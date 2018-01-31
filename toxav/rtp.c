@@ -128,7 +128,8 @@ int rtp_stop_receiving(RTPSession *session)
 /*
  * input is raw vpx data. length_v3 is the length of the raw data
  */
-int rtp_send_data(RTPSession *session, const uint8_t *data, uint32_t length_v3, Logger *log)
+int rtp_send_data(RTPSession *session, const uint8_t *data, uint32_t length_v3,
+                  uint32_t extra_data, Logger *log)
 {
     if (!session) {
         LOGGER_ERROR(log, "No session!");
@@ -137,27 +138,11 @@ int rtp_send_data(RTPSession *session, const uint8_t *data, uint32_t length_v3, 
 
     // here the highest bits gets stripped anyway, no need to do keyframe bit magic here!
     uint16_t length = (uint16_t)length_v3;
-    uint8_t is_keyframe = 0;
+    uint8_t is_keyframe = extra_data;
     uint8_t is_video_payload = 0;
 
     if (session->payload_type == rtp_TypeVideo) {
         is_video_payload = 1;
-    }
-
-    if (is_video_payload == 1) {
-        // TOX RTP V3 --- hack to get frame type ---
-        //
-        // use the highest bit (bit 31) to spec. keyframe = 1 / no keyframe = 0
-        // if length(31 bits) > 1FFFFFFF then use all bits for length
-        // and assume its a keyframe (most likely is anyway)
-        if (LOWER_31_BITS(length_v3) > 0x1FFFFFFF) {
-            is_keyframe = 1;
-        } else {
-            is_keyframe = (length_v3 & ((uint32_t)1 << 31)) != 0; // 1-> is keyframe, 0-> no keyframe
-            length_v3 = LOWER_31_BITS(length_v3);
-        }
-
-        // TOX RTP V3 --- hack to get frame type ---
     }
 
     VLA(uint8_t, rdata, length_v3 + sizeof(struct RTPHeader) + 1);
@@ -304,7 +289,10 @@ static struct RTPMessage *new_message_v3(size_t allocate_len, const uint8_t *dat
     struct RTPHeaderV3 *header_v3 = (struct RTPHeaderV3 *)&msg->header;
     header_v3->data_length_full = full_data_length; // without header
     header_v3->offset_full = offset;
-    header_v3->is_keyframe = is_keyframe;
+    if (is_keyframe == 1)
+    {
+        header_v3->flags = header_v3->flags | RTP_KEY_FRAME;
+    }
     header_v3->protocol_version = 3;
     return msg;
 }

@@ -243,6 +243,7 @@ RTPSession *rtp_new(int payload_type, Messenger *m, uint32_t friendnumber,
 void rtp_kill(RTPSession *session);
 int rtp_allow_receiving(RTPSession *session);
 int rtp_stop_receiving(RTPSession *session);
-int rtp_send_data(RTPSession *session, const uint8_t *data, uint32_t length, Logger *log);
+int rtp_send_data(RTPSession *session, const uint8_t *data, uint32_t length,
+                  uint32_t extra_data, Logger *log);
 
 #endif /* RTP_H */

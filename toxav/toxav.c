@@ -761,7 +761,7 @@ bool toxav_audio_send_frame(ToxAV *av, uint32_t friend_number, const int16_t *pc
             goto END;
         }
 
-        if (rtp_send_data(call->audio.first, dest, vrc + sizeof(sampling_rate), av->m->log) != 0) {
+        if (rtp_send_data(call->audio.first, dest, vrc + sizeof(sampling_rate), 0, av->m->log) != 0) {
             LOGGER_WARNING(av->m->log, "Failed to send audio packet");
             rc = TOXAV_ERR_SEND_FRAME_RTP_FAILED;
         }
@@ -880,26 +880,15 @@ bool toxav_video_send_frame(ToxAV *av, uint32_t friend_number, uint16_t width, u
             if (pkt->kind == VPX_CODEC_CX_FRAME_PKT) {
                 const int keyframe = (pkt->data.frame.flags & VPX_FRAME_IS_KEY) != 0;
 
-                // TOX RTP V3 --- hack to give frame type to function ---
-                //
-                // use the highest bit (bit 31) to spec. keyframe = 1 / no keyframe = 0
-                // if length(31 bits) > 1FFFFFFF then use all bits for length
-                // and assume its a keyframe (most likely is anyway)
-
                 // https://www.webmproject.org/docs/webm-sdk/structvpx__codec__cx__pkt.html
                 // pkt->data.frame.sz -> size_t
                 uint32_t frame_length_in_bytes = pkt->data.frame.sz;
-
-                if (LOWER_31_BITS(frame_length_in_bytes) <= 0x1FFFFFFF && keyframe == 1) {
-                    frame_length_in_bytes = ((uint32_t)1 << 31) | LOWER_31_BITS(frame_length_in_bytes);
-                }
-
-                // TOX RTP V3 --- hack to give frame type to function ---
 
                 int res = rtp_send_data(
                               call->video.first,
                               (const uint8_t *)pkt->data.frame.buf,
                               frame_length_in_bytes,
+                              keyframe,
                               av->m->log);
 
                 LOGGER_DEBUG(av->m->log, "+ _sending_FRAME_TYPE_==%s bytes=%d frame_len=%d", keyframe ? "K" : ".",
