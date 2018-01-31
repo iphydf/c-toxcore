@@ -175,6 +175,7 @@ int rtp_send_data(RTPSession *session, const uint8_t *data, uint32_t length_v3, 
     header->ssrc = net_htonl(session->ssrc);
     header->offset_lower = 0;
     header->data_length_lower = net_htons(length);
+    header->flags = RTP_LARGE_FRAME;
 
     struct RTPHeaderV3 *header_v3 = (struct RTPHeaderV3 *)header;
     header_v3->protocol_version = 3; // TOX RTP V3
@@ -188,7 +189,10 @@ int rtp_send_data(RTPSession *session, const uint8_t *data, uint32_t length_v3, 
     header_v3->data_length_full = net_htonl(length_v3); // without header
     header_v3->offset_lower = 0;
     header_v3->offset_full = 0;
-    header_v3->is_keyframe = is_keyframe;
+    if (is_keyframe == 1)
+    {
+        header_v3->flags = header_v3->flags | RTP_KEY_FRAME;
+    }
 
     if (MAX_CRYPTO_DATA_SIZE > (length_v3 + sizeof(struct RTPHeader) + 1)) {
         /**
@@ -526,9 +530,9 @@ int handle_rtp_packet_v3(Messenger *m, uint32_t friendnumber, const uint8_t *dat
     const struct RTPHeaderV3 *header_v3 = (const struct RTPHeaderV3 *)data;
     uint32_t length_v3 = net_htonl(header_v3->data_length_full); // without header
     uint32_t offset_v3 = net_htonl(header_v3->offset_full); // without header
-    uint8_t is_keyframe = (int)header_v3->is_keyframe;
+    uint8_t is_keyframe = (int)((header_v3->flags & RTP_KEY_FRAME) > 0);
     LOGGER_DEBUG(m->log, "-- handle_rtp_packet_v3 -- full lens=%d len=%d offset=%d is_keyframe=%s", (int)length,
-                 (int)length_v3, (int)offset_v3, ((int)header_v3->is_keyframe) ? "K" : ".");
+                 (int)length_v3, (int)offset_v3, is_keyframe ? "K" : ".");
     LOGGER_DEBUG(m->log, "wkbl->next_free_entry:003=%d", work_buffer_list->next_free_entry);
 
     if (offset_v3 >= length_v3) {
