@@ -152,6 +152,7 @@ typedef struct {
     uint32_t rtimestamp;
     uint32_t ssrc; //  this seems to be unused!?
     struct RTPMessage *mp; /* Expected parted message */
+    struct RTPWorkBufferList *work_buffer_list;
     uint8_t  first_packets_counter; /* dismiss first few lost video packets */
     Messenger *m;
     uint32_t friend_number;
@@ -159,6 +160,7 @@ typedef struct {
     void *cs;
     int (*mcb)(void *, struct RTPMessage *msg);
 } RTPSession;
+
 
 /**
  * Serialise an RTPHeader to bytes to be sent over the network.
@@ -177,27 +179,6 @@ size_t rtp_header_pack(uint8_t *rdata, const struct RTPHeader *header);
  * @param header The RTPHeader to write the unpacked values to.
  */
 size_t rtp_header_unpack(const uint8_t *data, struct RTPHeader *header);
-
-/**
- * RTP control session V3
- */
-typedef struct {
-    uint8_t  payload_type;
-    uint16_t sequnum;      /* Sending sequence number */
-    uint16_t rsequnum;     /* Receiving sequence number */
-    uint32_t rtimestamp;
-    uint32_t ssrc;  // this seems to be unused!?
-    struct RTPWorkBufferList *work_buffer_list;
-    uint8_t  first_packets_counter;
-    Messenger *m;
-    uint32_t friend_number;
-    BWController *bwc;
-    void *cs;
-    int (*mcb)(void *, struct RTPMessage *msg);
-} RTPSessionV3;
-
-/* Check that RTPSessionV3 is the same size as RTPSession */
-typedef char __fail_if_size_wrong_3 [ sizeof(RTPSession) == sizeof(RTPSessionV3) ? 1 : -1 ];
 
 RTPSession *rtp_new(int payload_type, Messenger *m, uint32_t friendnumber,
                     BWController *bwc, void *cs,

@@ -140,14 +140,13 @@ void rtp_kill(RTPSession *session)
 
     LOGGER_DEBUG(session->m->log, "Terminated RTP session: %p", session);
     rtp_stop_receiving(session);
-    RTPSessionV3 *session_v3 = (RTPSessionV3 *)session;
-    LOGGER_DEBUG(session->m->log, "Terminated RTP session V3 work_buffer_list: %p", session_v3->work_buffer_list);
+    LOGGER_DEBUG(session->m->log, "Terminated RTP session V3 work_buffer_list: %p", session->work_buffer_list);
 
-    if (session_v3->work_buffer_list) {
+    if (session->work_buffer_list) {
         LOGGER_DEBUG(session->m->log, "Terminated RTP session V3 next_free_entry: %d",
-                     (int)session_v3->work_buffer_list->next_free_entry);
-        free(session_v3->work_buffer_list);
-        session_v3->work_buffer_list = nullptr;
+                     (int)session->work_buffer_list->next_free_entry);
+        free(session->work_buffer_list);
+        session->work_buffer_list = nullptr;
     }
 
     free(session);
@@ -543,19 +542,18 @@ int handle_rtp_packet_v3(Messenger *m, uint32_t friendnumber, const uint8_t *dat
     (void) m;
     (void) friendnumber;
     RTPSession *session = (RTPSession *)object;
-    RTPSessionV3 *session_v3 = (RTPSessionV3 *)object;
-    struct RTPWorkBufferList *work_buffer_list = (struct RTPWorkBufferList *)session_v3->work_buffer_list;
+    struct RTPWorkBufferList *work_buffer_list = (struct RTPWorkBufferList *)session->work_buffer_list;
 
-    if (session_v3->work_buffer_list == nullptr) {
-        session_v3->work_buffer_list = (struct RTPWorkBufferList *)calloc(1, sizeof(struct RTPWorkBufferList));
+    if (session->work_buffer_list == nullptr) {
+        session->work_buffer_list = (struct RTPWorkBufferList *)calloc(1, sizeof(struct RTPWorkBufferList));
 
-        if (session_v3->work_buffer_list == nullptr) {
+        if (session->work_buffer_list == nullptr) {
             LOGGER_ERROR(m->log, "out of memory while allocating work buffer list");
             return -1;
         }
 
-        session_v3->work_buffer_list->next_free_entry = 0;
-        work_buffer_list = (struct RTPWorkBufferList *)session_v3->work_buffer_list;
+        session->work_buffer_list->next_free_entry = 0;
+        work_buffer_list = (struct RTPWorkBufferList *)session->work_buffer_list;
     }
 
     /*
