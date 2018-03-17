@@ -614,7 +614,7 @@ static int read_connection_handshake(TCP_Secure_Connection *con, const uint8_t *
  */
 static int send_routing_response(TCP_Secure_Connection *con, uint8_t rpid, const uint8_t *public_key)
 {
-    uint8_t data[1 + 1 + CRYPTO_PUBLIC_KEY_SIZE];
+    uint8_t data[2 + CRYPTO_PUBLIC_KEY_SIZE];
     data[0] = TCP_PACKET_ROUTING_RESPONSE;
     data[1] = rpid;
     memcpy(data + 2, public_key, CRYPTO_PUBLIC_KEY_SIZE);
@@ -651,6 +651,7 @@ static int handle_TCP_routing_req(TCP_Server *TCP_server, uint32_t con_id, const
     uint32_t index = ~0;
     TCP_Secure_Connection *con = &TCP_server->accepted_connection_array[con_id];
 
+    fprintf(stderr, "tcp server routing from %s to: %s\n", id_toa(con->public_key), id_toa(public_key));
     /* If person tries to cennect to himself we deny the request*/
     if (public_key_cmp(con->public_key, public_key) == 0) {
         if (send_routing_response(con, 0, public_key) == -1) {

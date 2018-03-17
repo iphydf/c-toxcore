@@ -36,8 +36,12 @@
 /* The time between attempts to share our TCP relays with a peer */
 #define GCC_TCP_SHARED_RELAYS_TIMEOUT 300
 
+#define GCC_IP_PORT_TIMEOUT GC_PING_INTERVAL * 4
+
 /* The time before the direct UDP connection is considered dead */
 #define GCC_UDP_DIRECT_TIMEOUT (GC_PING_INTERVAL * 2 + 2)
+
+#define HANDSHAKE_SENDING_TIMEOUT 3
 
 struct GC_Message_Ary_Entry {
     uint8_t *data;
@@ -66,13 +70,24 @@ struct GC_Connection {
     int         tcp_connection_num;
     uint64_t    last_recv_direct_time;   /* the last time we received a direct packet from this peer */
     uint64_t    last_tcp_relays_shared;  /* the last time we tried to send this peer our tcp relays */
+    uint64_t    last_ip_port_shared;
+
+    Node_format connected_tcp_relays[MAX_FRIEND_TCP_CONNECTIONS];
+    int tcp_relays_index;
 
     uint64_t    last_rcvd_ping;
     uint64_t    time_added;
     bool        pending_sync_request;   /* true if we have sent this peer a sync request and have not received a reply*/
     bool        pending_state_sync;    /* used for group state syncing */
     bool        handshaked; /* true if we've successfully handshaked with this peer */
+    uint64_t    pending_handshake;
+    uint8_t     pending_handshake_type;
+    bool        is_pending_handshake_response;
+    bool        is_oob_handshake;
+    uint8_t     oob_relay_pk[ENC_PUBLIC_KEY];
     bool        confirmed;  /* true if this peer has given us their info */
+    uint32_t    friend_shared_state_version;
+    uint32_t    self_sent_shared_state_version;
 };
 
 /* Return connection object for peernumber.

@@ -142,6 +142,12 @@ typedef enum {
 }
 USERSTATUS;
 
+typedef enum {
+    CONTACT_TYPE_FRIEND,
+    CONTACT_TYPE_GC
+}
+CONTACT_TYPE;
+
 #define FILE_ID_LENGTH 32
 
 struct File_Transfers {
@@ -219,6 +225,8 @@ typedef struct {
 
     struct Receipts *receipts_start;
     struct Receipts *receipts_end;
+
+    CONTACT_TYPE type;
 } Friend;
 
 struct Messenger {
@@ -250,7 +258,7 @@ struct Messenger {
     time_t lastdump;
 
     GC_Session *group_handler;
-    GC_Announce *group_announce;
+    GC_Announces_List *group_announce;
 
     uint8_t has_added_relays; // If the first connection has occurred in do_messenger
     Node_format loaded_relays[NUM_SAVED_TCP_RELAYS]; // Relays loaded from config
@@ -330,6 +338,10 @@ int32_t m_addfriend(Messenger *m, const uint8_t *address, const uint8_t *data, u
  *  return -8 if increasing the friend list size fails.
  */
 int32_t m_addfriend_norequest(Messenger *m, const uint8_t *real_pk);
+
+int32_t m_add_friend_gc(Messenger *m, const GC_Chat *chat);
+
+int32_t m_remove_friend_gc(Messenger *m, const GC_Chat *chat);
 
 /*  return the friend number associated to that client id.
  *  return -1 if no such friend.
