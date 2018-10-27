@@ -3793,7 +3793,7 @@ typedef void tox_group_peer_name_cb(Tox *tox, uint32_t group_number, uint32_t pe
  *
  * This event is triggered when a peer changes their nickname.
  */
-void tox_callback_group_peer_name(Tox *tox, tox_group_peer_name_cb *callback, void *user_data);
+void tox_callback_group_peer_name(Tox *tox, tox_group_peer_name_cb *callback);
 
 /**
  * @param group_number The group number of the group the status change is intended for.
@@ -3809,7 +3809,7 @@ typedef void tox_group_peer_status_cb(Tox *tox, uint32_t group_number, uint32_t 
  *
  * This event is triggered when a peer changes their status.
  */
-void tox_callback_group_peer_status(Tox *tox, tox_group_peer_status_cb *callback, void *user_data);
+void tox_callback_group_peer_status(Tox *tox, tox_group_peer_status_cb *callback);
 
 
 /*******************************************************************************
@@ -3929,7 +3929,7 @@ typedef void tox_group_topic_cb(Tox *tox, uint32_t group_number, uint32_t peer_i
  *
  * This event is triggered when a peer changes the group topic.
  */
-void tox_callback_group_topic(Tox *tox, tox_group_topic_cb *callback, void *user_data);
+void tox_callback_group_topic(Tox *tox, tox_group_topic_cb *callback);
 
 /**
  * Return the length of the group name. If the group number is invalid, the
@@ -3994,7 +3994,7 @@ typedef void tox_group_privacy_state_cb(Tox *tox, uint32_t group_number, TOX_GRO
  *
  * This event is triggered when the group founder changes the privacy state.
  */
-void tox_callback_group_privacy_state(Tox *tox, tox_group_privacy_state_cb *callback, void *user_data);
+void tox_callback_group_privacy_state(Tox *tox, tox_group_privacy_state_cb *callback);
 
 /**
  * Return the maximum number of peers allowed for the group designated by the given group number.
@@ -4019,7 +4019,7 @@ typedef void tox_group_peer_limit_cb(Tox *tox, uint32_t group_number, uint32_t p
  *
  * This event is triggered when the group founder changes the maximum peer limit.
  */
-void tox_callback_group_peer_limit(Tox *tox, tox_group_peer_limit_cb *callback, void *user_data);
+void tox_callback_group_peer_limit(Tox *tox, tox_group_peer_limit_cb *callback);
 
 /**
  * Return the length of the group password. If the group number is invalid, the
@@ -4059,7 +4059,7 @@ typedef void tox_group_password_cb(Tox *tox, uint32_t group_number, const uint8_
  *
  * This event is triggered when the group founder changes the group password.
  */
-void tox_callback_group_password(Tox *tox, tox_group_password_cb *callback, void *user_data);
+void tox_callback_group_password(Tox *tox, tox_group_password_cb *callback);
 
 
 /*******************************************************************************
@@ -4278,7 +4278,7 @@ typedef void tox_group_message_cb(Tox *tox, uint32_t group_number, uint32_t peer
  *
  * This event is triggered when the client receives a group message.
  */
-void tox_callback_group_message(Tox *tox, tox_group_message_cb *callback, void *user_data);
+void tox_callback_group_message(Tox *tox, tox_group_message_cb *callback);
 
 /**
  * @param group_number The group number of the group the private message is intended for.
@@ -4295,7 +4295,7 @@ typedef void tox_group_private_message_cb(Tox *tox, uint32_t group_number, uint3
  *
  * This event is triggered when the client receives a private message.
  */
-void tox_callback_group_private_message(Tox *tox, tox_group_private_message_cb *callback, void *user_data);
+void tox_callback_group_private_message(Tox *tox, tox_group_private_message_cb *callback);
 
 /**
  * @param group_number The group number of the group the custom packet is intended for.
@@ -4312,7 +4312,7 @@ typedef void tox_group_custom_packet_cb(Tox *tox, uint32_t group_number, uint32_
  *
  * This event is triggered when the client receives a custom packet.
  */
-void tox_callback_group_custom_packet(Tox *tox, tox_group_custom_packet_cb *callback, void *user_data);
+void tox_callback_group_custom_packet(Tox *tox, tox_group_custom_packet_cb *callback);
 
 
 /*******************************************************************************
@@ -4424,7 +4424,7 @@ typedef void tox_group_invite_cb(Tox *tox, uint32_t friend_number, const uint8_t
  * This event is triggered when the client receives a group invite from a friend. The client must store
  * invite_data which is used to join the group via tox_group_invite_accept.
  */
-void tox_callback_group_invite(Tox *tox, tox_group_invite_cb *callback, void *user_data);
+void tox_callback_group_invite(Tox *tox, tox_group_invite_cb *callback);
 
 /**
  * @param group_number The group number of the group in which a new peer has joined.
@@ -4439,7 +4439,7 @@ typedef void tox_group_peer_join_cb(Tox *tox, uint32_t group_number, uint32_t pe
  *
  * This event is triggered when a peer other than self joins the group.
  */
-void tox_callback_group_peer_join(Tox *tox, tox_group_peer_join_cb *callback, void *user_data);
+void tox_callback_group_peer_join(Tox *tox, tox_group_peer_join_cb *callback);
 
 /**
  * @param group_number The group number of the group in which a peer has left.
@@ -4456,7 +4456,7 @@ typedef void tox_group_peer_exit_cb(Tox *tox, uint32_t group_number, uint32_t pe
  *
  * This event is triggered when a peer other than self exits the group.
  */
-void tox_callback_group_peer_exit(Tox *tox, tox_group_peer_exit_cb *callback, void *user_data);
+void tox_callback_group_peer_exit(Tox *tox, tox_group_peer_exit_cb *callback);
 
 /**
  * @param group_number The group number of the group that the client has joined.
@@ -4470,7 +4470,7 @@ typedef void tox_group_self_join_cb(Tox *tox, uint32_t group_number, void *user_
  * This event is triggered when the client has successfully joined a group. Use this to initialize
  * any group information the client may need.
  */
-void tox_callback_group_self_join(Tox *tox, tox_group_self_join_cb *callback, void *user_data);
+void tox_callback_group_self_join(Tox *tox, tox_group_self_join_cb *callback);
 
 /**
  * Represents types of failed group join attempts. These are used in the tox_callback_group_rejected
@@ -4514,7 +4514,7 @@ typedef void tox_group_join_fail_cb(Tox *tox, uint32_t group_number, TOX_GROUP_J
  *
  * This event is triggered when the client fails to join a group.
  */
-void tox_callback_group_join_fail(Tox *tox, tox_group_join_fail_cb *callback, void *user_data);
+void tox_callback_group_join_fail(Tox *tox, tox_group_join_fail_cb *callback);
 
 
 /*******************************************************************************
@@ -4935,7 +4935,7 @@ typedef void tox_group_moderation_cb(Tox *tox, uint32_t group_number, uint32_t s
  *
  * This event is triggered when a moderator or founder executes a moderation event.
  */
-void tox_callback_group_moderation(Tox *tox, tox_group_moderation_cb *callback, void *user_data);
+void tox_callback_group_moderation(Tox *tox, tox_group_moderation_cb *callback);
 
 
 /*******************************************************************************
