@@ -71,7 +71,7 @@ static void mark_all_good(const Mono_Time *mono_time, Client_data *list, uint32_
 
 /* Returns 1 if public_key has a furthest distance to comp_client_id
    than all public_key's  in the list */
-static uint8_t is_furthest(const uint8_t *comp_client_id, Client_data *list, uint32_t length, const uint8_t *public_key)
+static uint8_t is_furthest(const uint8_t *comp_client_id, const Client_data *list, uint32_t length, const uint8_t *public_key)
 {
     uint32_t i;
 
@@ -84,7 +84,7 @@ static uint8_t is_furthest(const uint8_t *comp_client_id, Client_data *list, uin
     return 1;
 }
 
-static int client_in_list(Client_data *list, uint32_t length, const uint8_t *public_key)
+static int client_in_list(const Client_data *list, uint32_t length, const uint8_t *public_key)
 {
     uint32_t i;
 
@@ -100,7 +100,7 @@ static int client_in_list(Client_data *list, uint32_t length, const uint8_t *pub
 static void test_addto_lists_update(DHT            *dht,
                                     Client_data    *list,
                                     uint32_t        length,
-                                    IP_Port        *ip_port)
+                                    const IP_Port  *ip_port)
 {
     uint32_t used, test, test1, test2, found;
     IP_Port test_ipp;
@@ -408,7 +408,7 @@ static void test_addto_lists_ipv6(void)
 
 #define DHT_DEFAULT_PORT (TOX_PORT_DEFAULT + 1000)
 
-static void print_pk(uint8_t *public_key)
+static void print_pk(const uint8_t *public_key)
 {
     uint32_t j;
 

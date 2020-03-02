@@ -240,7 +240,7 @@ static void kill_TCP_con(struct sec_TCP_con *con)
     free(con);
 }
 
-static int write_packet_TCP_secure_connection(struct sec_TCP_con *con, uint8_t *data, uint16_t length)
+static int write_packet_TCP_secure_connection(struct sec_TCP_con *con, const uint8_t *data, uint16_t length)
 {
     VLA(uint8_t, packet, sizeof(uint16_t) + length + CRYPTO_MAC_SIZE);
 

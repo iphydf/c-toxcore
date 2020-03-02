@@ -101,8 +101,8 @@ static void handle_conference_message(
     }
 }
 
-static bool toxes_are_disconnected_from_group(uint32_t tox_count, Tox **toxes,
-        bool *disconnected)
+static bool toxes_are_disconnected_from_group(uint32_t tox_count, Tox *const *toxes,
+        const bool *disconnected)
 {
     uint32_t num_disconnected = 0;
 
@@ -164,7 +164,7 @@ static bool all_connected_to_group(uint32_t tox_count, Tox **toxes)
     return true;
 }
 
-static bool names_propagated(uint32_t tox_count, Tox **toxes, State *state)
+static bool names_propagated(uint32_t tox_count, Tox *const *toxes, const State *state)
 {
     for (uint32_t i = 0; i < tox_count; ++i) {
         for (uint32_t j = 0; j < tox_count; ++j) {
@@ -184,7 +184,7 @@ static bool names_propagated(uint32_t tox_count, Tox **toxes, State *state)
  * returns a random index at which a list of booleans is false
  * (some such index is required to exist)
  */
-static uint32_t random_false_index(bool *list, const uint32_t length)
+static uint32_t random_false_index(const bool *list, const uint32_t length)
 {
     uint32_t index;
 

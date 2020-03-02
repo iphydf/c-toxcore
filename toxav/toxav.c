@@ -129,7 +129,7 @@ bool audio_bit_rate_invalid(uint32_t bit_rate);
 bool video_bit_rate_invalid(uint32_t bit_rate);
 bool invoke_call_state_callback(ToxAV *av, uint32_t friend_number, uint32_t state);
 ToxAVCall *call_new(ToxAV *av, uint32_t friend_number, Toxav_Err_Call *error);
-ToxAVCall *call_get(ToxAV *av, uint32_t friend_number);
+static ToxAVCall *call_get(const ToxAV *av, uint32_t friend_number);
 ToxAVCall *call_remove(ToxAVCall *call);
 bool call_prepare_transmission(ToxAVCall *call);
 void call_kill_transmission(ToxAVCall *call);
@@ -802,7 +802,7 @@ RETURN:
     return rc == TOXAV_ERR_SEND_FRAME_OK;
 }
 
-static Toxav_Err_Send_Frame send_frames(const Logger *log, ToxAVCall *call)
+static Toxav_Err_Send_Frame send_frames(const Logger *log, const ToxAVCall *call)
 {
     vpx_codec_iter_t iter = nullptr;
 
@@ -1241,7 +1241,7 @@ RETURN:
     return call;
 }
 
-ToxAVCall *call_get(ToxAV *av, uint32_t friend_number)
+static ToxAVCall *call_get(const ToxAV *av, uint32_t friend_number)
 {
     /* Assumes mutex locked */
     if (av->calls == nullptr || av->calls_tail < friend_number) {

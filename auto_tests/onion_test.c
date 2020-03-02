@@ -29,7 +29,7 @@ static inline IP get_loopback(void)
 #endif
     return ip;
 }
-static void do_onion(Onion *onion)
+static void do_onion(const Onion *onion)
 {
     mono_time_update(onion->mono_time);
 
@@ -406,7 +406,7 @@ static Onions *new_onions(uint16_t port, uint32_t *index)
     return on;
 }
 
-static void do_onions(Onions *on)
+static void do_onions(const Onions *on)
 {
     mono_time_update(on->mono_time);
 

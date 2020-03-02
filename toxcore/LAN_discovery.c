@@ -381,7 +381,7 @@ static int handle_LANdiscovery(void *object, IP_Port source, const uint8_t *pack
 }
 
 
-int lan_discovery_send(uint16_t port, DHT *dht)
+int lan_discovery_send(uint16_t port, const DHT *dht)
 {
     uint8_t data[CRYPTO_PUBLIC_KEY_SIZE + 1];
     data[0] = NET_PACKET_LAN_DISCOVERY;
@@ -422,7 +422,7 @@ void lan_discovery_init(DHT *dht)
     networking_registerhandler(dht_get_net(dht), NET_PACKET_LAN_DISCOVERY, &handle_LANdiscovery, dht);
 }
 
-void lan_discovery_kill(DHT *dht)
+void lan_discovery_kill(const DHT *dht)
 {
     networking_registerhandler(dht_get_net(dht), NET_PACKET_LAN_DISCOVERY, nullptr, nullptr);
 }

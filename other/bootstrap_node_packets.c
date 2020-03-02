@@ -57,7 +57,7 @@ static int handle_info_request(void *object, IP_Port source, const uint8_t *pack
     return 1;
 }
 
-int bootstrap_set_callbacks(Networking_Core *net, uint32_t version, uint8_t *motd, uint16_t motd_length)
+int bootstrap_set_callbacks(Networking_Core *net, uint32_t version, const uint8_t *motd, uint16_t motd_length)
 {
     if (motd_length > MAX_MOTD_LENGTH) {
         return -1;

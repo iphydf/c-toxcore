@@ -79,10 +79,10 @@ typedef struct MSIMessage {
 void msg_init(MSIMessage *dest, MSIRequest request);
 int msg_parse_in(const Logger *log, MSIMessage *dest, const uint8_t *data, uint16_t length);
 uint8_t *msg_parse_header_out(MSIHeaderID id, uint8_t *dest, const void *value, uint8_t value_len, uint16_t *length);
-static int send_message(Messenger *m, uint32_t friend_number, const MSIMessage *msg);
+static int send_message(const Messenger *m, uint32_t friend_number, const MSIMessage *msg);
 int send_error(Messenger *m, uint32_t friend_number, MSIError error);
 static int invoke_callback(MSICall *call, MSICallbackID cb);
-static MSICall *get_call(MSISession *session, uint32_t friend_number);
+static MSICall *get_call(const MSISession *session, uint32_t friend_number);
 MSICall *new_call(MSISession *session, uint32_t friend_number);
 void kill_call(MSICall *call);
 void on_peer_status(Messenger *m, uint32_t friend_number, uint8_t status, void *data);
@@ -426,7 +426,7 @@ uint8_t *msg_parse_header_out(MSIHeaderID id, uint8_t *dest, const void *value, 
 
     return dest + value_len; /* Set to next position ready to be written */
 }
-int send_message(Messenger *m, uint32_t friend_number, const MSIMessage *msg)
+static int send_message(const Messenger *m, uint32_t friend_number, const MSIMessage *msg)
 {
     /* Parse and send message */
     assert(m);
@@ -514,7 +514,7 @@ FAILURE:
 
     return -1;
 }
-static MSICall *get_call(MSISession *session, uint32_t friend_number)
+static MSICall *get_call(const MSISession *session, uint32_t friend_number)
 {
     assert(session);
 

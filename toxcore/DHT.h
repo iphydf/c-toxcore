@@ -230,7 +230,7 @@ const Client_data *dht_get_close_clientlist(const DHT *dht);
 const Client_data *dht_get_close_client(const DHT *dht, uint32_t client_num);
 uint16_t dht_get_num_friends(const DHT *dht);
 
-DHT_Friend *dht_get_friend(DHT *dht, uint32_t friend_num);
+DHT_Friend *dht_get_friend(const DHT *dht, uint32_t friend_num);
 const uint8_t *dht_get_friend_public_key(const DHT *dht, uint32_t friend_num);
 
 /*----------------------------------------------------------------------------------*/
@@ -332,13 +332,13 @@ int get_close_nodes(const DHT *dht, const uint8_t *public_key, Node_format *node
  *
  * return the number of nodes.
  */
-uint16_t randfriends_nodes(DHT *dht, Node_format *nodes, uint16_t max_num);
+uint16_t randfriends_nodes(const DHT *dht, Node_format *nodes, uint16_t max_num);
 
 /* Put up to max_num nodes in nodes from the closelist.
  *
  * return the number of nodes.
  */
-uint16_t closelist_nodes(DHT *dht, Node_format *nodes, uint16_t max_num);
+uint16_t closelist_nodes(const DHT *dht, Node_format *nodes, uint16_t max_num);
 
 /* Run this function at least a couple times per second (It's the main loop). */
 void do_dht(DHT *dht);

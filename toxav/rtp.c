@@ -80,7 +80,7 @@ static struct RTPMessage *new_message(const struct RTPHeader *header, size_t all
  * do not kick it out right away if all slots are full instead kick out the new
  * incoming interframe.
  */
-static int8_t get_slot(const Logger *log, struct RTPWorkBufferList *wkbl, bool is_keyframe,
+static int8_t get_slot(const Logger *log, const struct RTPWorkBufferList *wkbl, bool is_keyframe,
                        const struct RTPHeader *header, bool is_multipart)
 {
     if (is_multipart) {

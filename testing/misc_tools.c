@@ -85,7 +85,7 @@ uint8_t *hex_string_to_bin(const char *hex_string)
     return ret;
 }
 
-void to_hex(char *out, uint8_t *in, int size)
+void to_hex(char *out, const uint8_t *in, int size)
 {
     while (size--) {
         if (*in >> 4 < 0xA) {

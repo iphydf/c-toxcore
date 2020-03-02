@@ -23,20 +23,20 @@ static inline Suite *suite_create(const char *title)
     return nullptr;
 }
 
-static inline SRunner *srunner_create(Suite *s)
+static inline SRunner *srunner_create(const Suite *s)
 {
     return nullptr;
 }
 
-static inline void srunner_free(SRunner *s)
+static inline void srunner_free(const SRunner *s)
 {
 }
 
-static inline void srunner_run_all(SRunner *r, int mode)
+static inline void srunner_run_all(const SRunner *r, int mode)
 {
 }
 
-static inline int srunner_ntests_failed(SRunner *r)
+static inline int srunner_ntests_failed(const SRunner *r)
 {
     return 0;
 }

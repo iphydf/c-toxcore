@@ -153,7 +153,7 @@ void getaddress(const Messenger *m, uint8_t *address)
     memcpy(address + CRYPTO_PUBLIC_KEY_SIZE + sizeof(nospam), &checksum, sizeof(checksum));
 }
 
-static int send_online_packet(Messenger *m, int32_t friendnumber)
+static int send_online_packet(const Messenger *m, int32_t friendnumber)
 {
     if (friend_not_valid(m, friendnumber)) {
         return 0;
@@ -164,7 +164,7 @@ static int send_online_packet(Messenger *m, int32_t friendnumber)
                              m->friendlist[friendnumber].friendcon_id), &packet, sizeof(packet), 0) != -1;
 }
 
-static int send_offline_packet(Messenger *m, int friendcon_id)
+static int send_offline_packet(const Messenger *m, int friendcon_id)
 {
     uint8_t packet = PACKET_ID_OFFLINE;
     return write_cryptpacket(m->net_crypto, friend_connection_crypt_connection_id(m->fr_c, friendcon_id), &packet,

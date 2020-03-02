@@ -102,8 +102,8 @@ static void handle_conference_connected(
     state->invited_next = true;
 }
 
-static bool toxes_are_disconnected_from_group(uint32_t tox_count, Tox **toxes,
-        bool *disconnected)
+static bool toxes_are_disconnected_from_group(uint32_t tox_count, Tox *const *toxes,
+        const bool *disconnected)
 {
     uint32_t num_disconnected = 0;
 
@@ -169,7 +169,7 @@ static bool all_connected_to_group(uint32_t tox_count, Tox **toxes)
  * returns a random index at which a list of booleans is false
  * (some such index is required to exist)
  */
-static uint32_t random_false_index(bool *list, const uint32_t length)
+static uint32_t random_false_index(const bool *list, const uint32_t length)
 {
     uint32_t index;
 
@@ -180,7 +180,7 @@ static uint32_t random_false_index(bool *list, const uint32_t length)
     return index;
 }
 
-static bool all_got_audio(State *state, const bool *disabled)
+static bool all_got_audio(const State *state, const bool *disabled)
 {
     uint32_t num_disabled = 0;
 

@@ -46,7 +46,7 @@ uint32_t lan_discovery_interval(void);
 /**
  * Send a LAN discovery pcaket to the broadcast address with port port.
  */
-int32_t lan_discovery_send(uint16_t port, DHT *dht);
+int32_t lan_discovery_send(uint16_t port, const DHT *dht);
 
 /**
  * Sets up packet handlers.
@@ -56,7 +56,7 @@ void lan_discovery_init(DHT *dht);
 /**
  * Clear packet handlers.
  */
-void lan_discovery_kill(DHT *dht);
+void lan_discovery_kill(const DHT *dht);
 
 /**
  * Is IP a local ip or not.

@@ -41,7 +41,7 @@
  *
  * Important: iff `tcp_relay_port_count` > 0, then you are responsible for freeing `tcp_relay_ports`.
  */
-static void parse_tcp_relay_ports_config(config_t *cfg, uint16_t **tcp_relay_ports, int *tcp_relay_port_count)
+static void parse_tcp_relay_ports_config(const config_t *cfg, uint16_t **tcp_relay_ports, int *tcp_relay_port_count)
 {
     const char *NAME_TCP_RELAY_PORTS = "tcp_relay_ports";
 
