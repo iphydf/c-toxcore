@@ -97,7 +97,7 @@ typedef struct ToxAV ToxAV;
 
 
 
-typedef enum TOXAV_ERR_NEW {
+typedef enum _TOXAV_ERR_NEW {
 
     /**
      * The function returned successfully.
@@ -120,13 +120,13 @@ typedef enum TOXAV_ERR_NEW {
      */
     TOXAV_ERR_NEW_MULTIPLE,
 
-} TOXAV_ERR_NEW;
+} _TOXAV_ERR_NEW;
 
 
 /**
  * Start new A/V session. There can only be only one session per Tox instance.
  */
-ToxAV *toxav_new(Tox *tox, TOXAV_ERR_NEW *error);
+ToxAV *toxav_new(Tox *tox, _TOXAV_ERR_NEW *error);
 
 /**
  * Releases all resources associated with the A/V session.
@@ -173,7 +173,7 @@ void toxav_iterate(ToxAV *av);
 
 
 
-typedef enum TOXAV_ERR_CALL {
+typedef enum _TOXAV_ERR_CALL {
 
     /**
      * The function returned successfully.
@@ -212,7 +212,7 @@ typedef enum TOXAV_ERR_CALL {
      */
     TOXAV_ERR_CALL_INVALID_BIT_RATE,
 
-} TOXAV_ERR_CALL;
+} _TOXAV_ERR_CALL;
 
 
 /**
@@ -230,7 +230,7 @@ typedef enum TOXAV_ERR_CALL {
  * video sending.
  */
 bool toxav_call(ToxAV *av, uint32_t friend_number, uint32_t audio_bit_rate, uint32_t video_bit_rate,
-                TOXAV_ERR_CALL *error);
+                _TOXAV_ERR_CALL *error);
 
 /**
  * The function type for the call callback.
@@ -248,7 +248,7 @@ typedef void toxav_call_cb(ToxAV *av, uint32_t friend_number, bool audio_enabled
  */
 void toxav_callback_call(ToxAV *av, toxav_call_cb *callback, void *user_data);
 
-typedef enum TOXAV_ERR_ANSWER {
+typedef enum _TOXAV_ERR_ANSWER {
 
     /**
      * The function returned successfully.
@@ -283,7 +283,7 @@ typedef enum TOXAV_ERR_ANSWER {
      */
     TOXAV_ERR_ANSWER_INVALID_BIT_RATE,
 
-} TOXAV_ERR_ANSWER;
+} _TOXAV_ERR_ANSWER;
 
 
 /**
@@ -300,7 +300,7 @@ typedef enum TOXAV_ERR_ANSWER {
  * video sending.
  */
 bool toxav_answer(ToxAV *av, uint32_t friend_number, uint32_t audio_bit_rate, uint32_t video_bit_rate,
-                  TOXAV_ERR_ANSWER *error);
+                  _TOXAV_ERR_ANSWER *error);
 
 
 /*******************************************************************************
@@ -383,7 +383,7 @@ void toxav_callback_call_state(ToxAV *av, toxav_call_state_cb *callback, void *u
 
 
 
-typedef enum TOXAV_CALL_CONTROL {
+typedef enum _TOXAV_CALL_CONTROL {
 
     /**
      * Resume a previously paused call. Only valid if the pause was caused by this
@@ -426,10 +426,10 @@ typedef enum TOXAV_CALL_CONTROL {
      */
     TOXAV_CALL_CONTROL_SHOW_VIDEO,
 
-} TOXAV_CALL_CONTROL;
+} _TOXAV_CALL_CONTROL;
 
 
-typedef enum TOXAV_ERR_CALL_CONTROL {
+typedef enum _TOXAV_ERR_CALL_CONTROL {
 
     /**
      * The function returned successfully.
@@ -458,7 +458,7 @@ typedef enum TOXAV_ERR_CALL_CONTROL {
      */
     TOXAV_ERR_CALL_CONTROL_INVALID_TRANSITION,
 
-} TOXAV_ERR_CALL_CONTROL;
+} _TOXAV_ERR_CALL_CONTROL;
 
 
 /**
@@ -470,7 +470,7 @@ typedef enum TOXAV_ERR_CALL_CONTROL {
  *
  * @return true on success.
  */
-bool toxav_call_control(ToxAV *av, uint32_t friend_number, TOXAV_CALL_CONTROL control, TOXAV_ERR_CALL_CONTROL *error);
+bool toxav_call_control(ToxAV *av, uint32_t friend_number, _TOXAV_CALL_CONTROL control, _TOXAV_ERR_CALL_CONTROL *error);
 
 
 /*******************************************************************************
@@ -481,7 +481,7 @@ bool toxav_call_control(ToxAV *av, uint32_t friend_number, TOXAV_CALL_CONTROL co
 
 
 
-typedef enum TOXAV_ERR_BIT_RATE_SET {
+typedef enum _TOXAV_ERR_BIT_RATE_SET {
 
     /**
      * The function returned successfully.
@@ -508,7 +508,7 @@ typedef enum TOXAV_ERR_BIT_RATE_SET {
      */
     TOXAV_ERR_BIT_RATE_SET_FRIEND_NOT_IN_CALL,
 
-} TOXAV_ERR_BIT_RATE_SET;
+} _TOXAV_ERR_BIT_RATE_SET;
 
 
 
@@ -520,7 +520,7 @@ typedef enum TOXAV_ERR_BIT_RATE_SET {
 
 
 
-typedef enum TOXAV_ERR_SEND_FRAME {
+typedef enum _TOXAV_ERR_SEND_FRAME {
 
     /**
      * The function returned successfully.
@@ -565,7 +565,7 @@ typedef enum TOXAV_ERR_SEND_FRAME {
      */
     TOXAV_ERR_SEND_FRAME_RTP_FAILED,
 
-} TOXAV_ERR_SEND_FRAME;
+} _TOXAV_ERR_SEND_FRAME;
 
 
 /**
@@ -589,7 +589,7 @@ typedef enum TOXAV_ERR_SEND_FRAME {
  * rates are 8000, 12000, 16000, 24000, or 48000.
  */
 bool toxav_audio_send_frame(ToxAV *av, uint32_t friend_number, const int16_t *pcm, size_t sample_count,
-                            uint8_t channels, uint32_t sampling_rate, TOXAV_ERR_SEND_FRAME *error);
+                            uint8_t channels, uint32_t sampling_rate, _TOXAV_ERR_SEND_FRAME *error);
 
 /**
  * Set the bit rate to be used in subsequent video frames.
@@ -600,7 +600,7 @@ bool toxav_audio_send_frame(ToxAV *av, uint32_t friend_number, const int16_t *pc
  *
  * @return true on success.
  */
-bool toxav_audio_set_bit_rate(ToxAV *av, uint32_t friend_number, uint32_t bit_rate, TOXAV_ERR_BIT_RATE_SET *error);
+bool toxav_audio_set_bit_rate(ToxAV *av, uint32_t friend_number, uint32_t bit_rate, _TOXAV_ERR_BIT_RATE_SET *error);
 
 /**
  * The function type for the audio_bit_rate callback. The event is triggered
@@ -636,7 +636,7 @@ void toxav_callback_audio_bit_rate(ToxAV *av, toxav_audio_bit_rate_cb *callback,
  * @param v V (Chroma) plane data.
  */
 bool toxav_video_send_frame(ToxAV *av, uint32_t friend_number, uint16_t width, uint16_t height, const uint8_t *y,
-                            const uint8_t *u, const uint8_t *v, TOXAV_ERR_SEND_FRAME *error);
+                            const uint8_t *u, const uint8_t *v, _TOXAV_ERR_SEND_FRAME *error);
 
 /**
  * Set the bit rate to be used in subsequent video frames.
@@ -647,7 +647,7 @@ bool toxav_video_send_frame(ToxAV *av, uint32_t friend_number, uint16_t width, u
  *
  * @return true on success.
  */
-bool toxav_video_set_bit_rate(ToxAV *av, uint32_t friend_number, uint32_t bit_rate, TOXAV_ERR_BIT_RATE_SET *error);
+bool toxav_video_set_bit_rate(ToxAV *av, uint32_t friend_number, uint32_t bit_rate, _TOXAV_ERR_BIT_RATE_SET *error);
 
 /**
  * The function type for the video_bit_rate callback. The event is triggered
@@ -822,12 +822,13 @@ bool toxav_groupchat_av_enabled(Tox *tox, uint32_t groupnumber);
 typedef void toxav_group_audio_cb(Tox *tox, uint32_t groupnumber, uint32_t peernumber, const int16_t *pcm,
                                   uint32_t samples, uint8_t channels, uint32_t sample_rate, void *user_data);
 
-typedef TOXAV_ERR_CALL Toxav_Err_Call;
-typedef TOXAV_ERR_NEW Toxav_Err_New;
-typedef TOXAV_ERR_ANSWER Toxav_Err_Answer;
-typedef TOXAV_ERR_CALL_CONTROL Toxav_Err_Call_Control;
-typedef TOXAV_ERR_BIT_RATE_SET Toxav_Err_Bit_Rate_Set;
-typedef TOXAV_ERR_SEND_FRAME Toxav_Err_Send_Frame;
-typedef TOXAV_CALL_CONTROL Toxav_Call_Control;
+typedef _TOXAV_ERR_CALL Toxav_Err_Call;
+typedef _TOXAV_ERR_NEW Toxav_Err_New;
+typedef _TOXAV_ERR_ANSWER Toxav_Err_Answer;
+typedef _TOXAV_ERR_CALL_CONTROL Toxav_Err_Call_Control;
+typedef _TOXAV_ERR_BIT_RATE_SET Toxav_Err_Bit_Rate_Set;
+typedef _TOXAV_ERR_SEND_FRAME Toxav_Err_Send_Frame;
+typedef enum TOXAV_FRIEND_CALL_STATE Toxav_Friend_Call_State;
+typedef _TOXAV_CALL_CONTROL Toxav_Call_Control;
 
 #endif // C_TOXCORE_TOXAV_TOXAV_H
