@@ -1,21 +1,11 @@
-%{
 /* SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright © 2016-2018 The TokTok team.
  * Copyright © 2013-2015 Tox project.
  */
-#ifndef C_TOXCORE_TOXAV_TOXAV_H
-#define C_TOXCORE_TOXAV_TOXAV_H
 
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-
-//!TOKSTYLE-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-%}
 
 /** \page av Public audio/video API for Tox clients.
  *
@@ -40,12 +30,12 @@ extern "C" {
 
 /** \subsection threading Threading implications
  *
- * Only ${toxAV.iterate} is thread-safe, all other functions must run from the
+ * Only #ToxAV.iterate is thread-safe, all other functions must run from the
  * tox thread.
  *
  * A common way to run ToxAV (multiple or single instance) is to have a thread,
- * separate from tox instance thread, running a simple ${toxAV.iterate} loop,
- * sleeping for ${toxAV.iteration_interval} * milliseconds on each iteration.
+ * separate from tox instance thread, running a simple #toxAV.iterate loop,
+ * sleeping for `#ToxAV.iteration_interval * milliseconds` on each iteration.
  *
  * An important thing to note is that events are triggered from both tox and
  * toxav thread (see above). Audio and video receive frame events are triggered
@@ -59,14 +49,7 @@ extern "C" {
 /**
  * External Tox type.
  */
-class tox {
-  struct this;
-}
-
-/**
- * ToxAV.
- */
-class toxAV {
+class Tox;
 
 /**
  * The ToxAV instance type. Each ToxAV instance can be bound to only one Tox
@@ -76,7 +59,7 @@ class toxAV {
  * forcibly terminated without notifying peers.
  *
  */
-struct this;
+class ToxAV {
 
 /*******************************************************************************
  *
@@ -88,7 +71,7 @@ struct this;
 /**
  * Start new A/V session. There can only be only one session per Tox instance.
  */
-static this new(tox::this *tox) {
+static this new(Tox *tox) with error {
   NULL,
   /**
    * Memory allocation failure while trying to allocate structures required for
@@ -108,12 +91,12 @@ static this new(tox::this *tox) {
  * notifying peers. After calling this function, no other functions may be
  * called and the av pointer becomes invalid.
  */
-void kill();
+void kill(void);
 
 /**
  * Returns the Tox instance the A/V object was created for.
  */
-tox::this *tox { get(); }
+Tox *tox { get(void); }
 
 
 /*******************************************************************************
@@ -127,14 +110,14 @@ tox::this *tox { get(); }
  * Returns the interval in milliseconds when the next toxav_iterate call should
  * be. If no call is active at the moment, this function returns 200.
  */
-const uint32_t iteration_interval();
+uint32_t iteration_interval(void) const;
 
 /**
  * Main loop for the session. This function needs to be called in intervals of
  * toxav_iteration_interval() milliseconds. It is best called in the separate
  * thread from tox_iterate.
  */
-void iterate();
+void iterate(void);
 
 
 /*******************************************************************************
@@ -158,7 +141,7 @@ void iterate();
  * @param video_bit_rate Video bit rate in Kb/sec. Set this to 0 to disable
  * video sending.
  */
-bool call(uint32_t friend_number, uint32_t audio_bit_rate, uint32_t video_bit_rate) {
+bool call(uint32_t friend_number, uint32_t audio_bit_rate, uint32_t video_bit_rate) with error {
   /**
    * A resource allocation error occurred while trying to create the structures
    * required for the call.
@@ -189,7 +172,7 @@ bool call(uint32_t friend_number, uint32_t audio_bit_rate, uint32_t video_bit_ra
 
 event call {
   /**
-   * The function type for the ${event call} callback.
+   * The function type for the #event::call callback.
    *
    * @param friend_number The friend number from which the call is incoming.
    * @param audio_enabled True if friend is sending audio.
@@ -211,7 +194,7 @@ event call {
  * @param video_bit_rate Video bit rate in Kb/sec. Set this to 0 to disable
  * video sending.
  */
-bool answer(uint32_t friend_number, uint32_t audio_bit_rate, uint32_t video_bit_rate) {
+bool answer(uint32_t friend_number, uint32_t audio_bit_rate, uint32_t video_bit_rate) with error {
   /**
    * Synchronization error occurred.
    */
@@ -245,7 +228,7 @@ bool answer(uint32_t friend_number, uint32_t audio_bit_rate, uint32_t video_bit_
  ******************************************************************************/
 
 
-bitmask FRIEND_CALL_STATE {
+bitmask Friend_Call_State {
   /**
    * Set by the AV core if an error occurred on the remote end or if friend
    * timed out. This is the final state after which no more state
@@ -279,7 +262,7 @@ bitmask FRIEND_CALL_STATE {
 
 event call_state {
  /**
-  * The function type for the ${event call_state} callback.
+  * The function type for the #event::call_state callback.
   *
   * @param friend_number The friend number for which the call state changed.
   * @param state The bitmask of the new call state which is guaranteed to be
@@ -298,7 +281,7 @@ event call_state {
  ******************************************************************************/
 
 
-enum class CALL_CONTROL {
+enum class Call_Control {
     /**
      * Resume a previously paused call. Only valid if the pause was caused by this
      * client, if not, this control is ignored. Not valid before the call is accepted.
@@ -315,7 +298,7 @@ enum class CALL_CONTROL {
     CANCEL,
     /**
      * Request that the friend stops sending audio. Regardless of the friend's
-     * compliance, this will cause the ${event audio.receive_frame} event to stop being
+     * compliance, this will cause the #event::audio.receive_frame event to stop being
      * triggered on receiving an audio frame from the friend.
      */
     MUTE_AUDIO,
@@ -325,7 +308,7 @@ enum class CALL_CONTROL {
     UNMUTE_AUDIO,
     /**
      * Request that the friend stops sending video. Regardless of the friend's
-     * compliance, this will cause the ${event video.receive_frame} event to stop being
+     * compliance, this will cause the #event::video.receive_frame event to stop being
      * triggered on receiving a video frame from the friend.
      */
     HIDE_VIDEO,
@@ -344,7 +327,7 @@ enum class CALL_CONTROL {
  *
  * @return true on success.
  */
-bool call_control(uint32_t friend_number, CALL_CONTROL control) {
+bool call_control(uint32_t friend_number, Call_Control control) with error {
   /**
    * Synchronization error occurred.
    */
@@ -437,7 +420,7 @@ namespace audio {
   /**
    * Send an audio frame to a friend.
    *
-   * The expected format of the PCM data is: [s1c1][s1c2][...][s2c1][s2c2][...]...
+   * The expected format of the PCM data is: `[s1c1][s1c2][...][s2c1][s2c2][...]...`
    * Meaning: sample 1 for channel 1, sample 1 for channel 2, ...
    * For mono audio, this has no meaning, every sample is subsequent. For stereo,
    * this means the expected format is LRLRLR... with samples for left and right
@@ -446,9 +429,9 @@ namespace audio {
    * @param friend_number The friend number of the friend to which to send an
    * audio frame.
    * @param pcm An array of audio samples. The size of this array must be
-   * sample_count * channels.
+   * `sample_count * channels`.
    * @param sample_count Number of samples in this frame. Valid numbers here are
-   * ((sample rate) * (audio length) / 1000), where audio length can be
+   * `((sample rate) * (audio length) / 1000)`, where audio length can be
    * 2.5, 5, 10, 20, 40 or 60 millseconds.
    * @param channels Number of audio channels. Supported values are 1 and 2.
    * @param sampling_rate Audio sampling rate used in this frame. Valid sampling
@@ -472,7 +455,7 @@ namespace audio {
 
   event bit_rate {
     /**
-     * The function type for the ${event bit_rate} callback. The event is triggered
+     * The function type for the #event::bit_rate callback. The event is triggered
      * when the network becomes too saturated for current bit rates at which
      * point core suggests new bit rates.
      *
@@ -488,9 +471,9 @@ namespace video {
   /**
    * Send a video frame to a friend.
    *
-   * Y - plane should be of size: height * width
-   * U - plane should be of size: (height/2) * (width/2)
-   * V - plane should be of size: (height/2) * (width/2)
+   * Y - plane should be of size: `height * width`
+   * U - plane should be of size: `(height/2) * (width/2)`
+   * V - plane should be of size: `(height/2) * (width/2)`
    *
    * @param friend_number The friend number of the friend to which to send a video
    * frame.
@@ -518,7 +501,7 @@ namespace video {
 
   event bit_rate {
     /**
-     * The function type for the ${event bit_rate} callback. The event is triggered
+     * The function type for the #event::bit_rate callback. The event is triggered
      * when the network becomes too saturated for current bit rates at which
      * point core suggests new bit rates.
      *
@@ -541,12 +524,12 @@ namespace video {
 namespace audio {
   event receive_frame {
     /**
-     * The function type for the ${event receive_frame} callback. The callback can be
+     * The function type for the #event::receive_frame callback. The callback can be
      * called multiple times per single iteration depending on the amount of queued
      * frames in the buffer. The received format is the same as in send function.
      *
      * @param friend_number The friend number of the friend who sent an audio frame.
-     * @param pcm An array of audio samples (sample_count * channels elements).
+     * @param pcm An array of audio samples (`sample_count * channels elements`).
      * @param sample_count The number of audio samples per channel in the PCM array.
      * @param channels Number of audio channels.
      * @param sampling_rate Sampling rate used in this frame.
@@ -560,7 +543,7 @@ namespace audio {
 namespace video {
   event receive_frame {
     /**
-     * The function type for the ${event receive_frame} callback.
+     * The function type for the #event::receive_frame callback.
      *
      * The size of plane data is derived from width and height as documented
      * below.
@@ -573,9 +556,9 @@ namespace video {
      * @param friend_number The friend number of the friend who sent a video frame.
      * @param width Width of the frame in pixels.
      * @param height Height of the frame in pixels.
-     * @param y Luminosity plane. Size = MAX(width, abs(ystride)) * height.
-     * @param u U chroma plane. Size = MAX(width/2, abs(ustride)) * (height/2).
-     * @param v V chroma plane. Size = MAX(width/2, abs(vstride)) * (height/2).
+     * @param y Luminosity plane. `Size = MAX(width, abs(ystride)) * height`.
+     * @param u U chroma plane. `Size = MAX(width/2, abs(ustride)) * (height/2)`.
+     * @param v V chroma plane. `Size = MAX(width/2, abs(vstride)) * (height/2)`.
      *
      * @param ystride Luminosity plane stride.
      * @param ustride U chroma plane stride.
@@ -589,7 +572,6 @@ namespace video {
 
 }
 
-%{
 /**
  * NOTE Compatibility with old toxav group calls. TODO(iphydf): remove
  *
@@ -602,37 +584,29 @@ namespace video {
  * return group number on success.
  * return -1 on failure.
  *
- * Audio data callback format:
- *   audio_callback(Tox *tox, uint32_t groupnumber, uint32_t peernumber, const int16_t *pcm, unsigned int samples, uint8_t channels, uint32_t sample_rate, void *userdata)
- *
- * Note that total size of pcm in bytes is equal to (samples * channels * sizeof(int16_t)).
+ * Note that total size of pcm in bytes is equal to `(samples * channels * sizeof(int16_t))`.
  */
-int toxav_add_av_groupchat(Tox *tox,
-                           void (*audio_callback)(void *, uint32_t, uint32_t, const int16_t *, unsigned int, uint8_t, uint32_t, void *),
-                           void *userdata);
+typedef void toxav_audio_cb(void *tox, uint32_t groupnumber, uint32_t peernumber, const int16_t *pcm, unsigned int samples, uint8_t channels, uint32_t sample_rate, void *userdata);
+int toxav_add_av_groupchat(Tox *tox, toxav_audio_cb *audio_callback, void *userdata);
 
 /* Join a AV group (you need to have been invited first.)
  *
  * returns group number on success
  * returns -1 on failure.
  *
- * Audio data callback format (same as the one for toxav_add_av_groupchat()):
- *   audio_callback(Tox *tox, uint32_t groupnumber, uint32_t peernumber, const int16_t *pcm, unsigned int samples, uint8_t channels, uint32_t sample_rate, void *userdata)
- *
- * Note that total size of pcm in bytes is equal to (samples * channels * sizeof(int16_t)).
+ * Note that total size of pcm in bytes is equal to `(samples * channels * sizeof(int16_t))`.
  */
 int toxav_join_av_groupchat(Tox *tox, uint32_t friendnumber, const uint8_t *data, uint16_t length,
-                            void (*audio_callback)(void *, uint32_t, uint32_t, const int16_t *, unsigned int, uint8_t, uint32_t, void *),
-                            void *userdata);
+                            toxav_audio_cb *audio_callback, void *userdata);
 
 /* Send audio to the group chat.
  *
  * return 0 on success.
  * return -1 on failure.
  *
- * Note that total size of pcm in bytes is equal to (samples * channels * sizeof(int16_t)).
+ * Note that total size of pcm in bytes is equal to `(samples * channels * sizeof(int16_t))`.
  *
- * Valid number of samples are ((sample rate) * (audio length (Valid ones are: 2.5, 5, 10, 20, 40 or 60 ms)) / 1000)
+ * Valid number of samples are `((sample rate) * (audio length (Valid ones are: 2.5, 5, 10, 20, 40 or 60 ms)) / 1000)`
  * Valid number of channels are 1 or 2.
  * Valid sample rates are 8000, 12000, 16000, 24000, or 48000.
  *
@@ -654,14 +628,10 @@ int toxav_group_send_audio(Tox *tox, uint32_t groupnumber, const int16_t *pcm, u
  * return 0 on success.
  * return -1 on failure.
  *
- * Audio data callback format (same as the one for toxav_add_av_groupchat()):
- *   audio_callback(Tox *tox, uint32_t groupnumber, uint32_t peernumber, const int16_t *pcm, unsigned int samples, uint8_t channels, uint32_t sample_rate, void *userdata)
- *
- * Note that total size of pcm in bytes is equal to (samples * channels * sizeof(int16_t)).
+ * Note that total size of pcm in bytes is equal to `(samples * channels * sizeof(int16_t))`.
  */
 int toxav_groupchat_enable_av(Tox *tox, uint32_t groupnumber,
-                              void (*audio_callback)(void *, uint32_t, uint32_t, const int16_t *, unsigned int, uint8_t, uint32_t, void *),
-                              void *userdata);
+                              toxav_audio_cb *audio_callback, void *userdata);
 
 /* Disable A/V in a groupchat.
  *
@@ -674,21 +644,4 @@ int toxav_groupchat_disable_av(Tox *tox, uint32_t groupnumber);
  */
 bool toxav_groupchat_av_enabled(Tox *tox, uint32_t groupnumber);
 
-#ifdef __cplusplus
-}
-#endif
-
 typedef void toxav_group_audio_cb(Tox *tox, uint32_t groupnumber, uint32_t peernumber, const int16_t *pcm, uint32_t samples, uint8_t channels, uint32_t sample_rate, void *user_data);
-
-typedef TOXAV_ERR_CALL Toxav_Err_Call;
-typedef TOXAV_ERR_NEW Toxav_Err_New;
-typedef TOXAV_ERR_ANSWER Toxav_Err_Answer;
-typedef TOXAV_ERR_CALL_CONTROL Toxav_Err_Call_Control;
-typedef TOXAV_ERR_BIT_RATE_SET Toxav_Err_Bit_Rate_Set;
-typedef TOXAV_ERR_SEND_FRAME Toxav_Err_Send_Frame;
-typedef TOXAV_CALL_CONTROL Toxav_Call_Control;
-
-//!TOKSTYLE+
-
-#endif // C_TOXCORE_TOXAV_TOXAV_H
-%}

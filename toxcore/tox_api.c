@@ -60,7 +60,6 @@ ACCESSORS(tox_log_cb *, log_, callback)
 ACCESSORS(void *, log_, user_data)
 ACCESSORS(bool,, local_discovery_enabled)
 ACCESSORS(bool,, experimental_thread_safety)
-
 //!TOKSTYLE+
 
 const uint8_t *tox_options_get_savedata_data(const struct Tox_Options *options)

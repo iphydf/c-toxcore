@@ -130,7 +130,7 @@ CIMPLE_SRCS = glob(
         "*.c",
         "*.h",
     ],
-    exclude = ["*.api.h"],
+    exclude = ["toxav.h"],
 )
 
 sh_test(
