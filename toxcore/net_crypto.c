@@ -1815,15 +1815,13 @@ static int create_crypto_connection(Net_Crypto *c)
  */
 static int wipe_crypto_connection(Net_Crypto *c, int crypt_connection_id)
 {
-    if ((uint32_t)crypt_connection_id >= c->crypto_connections_length) {
+    Crypto_Connection *const conn = get_crypto_connection(c, crypt_connection_id);
+
+    if (conn == nullptr) {
         return -1;
     }
 
-    if (c->crypto_connections == nullptr) {
-        return -1;
-    }
-
-    const Crypto_Conn_State status = c->crypto_connections[crypt_connection_id].status;
+    const Crypto_Conn_State status = conn->status;
 
     if (status == CRYPTO_CONN_FREE) {
         return -1;
@@ -1831,9 +1829,22 @@ static int wipe_crypto_connection(Net_Crypto *c, int crypt_connection_id)
 
     uint32_t i;
 
-    pthread_mutex_destroy(c->crypto_connections[crypt_connection_id].mutex);
-    free(c->crypto_connections[crypt_connection_id].mutex);
-    crypto_memzero(&c->crypto_connections[crypt_connection_id], sizeof(Crypto_Connection));
+    pthread_mutex_destroy(conn->mutex);
+    free(conn->mutex);
+
+    /* Set all fields to their zero-value. */
+    const Crypto_Connection empty_conn = {0};
+    *conn = empty_conn;
+
+    /* Explicitly zero out the keys and nonces. */
+    crypto_memzero(conn->public_key, sizeof(conn->public_key));
+    crypto_memzero(conn->recv_nonce, sizeof(conn->public_key));
+    crypto_memzero(conn->sent_nonce, sizeof(conn->public_key));
+    crypto_memzero(conn->sessionpublic_key, sizeof(conn->public_key));
+    crypto_memzero(conn->sessionsecret_key, sizeof(conn->public_key));
+    crypto_memzero(conn->peersessionpublic_key, sizeof(conn->public_key));
+    crypto_memzero(conn->shared_key, sizeof(conn->public_key));
+    crypto_memzero(conn->dht_public_key, sizeof(conn->public_key));
 
     /* check if we can resize the connections array */
     for (i = c->crypto_connections_length; i != 0; --i) {
@@ -3077,6 +3088,9 @@ void kill_net_crypto(Net_Crypto *c)
     networking_registerhandler(dht_get_net(c->dht), NET_PACKET_COOKIE_RESPONSE, nullptr, nullptr);
     networking_registerhandler(dht_get_net(c->dht), NET_PACKET_CRYPTO_HS, nullptr, nullptr);
     networking_registerhandler(dht_get_net(c->dht), NET_PACKET_CRYPTO_DATA, nullptr, nullptr);
-    crypto_memzero(c, sizeof(Net_Crypto));
+    /* Explicitly wipe out the keys. */
+    crypto_memzero(c->self_public_key, sizeof(conn->public_key));
+    crypto_memzero(c->self_secret_key, sizeof(conn->public_key));
+    crypto_memzero(c->secret_symmetric_key, sizeof(conn->public_key));
     free(c);
 }
