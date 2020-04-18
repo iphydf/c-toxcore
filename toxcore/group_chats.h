@@ -247,7 +247,10 @@ typedef struct GC_Chat {
     uint16_t    addrs_idx;
 } GC_Chat;
 
+#ifndef MESSENGER_DEFINED
+#define MESSENGER_DEFINED
 typedef struct Messenger Messenger;
+#endif /* MESSENGER_DEFINED */
 
 typedef void gc_message_cb(Messenger *m, uint32_t group_number, uint32_t peer_id, unsigned int type,
                            const uint8_t *data, size_t length, void *user_data);
