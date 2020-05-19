@@ -50,6 +50,26 @@
 #define GNU_PRINTF(f, a)
 #endif
 
+#include <stdint.h>
+
+typedef const int8_t  int8;
+typedef       int8_t  int8_mut;
+typedef const int16_t int16;
+typedef       int16_t int16_mut;
+typedef const int32_t int32;
+typedef       int32_t int32_mut;
+typedef const int64_t int64;
+typedef       int64_t int64_mut;
+
+typedef const uint8_t  uint8;
+typedef       uint8_t  uint8_mut;
+typedef const uint16_t uint16;
+typedef       uint16_t uint16_mut;
+typedef const uint32_t uint32;
+typedef       uint32_t uint32_mut;
+typedef const uint64_t uint64;
+typedef       uint64_t uint64_mut;
+
 //!TOKSTYLE+
 
 #endif // C_TOXCORE_TOXCORE_CCOMPAT_H

@@ -53,7 +53,7 @@ void crypto_memzero(void *data, size_t length)
     explicit_bzero(data, length);
 #else
     //!TOKSTYLE-
-    volatile uint8_t *volatile pnt = data;
+    volatile uint8_mut *volatile pnt = data;
     //!TOKSTYLE+
     size_t i = (size_t) 0U;
 
@@ -65,18 +65,18 @@ void crypto_memzero(void *data, size_t length)
 #endif
 }
 
-int32_t crypto_memcmp(const uint8_t *p1, const uint8_t *p2, size_t length)
+int32 crypto_memcmp(uint8 *p1, uint8 *p2, size_t length)
 {
 #ifndef VANILLA_NACL
     return sodium_memcmp(p1, p2, length);
 #else
     //!TOKSTYLE-
-    const volatile uint8_t *volatile b1 = p1;
-    const volatile uint8_t *volatile b2 = p2;
+    volatile uint8 *volatile b1 = p1;
+    volatile uint8 *volatile b2 = p2;
     //!TOKSTYLE+
 
     size_t i;
-    uint8_t d = (uint8_t) 0U;
+    uint8_mut d = (uint8_t) 0U;
 
     for (i = 0U; i < length; ++i) {
         d |= b1[i] ^ b2[i];
