@@ -309,16 +309,14 @@ typedef struct Cmp_data {
 
 static int cmp_entry(const void *a, const void *b)
 {
-    Cmp_data cmp1;
-    Cmp_data cmp2;
-    memcpy(&cmp1, a, sizeof(Cmp_data));
-    memcpy(&cmp2, b, sizeof(Cmp_data));
-    Onion_Announce_Entry entry1 = cmp1.entry;
-    Onion_Announce_Entry entry2 = cmp2.entry;
-    const uint8_t *cmp_public_key = cmp1.base_public_key;
+    const Cmp_data *cmp1 = (const Cmp_data *)a;
+    const Cmp_data *cmp2 = (const Cmp_data *)b;
+    const Onion_Announce_Entry *entry1 = &cmp1->entry;
+    const Onion_Announce_Entry *entry2 = &cmp2->entry;
+    const uint8_t *cmp_public_key = cmp1->base_public_key;
 
-    int t1 = mono_time_is_timeout(cmp1.mono_time, entry1.time, ONION_ANNOUNCE_TIMEOUT);
-    int t2 = mono_time_is_timeout(cmp1.mono_time, entry2.time, ONION_ANNOUNCE_TIMEOUT);
+    int t1 = mono_time_is_timeout(cmp1->mono_time, entry1->time, ONION_ANNOUNCE_TIMEOUT);
+    int t2 = mono_time_is_timeout(cmp1->mono_time, entry2->time, ONION_ANNOUNCE_TIMEOUT);
 
     if (t1 && t2) {
         return 0;
@@ -332,7 +330,7 @@ static int cmp_entry(const void *a, const void *b)
         return 1;
     }
 
-    int close = id_closest(cmp_public_key, entry1.public_key, entry2.public_key);
+    int close = id_closest(cmp_public_key, entry1->public_key, entry2->public_key);
 
     if (close == 1) {
         return 1;

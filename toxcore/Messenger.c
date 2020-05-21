@@ -331,6 +331,7 @@ int32_t m_create_group_connection(Messenger *m, GC_Chat *chat)
     }
 
     Friend_Conn *connection = get_conn(m->fr_c, friendcon_id);
+    assert(connection != nullptr);
 
     int onion_friend_number = friend_conn_get_onion_friendnum(connection);
     Onion_Friend *onion_friend = onion_get_friend(m->onion_c, onion_friend_number);
@@ -2805,8 +2806,8 @@ void do_messenger(Messenger *m, void *userdata)
 
         /* dht contains additional "friends" (requests) */
         uint32_t num_dhtfriends = dht_get_num_friends(m->dht);
-        VLA(int32_t, m2dht, num_dhtfriends);
-        VLA(int32_t, dht2m, num_dhtfriends);
+        int32_t *const m2dht = (int32_t *)malloc(num_dhtfriends * sizeof(int32_t));
+        int32_t *const dht2m = (int32_t *)malloc(num_dhtfriends * sizeof(int32_t));
 
         for (uint32_t friend_idx = 0; friend_idx < num_dhtfriends; ++friend_idx) {
             m2dht[friend_idx] = -1;
@@ -2881,6 +2882,9 @@ void do_messenger(Messenger *m, void *userdata)
                 }
             }
         }
+
+        free(dht2m);
+        free(m2dht);
     }
 }
 

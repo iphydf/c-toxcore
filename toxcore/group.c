@@ -1482,8 +1482,7 @@ static bool try_send_rejoin(Group_Chats *g_c, Group_c *g, const uint8_t *real_pk
 
 static unsigned int send_peer_query(Group_Chats *g_c, int friendcon_id, uint16_t group_num);
 
-static bool send_invite_response(Group_Chats *g_c, int groupnumber, uint32_t friendnumber, const uint8_t *data,
-                                 uint16_t length);
+static bool send_invite_response(Group_Chats *g_c, Group_c *g, int groupnumber, uint32_t friendnumber, const uint8_t *data, uint16_t length);
 
 /* Join a group (we need to have been invited first.)
  *
@@ -1529,7 +1528,7 @@ int join_groupchat(Group_Chats *g_c, uint32_t friendnumber, uint8_t expected_typ
     g->status = GROUPCHAT_STATUS_VALID;
     memcpy(g->real_pk, nc_get_self_public_key(g_c->m->net_crypto), CRYPTO_PUBLIC_KEY_SIZE);
 
-    if (!send_invite_response(g_c, groupnumber, friendnumber, data, length)) {
+    if (!send_invite_response(g_c, g, groupnumber, friendnumber, data, length)) {
         g->status = GROUPCHAT_STATUS_NONE;
         return -6;
     }
@@ -1537,10 +1536,9 @@ int join_groupchat(Group_Chats *g_c, uint32_t friendnumber, uint8_t expected_typ
     return groupnumber;
 }
 
-static bool send_invite_response(Group_Chats *g_c, int groupnumber, uint32_t friendnumber, const uint8_t *data,
-                                 uint16_t length)
+static bool send_invite_response(Group_Chats *g_c, Group_c *g, int groupnumber, uint32_t friendnumber, const uint8_t *data, uint16_t length)
 {
-    Group_c *g = get_group_c(g_c, groupnumber);
+    assert(get_group_c(g_c, groupnumber) == g);
 
     const bool member = (g->status == GROUPCHAT_STATUS_CONNECTED);
 
@@ -1918,7 +1916,7 @@ static void handle_friend_invite_packet(Messenger *m, uint32_t friendnumber, con
                 Group_c *g = get_group_c(g_c, groupnumber);
 
                 if (g && g->status == GROUPCHAT_STATUS_CONNECTED) {
-                    send_invite_response(g_c, groupnumber, friendnumber, invite_data, invite_length);
+                    send_invite_response(g_c, g, groupnumber, friendnumber, invite_data, invite_length);
                 }
             }
 
@@ -2373,7 +2371,7 @@ static unsigned int send_lossy_all_connections(const Group_Chats *g_c, const Gro
 {
     unsigned int sent = 0;
     unsigned int num_connected_closest = 0;
-    unsigned int connected_closest[DESIRED_CLOSEST];
+    unsigned int connected_closest[DESIRED_CLOSEST] = {0};
 
     for (unsigned int i = 0; i < MAX_GROUP_CONNECTIONS; ++i) {
         if (g->connections[i].type != GROUPCHAT_CONNECTION_ONLINE) {

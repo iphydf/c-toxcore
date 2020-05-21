@@ -572,7 +572,7 @@ int sendpacket(Networking_Core *net, IP_Port ip_port, const uint8_t *data, uint1
 static int receivepacket(const Logger *log, Socket sock, IP_Port *ip_port, uint8_t *data, uint32_t *length)
 {
     memset(ip_port, 0, sizeof(IP_Port));
-    struct sockaddr_storage addr;
+    struct sockaddr_storage addr = {0};
 #ifdef OS_WIN32
     int addrlen = sizeof(addr);
 #else

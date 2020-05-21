@@ -900,16 +900,14 @@ static bool incorrect_hardening(const IPPTsPng *assoc)
 
 static int cmp_dht_entry(const void *a, const void *b)
 {
-    DHT_Cmp_data cmp1;
-    DHT_Cmp_data cmp2;
-    memcpy(&cmp1, a, sizeof(DHT_Cmp_data));
-    memcpy(&cmp2, b, sizeof(DHT_Cmp_data));
-    const Client_data entry1 = cmp1.entry;
-    const Client_data entry2 = cmp2.entry;
-    const uint8_t *cmp_public_key = cmp1.base_public_key;
+    const DHT_Cmp_data *cmp1 = (const DHT_Cmp_data *)a;
+    const DHT_Cmp_data *cmp2 = (const DHT_Cmp_data *)b;
+    const Client_data *entry1 = &cmp1->entry;
+    const Client_data *entry2 = &cmp2->entry;
+    const uint8_t *cmp_public_key = cmp1->base_public_key;
 
-    bool t1 = assoc_timeout(cmp1.mono_time, &entry1.assoc4) && assoc_timeout(cmp1.mono_time, &entry1.assoc6);
-    bool t2 = assoc_timeout(cmp2.mono_time, &entry2.assoc4) && assoc_timeout(cmp2.mono_time, &entry2.assoc6);
+    bool t1 = assoc_timeout(cmp1->mono_time, &entry1->assoc4) && assoc_timeout(cmp1->mono_time, &entry1->assoc6);
+    bool t2 = assoc_timeout(cmp2->mono_time, &entry2->assoc4) && assoc_timeout(cmp2->mono_time, &entry2->assoc6);
 
     if (t1 && t2) {
         return 0;
@@ -923,8 +921,8 @@ static int cmp_dht_entry(const void *a, const void *b)
         return 1;
     }
 
-    t1 = incorrect_hardening(&entry1.assoc4) && incorrect_hardening(&entry1.assoc6);
-    t2 = incorrect_hardening(&entry2.assoc4) && incorrect_hardening(&entry2.assoc6);
+    t1 = incorrect_hardening(&entry1->assoc4) && incorrect_hardening(&entry1->assoc6);
+    t2 = incorrect_hardening(&entry2->assoc4) && incorrect_hardening(&entry2->assoc6);
 
     if (t1 && !t2) {
         return -1;
@@ -934,7 +932,7 @@ static int cmp_dht_entry(const void *a, const void *b)
         return 1;
     }
 
-    const int close = id_closest(cmp_public_key, entry1.public_key, entry2.public_key);
+    const int close = id_closest(cmp_public_key, entry1->public_key, entry2->public_key);
 
     if (close == 1) {
         return 1;

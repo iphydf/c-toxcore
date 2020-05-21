@@ -669,16 +669,14 @@ typedef struct Onion_Client_Cmp_data {
 
 static int onion_client_cmp_entry(const void *a, const void *b)
 {
-    Onion_Client_Cmp_data cmp1;
-    Onion_Client_Cmp_data cmp2;
-    memcpy(&cmp1, a, sizeof(Onion_Client_Cmp_data));
-    memcpy(&cmp2, b, sizeof(Onion_Client_Cmp_data));
-    Onion_Node entry1 = cmp1.entry;
-    Onion_Node entry2 = cmp2.entry;
-    const uint8_t *cmp_public_key = cmp1.base_public_key;
+    const Onion_Client_Cmp_data *cmp1 = (const Onion_Client_Cmp_data *)a;
+    const Onion_Client_Cmp_data *cmp2 = (const Onion_Client_Cmp_data *)b;
+    const Onion_Node *entry1 = &cmp1->entry;
+    const Onion_Node *entry2 = &cmp2->entry;
+    const uint8_t *cmp_public_key = cmp1->base_public_key;
 
-    int t1 = onion_node_timed_out(&entry1, cmp1.mono_time);
-    int t2 = onion_node_timed_out(&entry2, cmp2.mono_time);
+    int t1 = onion_node_timed_out(entry1, cmp1->mono_time);
+    int t2 = onion_node_timed_out(entry2, cmp2->mono_time);
 
     if (t1 && t2) {
         return 0;
@@ -692,7 +690,7 @@ static int onion_client_cmp_entry(const void *a, const void *b)
         return 1;
     }
 
-    int close = id_closest(cmp_public_key, entry1.public_key, entry2.public_key);
+    int close = id_closest(cmp_public_key, entry1->public_key, entry2->public_key);
 
     if (close == 1) {
         return 1;

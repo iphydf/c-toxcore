@@ -60,6 +60,7 @@ uint8_t *hex_string_to_bin(const char *hex_string)
     // then the last byte just won't be written in 'ret'.
     size_t i, len = strlen(hex_string) / 2;
     uint8_t *ret = (uint8_t *)malloc(len);
+    assert(ret != nullptr);
     const char *pos = hex_string;
 
     for (i = 0; i < len; ++i, pos += 2) {
