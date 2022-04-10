@@ -10,7 +10,10 @@
 #include <memory>
 #include <utility>
 
+#include "../../toxcore/crypto_core.h"
+#include "../../toxcore/network.h"
 #include "../../toxcore/tox.h"
+#include "../../toxcore/tox_private.h"
 
 struct Fuzz_Data {
     const uint8_t *data;
@@ -97,18 +100,54 @@ void fuzz_select_target(const uint8_t *data, std::size_t size, Args &&... args)
     return fuzz_select_target(selector, input, std::forward<Args>(args)...);
 }
 
-struct Network;
-struct Random;
+class Network_Base {
+public:
+    virtual int close(int sock) = 0;
+    virtual int accept(int sock) = 0;
+    virtual int bind(int sock, const Network_Addr *addr) = 0;
+    virtual int listen(int sock, int backlog) = 0;
+    virtual int recvbuf(int sock) = 0;
+    virtual int recv(int sock, uint8_t *buf, size_t len) = 0;
+    virtual int recvfrom(int sock, uint8_t *buf, size_t len, Network_Addr *addr) = 0;
+    virtual int send(int sock, const uint8_t *buf, size_t len) = 0;
+    virtual int sendto(int sock, const uint8_t *buf, size_t len, const Network_Addr *addr) = 0;
+    virtual int socket(int domain, int type, int proto) = 0;
+    virtual int socket_nonblock(int sock, bool nonblock) = 0;
+    virtual int getsockopt(int sock, int level, int optname, void *optval, size_t *optlen) = 0;
+    virtual int setsockopt(int sock, int level, int optname, const void *optval, size_t optlen) = 0;
 
-struct Fuzz_System {
-    uint64_t clock;
-    Fuzz_Data &data;
-    std::unique_ptr<Tox_System> sys;
-    std::unique_ptr<Network> ns;
-    std::unique_ptr<Random> rng;
+    virtual ~Network_Base();
+};
+
+class Random_Base {
+public:
+    virtual void random_bytes(uint8_t *bytes, size_t length) = 0;
+    virtual uint32_t random_uniform(uint32_t upper_bound) = 0;
+
+    virtual ~Random_Base();
+};
+
+class Fuzz_System {
+    uint64_t clock_;
+
+    std::unique_ptr<Network_Base> network_;
+    const Network ns_;
+
+    std::unique_ptr<Random_Base> random_;
+    const Random rng_;
+
+public:
+    const Tox_System sys;
 
     Fuzz_System(Fuzz_Data &input);
-    ~Fuzz_System();
+
+    void advance_clock(uint64_t amount) {
+        clock_ += amount;
+    }
+
+    // Non-copyable because sys contains pointers to rng and ns.
+    Fuzz_System(const Fuzz_System &rhs) = delete;
+    Fuzz_System &operator=(const Fuzz_System &rhs) = delete;
 };
 
 #endif  // C_TOXCORE_TESTING_FUZZING_FUZZ_SUPPORT_H

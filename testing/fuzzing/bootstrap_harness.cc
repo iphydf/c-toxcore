@@ -116,11 +116,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     Fuzz_Data input{data, size};
 
     Fuzz_System sys(input);
-    assert(sys.rng != nullptr);
 
     Tox_Options *opts = tox_options_new(nullptr);
     assert(opts != nullptr);
-    tox_options_set_operating_system(opts, sys.sys.get());
+    tox_options_set_operating_system(opts, &sys.sys);
 
     Tox_Err_New error_new;
     Tox *tox = tox_new(opts, &error_new);
@@ -149,7 +148,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         tox_events_free(events);
         // Move the clock forward a decent amount so all the time-based checks
         // trigger more quickly.
-        sys.clock += 200;
+        sys.advance_clock(200);
     }
 
     tox_dispatch_free(dispatch);
