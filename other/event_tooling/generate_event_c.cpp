@@ -626,7 +626,6 @@ int main(int argc, char** argv) {
             }
         },
 
-#if 0 // not yet :)
         {
             "Group_Peer_Name",
             {
@@ -768,7 +767,6 @@ int main(int argc, char** argv) {
                 EventTypeTrivial{"Tox_Group_Mod_Event", "mod_type"},
             }
         },
-#endif
     };
 
     if (argc < 2) {
