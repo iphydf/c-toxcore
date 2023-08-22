@@ -90,6 +90,17 @@ jobs:
         with:
           file: other/docker/compcert/Dockerfile
 
+  generate-events:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Run generate_event_c
+        run: |
+          other/event_tooling/run
+          git diff --exit-code
+
   cimplefmt:
     runs-on: ubuntu-latest
     steps:
