@@ -18,6 +18,9 @@
 #include "ccompat.h"
 #include "mem.h"
 
+/*@
+  @ assigns \result;
+  @*/
 bool is_power_of_2(uint64_t x)
 {
     return x != 0 && (x & (~x + 1)) == x;
@@ -38,17 +41,19 @@ void free_uint8_t_pointer_array(const Memory *mem, uint8_t **ary, size_t n_items
     mem_delete(mem, ary);
 }
 
+/*@
+  @ assigns \result \from data, data[0..length-1];
+  @*/
 uint16_t data_checksum(const uint8_t *data, uint32_t length)
 {
     uint8_t checksum[2] = {0};
-    uint16_t check;
 
+    //@ loop assigns i, checksum[0..1];
     for (uint32_t i = 0; i < length; ++i) {
         checksum[i % 2] ^= data[i];
     }
 
-    memcpy(&check, checksum, sizeof(check));
-    return check;
+    return checksum[0] | (checksum[1] << 8);
 }
 
 int create_recursive_mutex(pthread_mutex_t *mutex)
@@ -75,6 +80,9 @@ int create_recursive_mutex(pthread_mutex_t *mutex)
     return 0;
 }
 
+/*@
+  @ assigns \result \from a_size, b_size, a[0..a_size], b[0..b_size];
+  @*/
 bool memeq(const uint8_t *a, size_t a_size, const uint8_t *b, size_t b_size)
 {
     return a_size == b_size && memcmp(a, b, a_size) == 0;
@@ -104,27 +112,51 @@ void memzero(uint8_t *data, size_t data_size)
     memset(data, 0, data_size);
 }
 
+/*@
+  @ assigns \result;
+  @ ensures \result >= a && \result >= b;
+  @*/
 int16_t max_s16(int16_t a, int16_t b)
 {
     return a > b ? a : b;
 }
+/*@
+  @ assigns \result;
+  @ ensures \result >= a && \result >= b;
+  @*/
 int32_t max_s32(int32_t a, int32_t b)
 {
     return a > b ? a : b;
 }
+/*@
+  @ assigns \result;
+  @ ensures \result >= a && \result >= b;
+  @*/
 int64_t max_s64(int64_t a, int64_t b)
 {
     return a > b ? a : b;
 }
 
+/*@
+  @ assigns \result;
+  @ ensures \result <= a && \result <= b;
+  @*/
 int16_t min_s16(int16_t a, int16_t b)
 {
     return a < b ? a : b;
 }
+/*@
+  @ assigns \result;
+  @ ensures \result <= a && \result <= b;
+  @*/
 int32_t min_s32(int32_t a, int32_t b)
 {
     return a < b ? a : b;
 }
+/*@
+  @ assigns \result;
+  @ ensures \result <= a && \result <= b;
+  @*/
 int64_t min_s64(int64_t a, int64_t b)
 {
     return a < b ? a : b;
@@ -134,27 +166,52 @@ uint8_t max_u08(uint8_t a, uint8_t b)
 {
     return a > b ? a : b;
 }
+
+/*@
+  @ assigns \result;
+  @ ensures \result >= a && \result >= b;
+  @*/
 uint16_t max_u16(uint16_t a, uint16_t b)
 {
     return a > b ? a : b;
 }
+/*@
+  @ assigns \result;
+  @ ensures \result >= a && \result >= b;
+  @*/
 uint32_t max_u32(uint32_t a, uint32_t b)
 {
     return a > b ? a : b;
 }
+/*@
+  @ assigns \result;
+  @ ensures \result >= a && \result >= b;
+  @*/
 uint64_t max_u64(uint64_t a, uint64_t b)
 {
     return a > b ? a : b;
 }
 
+/*@
+  @ assigns \result;
+  @ ensures \result <= a && \result <= b;
+  @*/
 uint16_t min_u16(uint16_t a, uint16_t b)
 {
     return a < b ? a : b;
 }
+/*@
+  @ assigns \result;
+  @ ensures \result <= a && \result <= b;
+  @*/
 uint32_t min_u32(uint32_t a, uint32_t b)
 {
     return a < b ? a : b;
 }
+/*@
+  @ assigns \result;
+  @ ensures \result <= a && \result <= b;
+  @*/
 uint64_t min_u64(uint64_t a, uint64_t b)
 {
     return a < b ? a : b;
@@ -165,10 +222,14 @@ int cmp_uint(uint64_t a, uint64_t b)
     return (a > b ? 1 : 0) - (a < b ? 1 : 0);
 }
 
+/*@
+  @ assigns \result;
+  @*/
 uint32_t jenkins_one_at_a_time_hash(const uint8_t *key, size_t len)
 {
     uint32_t hash = 0;
 
+    //@ loop assigns i, hash;
     for (uint32_t i = 0; i < len; ++i) {
         hash += key[i];
         hash += (uint32_t)((uint64_t)hash << 10);

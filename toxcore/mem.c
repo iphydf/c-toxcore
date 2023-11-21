@@ -5,10 +5,43 @@
 
 #include "mem.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "ccompat.h"
 #include "tox_memory.h"
+#include "tox_memory_impl.h"
+
+static void *sys_malloc(void *_Nullable obj, uint32_t size)
+{
+    return malloc(size);
+}
+
+static void *sys_realloc(void *_Nullable obj, void *_Nullable ptr, uint32_t size)
+{
+    return realloc(ptr, size);
+}
+
+static void sys_free(void *_Nullable obj, void *_Nullable ptr)
+{
+    free(ptr);
+}
+
+static const Tox_Memory_Funcs system_memory_funcs = {
+    sys_malloc,
+    sys_realloc,
+    sys_free,
+};
+
+static const Memory system_memory_obj = {&system_memory_funcs, NULL};
+
+/*@
+  @ assigns \result \from &system_memory_obj;
+  @*/
+const Memory *system_memory(void)
+{
+    return &system_memory_obj;
+}
 
 void *mem_balloc(const Memory *mem, uint32_t size)
 {
