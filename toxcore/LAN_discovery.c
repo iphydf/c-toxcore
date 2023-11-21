@@ -11,7 +11,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+#if defined(FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION) || defined(__FRAMAC__)
+#define DISABLE_LAN_DISCOVERY
+#endif
+
+#if !defined(DISABLE_LAN_DISCOVERY) && (defined(_WIN32) || defined(__WIN32__) || defined(WIN32))
 // The mingw32/64 Windows library warns about including winsock2.h after
 // windows.h even though with the above it's a valid thing to do. So, to make
 // mingw32 headers happy, we include winsock2.h first.
@@ -23,7 +27,7 @@
 #include <iphlpapi.h>
 #endif
 
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__)
+#if !defined(DISABLE_LAN_DISCOVERY) && (defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__))
 #include <netinet/in.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
@@ -31,11 +35,11 @@
 #include <unistd.h>
 #endif
 
-#ifdef __linux__
+#if !defined(DISABLE_LAN_DISCOVERY) && defined(__linux__)
 #include <linux/netdevice.h>
 #endif
 
-#if defined(__FreeBSD__) || defined(__DragonFly__)
+#if !defined(DISABLE_LAN_DISCOVERY) && defined(__FreeBSD__) || defined(__DragonFly__)
 #include <net/if.h>
 #endif
 
@@ -51,7 +55,7 @@ struct Broadcast_Info {
     IP ips[MAX_INTERFACES];
 };
 
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+#if !defined(DISABLE_LAN_DISCOVERY) && (defined(_WIN32) || defined(__WIN32__) || defined(WIN32))
 
 non_null()
 static Broadcast_Info *fetch_broadcast_info(const Network *ns)
@@ -117,7 +121,7 @@ static Broadcast_Info *fetch_broadcast_info(const Network *ns)
     return broadcast;
 }
 
-#elif !defined(FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION) && (defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__))
+#elif !defined(DISABLE_LAN_DISCOVERY) && (defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__))
 
 non_null()
 static Broadcast_Info *fetch_broadcast_info(const Network *ns)

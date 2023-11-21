@@ -41,6 +41,9 @@ static const Memory_Funcs system_memory_funcs = {
 };
 static const Memory system_memory_obj = {&system_memory_funcs};
 
+/*@
+  @ assigns \result \from &system_memory_obj;
+  @*/
 const Memory *system_memory(void)
 {
     return &system_memory_obj;
