@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later
- * Copyright © 2022 The TokTok team.
+ * Copyright © 2023 The TokTok team.
  */
 
 #include "events_alloc.h"
@@ -14,7 +14,6 @@
 #include "../tox.h"
 #include "../tox_events.h"
 #include "../tox_unpack.h"
-#include "event_macros.h"
 
 
 /*****************************************************
@@ -29,8 +28,31 @@ struct Tox_Event_Friend_Connection_Status {
     Tox_Connection connection_status;
 };
 
-EV_ACCESS_VALUE(Friend_Connection_Status, friend_connection_status, uint32_t, friend_number)
-EV_ACCESS_VALUE(Friend_Connection_Status, friend_connection_status, Tox_Connection, connection_status)
+non_null()
+static void tox_event_friend_connection_status_set_friend_number(Tox_Event_Friend_Connection_Status *friend_connection_status,
+        uint32_t friend_number)
+{
+    assert(friend_connection_status != nullptr);
+    friend_connection_status->friend_number = friend_number;
+}
+uint32_t tox_event_friend_connection_status_get_friend_number(const Tox_Event_Friend_Connection_Status *friend_connection_status)
+{
+    assert(friend_connection_status != nullptr);
+    return friend_connection_status->friend_number;
+}
+
+non_null()
+static void tox_event_friend_connection_status_set_connection_status(Tox_Event_Friend_Connection_Status *friend_connection_status,
+        Tox_Connection connection_status)
+{
+    assert(friend_connection_status != nullptr);
+    friend_connection_status->connection_status = connection_status;
+}
+Tox_Connection tox_event_friend_connection_status_get_connection_status(const Tox_Event_Friend_Connection_Status *friend_connection_status)
+{
+    assert(friend_connection_status != nullptr);
+    return friend_connection_status->connection_status;
+}
 
 non_null()
 static void tox_event_friend_connection_status_construct(Tox_Event_Friend_Connection_Status *friend_connection_status)
@@ -69,7 +91,124 @@ static bool tox_event_friend_connection_status_unpack_into(
            && tox_unpack_connection(bu, &event->connection_status);
 }
 
-EV_FUNCS(Friend_Connection_Status, friend_connection_status, FRIEND_CONNECTION_STATUS)
+
+/*****************************************************
+ *
+ * :: new/free/add/get/size/unpack
+ *
+ *****************************************************/
+
+const Tox_Event_Friend_Connection_Status *tox_event_get_friend_connection_status(const Tox_Event *event)
+{
+    return event->type == TOX_EVENT_FRIEND_CONNECTION_STATUS ? event->data.friend_connection_status : nullptr;
+}
+
+Tox_Event_Friend_Connection_Status *tox_event_friend_connection_status_new(const Memory *mem)
+{
+    Tox_Event_Friend_Connection_Status *const friend_connection_status =
+        (Tox_Event_Friend_Connection_Status *)mem_alloc(mem, sizeof(Tox_Event_Friend_Connection_Status));
+
+    if (friend_connection_status == nullptr) {
+        return nullptr;
+    }
+
+    tox_event_friend_connection_status_construct(friend_connection_status);
+    return friend_connection_status;
+}
+
+void tox_event_friend_connection_status_free(Tox_Event_Friend_Connection_Status *friend_connection_status, const Memory *mem)
+{
+    if (friend_connection_status != nullptr) {
+        tox_event_friend_connection_status_destruct(friend_connection_status, mem);
+    }
+    mem_delete(mem, friend_connection_status);
+}
+
+non_null()
+static Tox_Event_Friend_Connection_Status *tox_events_add_friend_connection_status(Tox_Events *events, const Memory *mem)
+{
+    Tox_Event_Friend_Connection_Status *const friend_connection_status = tox_event_friend_connection_status_new(mem);
+
+    if (friend_connection_status == nullptr) {
+        return nullptr;
+    }
+
+    Tox_Event event;
+    event.type = TOX_EVENT_FRIEND_CONNECTION_STATUS;
+    event.data.friend_connection_status = friend_connection_status;
+
+    tox_events_add(events, &event);
+    return friend_connection_status;
+}
+
+const Tox_Event_Friend_Connection_Status *tox_events_get_friend_connection_status(const Tox_Events *events, uint32_t index)
+{
+    uint32_t friend_connection_status_index = 0;
+    const uint32_t size = tox_events_get_size(events);
+
+    for (uint32_t i = 0; i < size; ++i) {
+        if (friend_connection_status_index > index) {
+            return nullptr;
+        }
+
+        if (events->events[i].type == TOX_EVENT_FRIEND_CONNECTION_STATUS) {
+            const Tox_Event_Friend_Connection_Status *friend_connection_status = events->events[i].data.friend_connection_status;
+            if (friend_connection_status_index == index) {
+                return friend_connection_status;
+            }
+            ++friend_connection_status_index;
+        }
+    }
+
+    return nullptr;
+}
+
+uint32_t tox_events_get_friend_connection_status_size(const Tox_Events *events)
+{
+    uint32_t friend_connection_status_size = 0;
+    const uint32_t size = tox_events_get_size(events);
+
+    for (uint32_t i = 0; i < size; ++i) {
+        if (events->events[i].type == TOX_EVENT_FRIEND_CONNECTION_STATUS) {
+            ++friend_connection_status_size;
+        }
+    }
+
+    return friend_connection_status_size;
+}
+
+bool tox_event_friend_connection_status_unpack(
+    Tox_Event_Friend_Connection_Status **event, Bin_Unpack *bu, const Memory *mem)
+{
+    assert(event != nullptr);
+    *event = tox_event_friend_connection_status_new(mem);
+
+    if (*event == nullptr) {
+        return false;
+    }
+
+    return tox_event_friend_connection_status_unpack_into(*event, bu);
+}
+
+non_null()
+static Tox_Event_Friend_Connection_Status *tox_event_friend_connection_status_alloc(void *user_data)
+{
+    Tox_Events_State *state = tox_events_alloc(user_data);
+    assert(state != nullptr);
+
+    if (state->events == nullptr) {
+        return nullptr;
+    }
+
+    Tox_Event_Friend_Connection_Status *friend_connection_status = tox_events_add_friend_connection_status(state->events, state->mem);
+
+    if (friend_connection_status == nullptr) {
+        state->error = TOX_ERR_EVENTS_ITERATE_MALLOC;
+        return nullptr;
+    }
+
+    return friend_connection_status;
+}
 
 
 /*****************************************************

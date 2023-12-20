@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later
- * Copyright © 2022 The TokTok team.
+ * Copyright © 2023 The TokTok team.
  */
 
 #include "events_alloc.h"
@@ -13,8 +13,7 @@
 #include "../ccompat.h"
 #include "../tox.h"
 #include "../tox_events.h"
-#include "../tox_private.h"
-#include "event_macros.h"
+#include "../tox_unpack.h"
 
 
 /*****************************************************
@@ -31,9 +30,64 @@ struct Tox_Event_Conference_Title {
     uint32_t title_length;
 };
 
-EV_ACCESS_VALUE(Conference_Title, conference_title, uint32_t, conference_number)
-EV_ACCESS_VALUE(Conference_Title, conference_title, uint32_t, peer_number)
-EV_ACCESS_ARRAY(Conference_Title, conference_title, uint8_t, title)
+non_null()
+static void tox_event_conference_title_set_conference_number(Tox_Event_Conference_Title *conference_title,
+        uint32_t conference_number)
+{
+    assert(conference_title != nullptr);
+    conference_title->conference_number = conference_number;
+}
+uint32_t tox_event_conference_title_get_conference_number(const Tox_Event_Conference_Title *conference_title)
+{
+    assert(conference_title != nullptr);
+    return conference_title->conference_number;
+}
+
+non_null()
+static void tox_event_conference_title_set_peer_number(Tox_Event_Conference_Title *conference_title,
+        uint32_t peer_number)
+{
+    assert(conference_title != nullptr);
+    conference_title->peer_number = peer_number;
+}
+uint32_t tox_event_conference_title_get_peer_number(const Tox_Event_Conference_Title *conference_title)
+{
+    assert(conference_title != nullptr);
+    return conference_title->peer_number;
+}
+
+non_null()
+static bool tox_event_conference_title_set_title(Tox_Event_Conference_Title *conference_title,
+        const uint8_t *title, uint32_t title_length)
+{
+    assert(conference_title != nullptr);
+
+    if (conference_title->title != nullptr) {
+        free(conference_title->title);
+        conference_title->title = nullptr;
+        conference_title->title_length = 0;
+    }
+
+    conference_title->title = (uint8_t *)malloc(title_length);
+
+    if (conference_title->title == nullptr) {
+        return false;
+    }
+
+    memcpy(conference_title->title, title, title_length);
+    conference_title->title_length = title_length;
+    return true;
+}
+uint32_t tox_event_conference_title_get_title_length(const Tox_Event_Conference_Title *conference_title)
+{
+    assert(conference_title != nullptr);
+    return conference_title->title_length;
+}
+const uint8_t *tox_event_conference_title_get_title(const Tox_Event_Conference_Title *conference_title)
+{
+    assert(conference_title != nullptr);
+    return conference_title->title;
+}
 
 non_null()
 static void tox_event_conference_title_construct(Tox_Event_Conference_Title *conference_title)
@@ -45,7 +99,7 @@ static void tox_event_conference_title_construct(Tox_Event_Conference_Title *con
 non_null()
 static void tox_event_conference_title_destruct(Tox_Event_Conference_Title *conference_title, const Memory *mem)
 {
-    mem_delete(mem, conference_title->title);
+    free(conference_title->title);
 }
 
 bool tox_event_conference_title_pack(
@@ -74,7 +128,124 @@ static bool tox_event_conference_title_unpack_into(
            && bin_unpack_bin(bu, &event->title, &event->title_length);
 }
 
-EV_FUNCS(Conference_Title, conference_title, CONFERENCE_TITLE)
+
+/*****************************************************
+ *
+ * :: new/free/add/get/size/unpack
+ *
+ *****************************************************/
+
+const Tox_Event_Conference_Title *tox_event_get_conference_title(const Tox_Event *event)
+{
+    return event->type == TOX_EVENT_CONFERENCE_TITLE ? event->data.conference_title : nullptr;
+}
+
+Tox_Event_Conference_Title *tox_event_conference_title_new(const Memory *mem)
+{
+    Tox_Event_Conference_Title *const conference_title =
+        (Tox_Event_Conference_Title *)mem_alloc(mem, sizeof(Tox_Event_Conference_Title));
+
+    if (conference_title == nullptr) {
+        return nullptr;
+    }
+
+    tox_event_conference_title_construct(conference_title);
+    return conference_title;
+}
+
+void tox_event_conference_title_free(Tox_Event_Conference_Title *conference_title, const Memory *mem)
+{
+    if (conference_title != nullptr) {
+        tox_event_conference_title_destruct(conference_title, mem);
+    }
+    mem_delete(mem, conference_title);
+}
+
+non_null()
+static Tox_Event_Conference_Title *tox_events_add_conference_title(Tox_Events *events, const Memory *mem)
+{
+    Tox_Event_Conference_Title *const conference_title = tox_event_conference_title_new(mem);
+
+    if (conference_title == nullptr) {
+        return nullptr;
+    }
+
+    Tox_Event event;
+    event.type = TOX_EVENT_CONFERENCE_TITLE;
+    event.data.conference_title = conference_title;
+
+    tox_events_add(events, &event);
+    return conference_title;
+}
+
+const Tox_Event_Conference_Title *tox_events_get_conference_title(const Tox_Events *events, uint32_t index)
+{
+    uint32_t conference_title_index = 0;
+    const uint32_t size = tox_events_get_size(events);
+
+    for (uint32_t i = 0; i < size; ++i) {
+        if (conference_title_index > index) {
+            return nullptr;
+        }
+
+        if (events->events[i].type == TOX_EVENT_CONFERENCE_TITLE) {
+            const Tox_Event_Conference_Title *conference_title = events->events[i].data.conference_title;
+            if (conference_title_index == index) {
+                return conference_title;
+            }
+            ++conference_title_index;
+        }
+    }
+
+    return nullptr;
+}
+
+uint32_t tox_events_get_conference_title_size(const Tox_Events *events)
+{
+    uint32_t conference_title_size = 0;
+    const uint32_t size = tox_events_get_size(events);
+
+    for (uint32_t i = 0; i < size; ++i) {
+        if (events->events[i].type == TOX_EVENT_CONFERENCE_TITLE) {
+            ++conference_title_size;
+        }
+    }
+
+    return conference_title_size;
+}
+
+bool tox_event_conference_title_unpack(
+    Tox_Event_Conference_Title **event, Bin_Unpack *bu, const Memory *mem)
+{
+    assert(event != nullptr);
+    *event = tox_event_conference_title_new(mem);
+
+    if (*event == nullptr) {
+        return false;
+    }
+
+    return tox_event_conference_title_unpack_into(*event, bu);
+}
+
+non_null()
+static Tox_Event_Conference_Title *tox_event_conference_title_alloc(void *user_data)
+{
+    Tox_Events_State *state = tox_events_alloc(user_data);
+    assert(state != nullptr);
+
+    if (state->events == nullptr) {
+        return nullptr;
+    }
+
+    Tox_Event_Conference_Title *conference_title = tox_events_add_conference_title(state->events, state->mem);
+
+    if (conference_title == nullptr) {
+        state->error = TOX_ERR_EVENTS_ITERATE_MALLOC;
+        return nullptr;
+    }
+
+    return conference_title;
+}
 
 
 /*****************************************************
@@ -84,8 +255,8 @@ EV_FUNCS(Conference_Title, conference_title, CONFERENCE_TITLE)
  *****************************************************/
 
 
-void tox_events_handle_conference_title(Tox *tox, uint32_t conference_number, uint32_t peer_number,
-                                        const uint8_t *title, size_t length, void *user_data)
+void tox_events_handle_conference_title(Tox *tox, uint32_t conference_number, uint32_t peer_number, const uint8_t *title, size_t length,
+        void *user_data)
 {
     Tox_Event_Conference_Title *conference_title = tox_event_conference_title_alloc(user_data);
 
@@ -93,9 +264,7 @@ void tox_events_handle_conference_title(Tox *tox, uint32_t conference_number, ui
         return;
     }
 
-    const Tox_System *sys = tox_get_system(tox);
-
     tox_event_conference_title_set_conference_number(conference_title, conference_number);
     tox_event_conference_title_set_peer_number(conference_title, peer_number);
-    tox_event_conference_title_set_title(conference_title, title, length, sys->mem);
+    tox_event_conference_title_set_title(conference_title, title, length);
 }
