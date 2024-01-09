@@ -16,7 +16,7 @@
 #include "ccompat.h"
 
 struct Logger {
-    logger_cb *callback;
+    logger_cb callback;
     void *context;
     void *userdata;
 };
@@ -77,7 +77,7 @@ void logger_kill(Logger *log)
     free(log);
 }
 
-void logger_callback_log(Logger *log, logger_cb *function, void *context, void *userdata)
+void logger_callback_log(Logger *log, logger_cb function, void *context, void *userdata)
 {
     log->callback = function;
     log->context  = context;

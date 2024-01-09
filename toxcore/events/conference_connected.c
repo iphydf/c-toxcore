@@ -42,13 +42,13 @@ non_null()
 static void tox_event_conference_connected_set_conference_number(
     Tox_Event_Conference_Connected *conference_connected, uint32_t conference_number)
 {
-    assert(conference_connected != nullptr);
+    // assert(conference_connected != nullptr);
     conference_connected->conference_number = conference_number;
 }
 uint32_t tox_event_conference_connected_get_conference_number(
     const Tox_Event_Conference_Connected *conference_connected)
 {
-    assert(conference_connected != nullptr);
+    // assert(conference_connected != nullptr);
     return conference_connected->conference_number;
 }
 
@@ -56,7 +56,7 @@ non_null()
 static bool tox_event_conference_connected_pack(
     const Tox_Event_Conference_Connected *event, Bin_Pack *bp)
 {
-    assert(event != nullptr);
+    // assert(event != nullptr);
     return bin_pack_array(bp, 2)
            && bin_pack_u32(bp, TOX_EVENT_CONFERENCE_CONNECTED)
            && bin_pack_u32(bp, event->conference_number);
@@ -66,7 +66,7 @@ non_null()
 static bool tox_event_conference_connected_unpack(
     Tox_Event_Conference_Connected *event, Bin_Unpack *bu)
 {
-    assert(event != nullptr);
+    // assert(event != nullptr);
     return bin_unpack_u32(bu, &event->conference_number);
 }
 
@@ -132,8 +132,8 @@ uint32_t tox_events_get_conference_connected_size(const Tox_Events *events)
 
 const Tox_Event_Conference_Connected *tox_events_get_conference_connected(const Tox_Events *events, uint32_t index)
 {
-    assert(index < events->conference_connected_size);
-    assert(events->conference_connected != nullptr);
+    // assert(index < events->conference_connected_size);
+    // assert(events->conference_connected != nullptr);
     return &events->conference_connected[index];
 }
 
@@ -172,7 +172,7 @@ bool tox_events_unpack_conference_connected(Tox_Events *events, Bin_Unpack *bu)
 void tox_events_handle_conference_connected(Tox *tox, uint32_t conference_number, void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);
-    assert(state != nullptr);
+    // assert(state != nullptr);
 
     if (state->events == nullptr) {
         return;

@@ -257,7 +257,7 @@ int unpack_nodes(Node_format *nodes, uint16_t max_num_nodes, uint16_t *processed
 
 /*----------------------------------------------------------------------------------*/
 
-typedef int cryptopacket_handler_cb(void *object, const IP_Port *ip_port, const uint8_t *source_pubkey,
+typedef int(*cryptopacket_handler_cb)(void *object, const IP_Port *ip_port, const uint8_t *source_pubkey,
                                     const uint8_t *data, uint16_t len, void *userdata);
 
 typedef struct DHT DHT;
@@ -301,13 +301,13 @@ const uint8_t *dht_get_shared_key_sent(DHT *dht, const uint8_t *public_key);
 non_null()
 bool dht_getnodes(DHT *dht, const IP_Port *ip_port, const uint8_t *public_key, const uint8_t *client_id);
 
-typedef void dht_ip_cb(void *object, int32_t number, const IP_Port *ip_port);
+typedef void(*dht_ip_cb)(void *object, int32_t number, const IP_Port *ip_port);
 
-typedef void dht_get_nodes_response_cb(const DHT *dht, const Node_format *node, void *user_data);
+typedef void(*dht_get_nodes_response_cb)(const DHT *dht, const Node_format *node, void *user_data);
 
 /** Sets the callback to be triggered on a getnodes response. */
 non_null(1) nullable(2)
-void dht_callback_get_nodes_response(DHT *dht, dht_get_nodes_response_cb *function);
+void dht_callback_get_nodes_response(DHT *dht, dht_get_nodes_response_cb function);
 
 /** @brief Add a new friend to the friends list.
  * @param public_key must be CRYPTO_PUBLIC_KEY_SIZE bytes long.
@@ -324,7 +324,7 @@ void dht_callback_get_nodes_response(DHT *dht, dht_get_nodes_response_cb *functi
  * @retval -1 if failure (friends list is full).
  */
 non_null(1, 2, 6) nullable(3, 4)
-int dht_addfriend(DHT *dht, const uint8_t *public_key, dht_ip_cb *ip_callback,
+int dht_addfriend(DHT *dht, const uint8_t *public_key, dht_ip_cb ip_callback,
                   void *data, int32_t number, uint32_t *lock_token);
 
 /** @brief Delete a friend from the friends list.
@@ -473,7 +473,7 @@ uint32_t route_to_friend(const DHT *dht, const uint8_t *friend_id, const Packet 
 
 /** Function to handle crypto packets. */
 non_null(1) nullable(3, 4)
-void cryptopacket_registerhandler(DHT *dht, uint8_t byte, cryptopacket_handler_cb *cb, void *object);
+void cryptopacket_registerhandler(DHT *dht, uint8_t byte, cryptopacket_handler_cb cb, void *object);
 
 /* SAVE/LOAD functions */
 

@@ -9,7 +9,7 @@
 
 #define MAX_ANNOUNCEMENT_SIZE 512
 
-typedef void announce_on_retrieve_cb(void *object, const uint8_t *data, uint16_t length);
+typedef void(*announce_on_retrieve_cb)(void *object, const uint8_t *data, uint16_t length);
 
 uint8_t announce_response_of_request_type(uint8_t request_type);
 
@@ -26,7 +26,7 @@ Announcements *new_announcements(const Logger *log, const Memory *mem, const Ran
  */
 non_null(1, 2) nullable(3, 4)
 bool announce_on_stored(const Announcements *announce, const uint8_t *data_public_key,
-                        announce_on_retrieve_cb *on_retrieve_callback, void *object);
+                        announce_on_retrieve_cb on_retrieve_callback, void *object);
 
 non_null()
 void announce_set_synch_offset(Announcements *announce, int32_t synch_offset);

@@ -16,10 +16,10 @@
 extern "C" {
 #endif
 
-typedef uint64_t tox_mono_time_cb(void *user_data);
+typedef uint64_t(*tox_mono_time_cb)(void *user_data);
 
 struct Tox_System {
-    tox_mono_time_cb *mono_time_callback;
+    tox_mono_time_cb mono_time_callback;
     void *mono_time_user_data;
     const struct Random *rng;
     const struct Network *ns;
@@ -40,7 +40,7 @@ const Tox_System *tox_get_system(Tox *tox);
  * allowed packet ID range:
  * from `PACKET_ID_RANGE_LOSSY_START` to `PACKET_ID_RANGE_LOSSY_END` (both inclusive)
  */
-void tox_callback_friend_lossy_packet_per_pktid(Tox *tox, tox_friend_lossy_packet_cb *callback, uint8_t pktid);
+void tox_callback_friend_lossy_packet_per_pktid(Tox *tox, tox_friend_lossy_packet_cb callback, uint8_t pktid);
 
 /**
  * Set the callback for the `friend_lossless_packet` event for a specific packet ID.
@@ -51,7 +51,7 @@ void tox_callback_friend_lossy_packet_per_pktid(Tox *tox, tox_friend_lossy_packe
  * and
  * `PACKET_ID_MSI`
  */
-void tox_callback_friend_lossless_packet_per_pktid(Tox *tox, tox_friend_lossless_packet_cb *callback, uint8_t pktid);
+void tox_callback_friend_lossless_packet_per_pktid(Tox *tox, tox_friend_lossless_packet_cb callback, uint8_t pktid);
 
 void tox_set_av_object(Tox *tox, void *object);
 void *tox_get_av_object(const Tox *tox);
@@ -82,7 +82,7 @@ uint32_t tox_dht_node_public_key_size(void);
  * @param ip The node's IP address, represented as a null terminated string.
  * @param port The node's port.
  */
-typedef void tox_dht_get_nodes_response_cb(Tox *tox, const uint8_t *public_key, const char *ip, uint16_t port,
+typedef void(*tox_dht_get_nodes_response_cb)(Tox *tox, const uint8_t *public_key, const char *ip, uint16_t port,
         void *user_data);
 
 
@@ -91,7 +91,7 @@ typedef void tox_dht_get_nodes_response_cb(Tox *tox, const uint8_t *public_key, 
  *
  * This event is triggered when a getnodes response is received from a DHT peer.
  */
-void tox_callback_dht_get_nodes_response(Tox *tox, tox_dht_get_nodes_response_cb *callback);
+void tox_callback_dht_get_nodes_response(Tox *tox, tox_dht_get_nodes_response_cb callback);
 
 
 typedef enum Tox_Err_Dht_Get_Nodes {

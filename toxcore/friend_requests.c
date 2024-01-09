@@ -29,11 +29,11 @@ struct Received_Requests {
 
 struct Friend_Requests {
     uint32_t nospam;
-    fr_friend_request_cb *handle_friendrequest;
+    fr_friend_request_cb handle_friendrequest;
     uint8_t handle_friendrequest_isset;
     void *handle_friendrequest_object;
 
-    filter_function_cb *filter_function;
+    filter_function_cb filter_function;
     void *filter_function_userdata;
 
     struct Received_Requests received;
@@ -52,7 +52,7 @@ uint32_t get_nospam(const Friend_Requests *fr)
 
 
 /** Set the function that will be executed when a friend request for us is received. */
-void callback_friendrequest(Friend_Requests *fr, fr_friend_request_cb *function, void *object)
+void callback_friendrequest(Friend_Requests *fr, fr_friend_request_cb function, void *object)
 {
     fr->handle_friendrequest = function;
     fr->handle_friendrequest_isset = 1;
@@ -62,7 +62,7 @@ void callback_friendrequest(Friend_Requests *fr, fr_friend_request_cb *function,
 /** @brief Set the function used to check if a friend request should be displayed to the user or not.
  * It must return 0 if the request is ok (anything else if it is bad).
  */
-void set_filter_function(Friend_Requests *fr, filter_function_cb *function, void *userdata)
+void set_filter_function(Friend_Requests *fr, filter_function_cb function, void *userdata)
 {
     fr->filter_function = function;
     fr->filter_function_userdata = userdata;
@@ -119,7 +119,7 @@ non_null()
 static int friendreq_handlepacket(void *object, const uint8_t *source_pubkey, const uint8_t *packet, uint16_t length,
                                   void *userdata)
 {
-    Friend_Requests *const fr = (Friend_Requests *)object;
+    Friend_Requests * fr = (Friend_Requests *)object;
 
     if (length <= 1 + sizeof(fr->nospam) || length > ONION_CLIENT_MAX_DATA_SIZE) {
         return 1;

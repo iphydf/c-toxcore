@@ -132,11 +132,11 @@ typedef struct New_Connection {
     uint8_t cookie_length;
 } New_Connection;
 
-typedef int connection_status_cb(void *object, int id, bool status, void *userdata);
-typedef int connection_data_cb(void *object, int id, const uint8_t *data, uint16_t length, void *userdata);
-typedef int connection_lossy_data_cb(void *object, int id, const uint8_t *data, uint16_t length, void *userdata);
-typedef void dht_pk_cb(void *data, int32_t number, const uint8_t *dht_public_key, void *userdata);
-typedef int new_connection_cb(void *object, const New_Connection *n_c);
+typedef int(*connection_status_cb)(void *object, int id, bool status, void *userdata);
+typedef int(*connection_data_cb)(void *object, int id, const uint8_t *data, uint16_t length, void *userdata);
+typedef int(*connection_lossy_data_cb)(void *object, int id, const uint8_t *data, uint16_t length, void *userdata);
+typedef void(*dht_pk_cb)(void *data, int32_t number, const uint8_t *dht_public_key, void *userdata);
+typedef int(*new_connection_cb)(void *object, const New_Connection *n_c);
 
 /** @brief Set function to be called when someone requests a new connection to us.
  *
@@ -145,7 +145,7 @@ typedef int new_connection_cb(void *object, const New_Connection *n_c);
  * n_c is only valid for the duration of the function call.
  */
 non_null()
-void new_connection_handler(Net_Crypto *c, new_connection_cb *new_connection_callback, void *object);
+void new_connection_handler(Net_Crypto *c, new_connection_cb new_connection_callback, void *object);
 
 /** @brief Accept a crypto connection.
  *
@@ -186,7 +186,7 @@ int set_direct_ip_port(Net_Crypto *c, int crypt_connection_id, const IP_Port *ip
  */
 non_null()
 int connection_status_handler(const Net_Crypto *c, int crypt_connection_id,
-                              connection_status_cb *connection_status_callback, void *object, int id);
+                              connection_status_cb connection_status_callback, void *object, int id);
 
 /** @brief Set function to be called when connection with crypt_connection_id receives a lossless data packet of length.
  *
@@ -198,7 +198,7 @@ int connection_status_handler(const Net_Crypto *c, int crypt_connection_id,
  */
 non_null()
 int connection_data_handler(const Net_Crypto *c, int crypt_connection_id,
-                            connection_data_cb *connection_data_callback, void *object, int id);
+                            connection_data_cb connection_data_callback, void *object, int id);
 
 
 /** @brief Set function to be called when connection with crypt_connection_id receives a lossy data packet of length.
@@ -211,7 +211,7 @@ int connection_data_handler(const Net_Crypto *c, int crypt_connection_id,
  */
 non_null()
 int connection_lossy_data_handler(const Net_Crypto *c, int crypt_connection_id,
-                                  connection_lossy_data_cb *connection_lossy_data_callback, void *object, int id);
+                                  connection_lossy_data_cb connection_lossy_data_callback, void *object, int id);
 
 /** @brief Set the function for this friend that will be callbacked with object and number if
  * the friend sends us a different dht public key than we have associated to him.
@@ -225,7 +225,7 @@ int connection_lossy_data_handler(const Net_Crypto *c, int crypt_connection_id,
  */
 non_null()
 int nc_dht_pk_callback(const Net_Crypto *c, int crypt_connection_id,
-                       dht_pk_cb *function, void *object, uint32_t number);
+                       dht_pk_cb function, void *object, uint32_t number);
 
 /**
  * @return the number of packet slots left in the sendbuffer.

@@ -44,12 +44,12 @@ non_null()
 static void tox_event_friend_status_set_friend_number(Tox_Event_Friend_Status *friend_status,
         uint32_t friend_number)
 {
-    assert(friend_status != nullptr);
+    // assert(friend_status != nullptr);
     friend_status->friend_number = friend_number;
 }
 uint32_t tox_event_friend_status_get_friend_number(const Tox_Event_Friend_Status *friend_status)
 {
-    assert(friend_status != nullptr);
+    // assert(friend_status != nullptr);
     return friend_status->friend_number;
 }
 
@@ -57,12 +57,12 @@ non_null()
 static void tox_event_friend_status_set_status(Tox_Event_Friend_Status *friend_status,
         Tox_User_Status status)
 {
-    assert(friend_status != nullptr);
+    // assert(friend_status != nullptr);
     friend_status->status = status;
 }
 Tox_User_Status tox_event_friend_status_get_status(const Tox_Event_Friend_Status *friend_status)
 {
-    assert(friend_status != nullptr);
+    // assert(friend_status != nullptr);
     return friend_status->status;
 }
 
@@ -70,7 +70,7 @@ non_null()
 static bool tox_event_friend_status_pack(
     const Tox_Event_Friend_Status *event, Bin_Pack *bp)
 {
-    assert(event != nullptr);
+    // assert(event != nullptr);
     return bin_pack_array(bp, 2)
            && bin_pack_u32(bp, TOX_EVENT_FRIEND_STATUS)
            && bin_pack_array(bp, 2)
@@ -82,7 +82,7 @@ non_null()
 static bool tox_event_friend_status_unpack(
     Tox_Event_Friend_Status *event, Bin_Unpack *bu)
 {
-    assert(event != nullptr);
+    // assert(event != nullptr);
     if (!bin_unpack_array_fixed(bu, 2, nullptr)) {
         return false;
     }
@@ -152,8 +152,8 @@ uint32_t tox_events_get_friend_status_size(const Tox_Events *events)
 
 const Tox_Event_Friend_Status *tox_events_get_friend_status(const Tox_Events *events, uint32_t index)
 {
-    assert(index < events->friend_status_size);
-    assert(events->friend_status != nullptr);
+    // assert(index < events->friend_status_size);
+    // assert(events->friend_status != nullptr);
     return &events->friend_status[index];
 }
 
@@ -192,7 +192,7 @@ void tox_events_handle_friend_status(Tox *tox, uint32_t friend_number, Tox_User_
                                      void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);
-    assert(state != nullptr);
+    // assert(state != nullptr);
 
     if (state->events == nullptr) {
         return;

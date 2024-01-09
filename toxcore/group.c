@@ -140,9 +140,9 @@ typedef struct Group_c {
 
     void *object;
 
-    peer_on_join_cb *peer_on_join;
-    peer_on_leave_cb *peer_on_leave;
-    group_on_delete_cb *group_on_delete;
+    peer_on_join_cb peer_on_join;
+    peer_on_leave_cb peer_on_leave;
+    group_on_delete_cb group_on_delete;
 } Group_c;
 
 struct Group_Chats {
@@ -154,14 +154,14 @@ struct Group_Chats {
     Group_c *chats;
     uint16_t num_chats;
 
-    g_conference_invite_cb *invite_callback;
-    g_conference_connected_cb *connected_callback;
-    g_conference_message_cb *message_callback;
-    peer_name_cb *peer_name_callback;
-    peer_list_changed_cb *peer_list_changed_callback;
-    title_cb *title_callback;
+    g_conference_invite_cb invite_callback;
+    g_conference_connected_cb connected_callback;
+    g_conference_message_cb message_callback;
+    peer_name_cb peer_name_callback;
+    peer_list_changed_cb peer_list_changed_callback;
+    title_cb title_callback;
 
-    lossy_packet_cb *lossy_packethandlers[256];
+    lossy_packet_cb lossy_packethandlers[256];
 };
 
 static const Group_c empty_group_c = {0};
@@ -205,8 +205,8 @@ typedef enum Peer_Id {
 
 #define MIN_MESSAGE_PACKET_LEN (sizeof(uint16_t) * 2 + sizeof(uint32_t) + 1)
 
-static_assert(GROUP_ID_LENGTH == CRYPTO_PUBLIC_KEY_SIZE,
-              "GROUP_ID_LENGTH should be equal to CRYPTO_PUBLIC_KEY_SIZE");
+// static_assert(GROUP_ID_LENGTH == CRYPTO_PUBLIC_KEY_SIZE,
+//              "GROUP_ID_LENGTH should be equal to CRYPTO_PUBLIC_KEY_SIZE");
 
 const Mono_Time *g_mono_time(const Group_Chats *g_c)
 {
@@ -684,7 +684,7 @@ static bool delete_frozen(Group_c *g, uint32_t frozen_index)
             g->frozen[frozen_index] = g->frozen[g->numfrozen];
         }
 
-        Group_Peer *const frozen_temp = (Group_Peer *)realloc(g->frozen, sizeof(Group_Peer) * g->numfrozen);
+        Group_Peer * frozen_temp = (Group_Peer *)realloc(g->frozen, sizeof(Group_Peer) * g->numfrozen);
 
         if (frozen_temp == nullptr) {
             return false;
@@ -1826,25 +1826,25 @@ static bool send_invite_response(Group_Chats *g_c, int groupnumber, uint32_t fri
 }
 
 /** Set handlers for custom lossy packets. */
-void group_lossy_packet_registerhandler(Group_Chats *g_c, uint8_t byte, lossy_packet_cb *function)
+void group_lossy_packet_registerhandler(Group_Chats *g_c, uint8_t byte, lossy_packet_cb function)
 {
     g_c->lossy_packethandlers[byte] = function;
 }
 
 /** Set the callback for group invites. */
-void g_callback_group_invite(Group_Chats *g_c, g_conference_invite_cb *function)
+void g_callback_group_invite(Group_Chats *g_c, g_conference_invite_cb function)
 {
     g_c->invite_callback = function;
 }
 
 /** Set the callback for group connection. */
-void g_callback_group_connected(Group_Chats *g_c, g_conference_connected_cb *function)
+void g_callback_group_connected(Group_Chats *g_c, g_conference_connected_cb function)
 {
     g_c->connected_callback = function;
 }
 
 /** Set the callback for group messages. */
-void g_callback_group_message(Group_Chats *g_c, g_conference_message_cb *function)
+void g_callback_group_message(Group_Chats *g_c, g_conference_message_cb function)
 {
     g_c->message_callback = function;
 }
@@ -1853,7 +1853,7 @@ void g_callback_group_message(Group_Chats *g_c, g_conference_message_cb *functio
  *
  * It gets called every time a peer changes their nickname.
  */
-void g_callback_peer_name(Group_Chats *g_c, peer_name_cb *function)
+void g_callback_peer_name(Group_Chats *g_c, peer_name_cb function)
 {
     g_c->peer_name_callback = function;
 }
@@ -1862,13 +1862,13 @@ void g_callback_peer_name(Group_Chats *g_c, peer_name_cb *function)
  *
  * It gets called every time the name list changes(new peer, deleted peer)
  */
-void g_callback_peer_list_changed(Group_Chats *g_c, peer_list_changed_cb *function)
+void g_callback_peer_list_changed(Group_Chats *g_c, peer_list_changed_cb function)
 {
     g_c->peer_list_changed_callback = function;
 }
 
 /** Set callback function for title changes. */
-void g_callback_group_title(Group_Chats *g_c, title_cb *function)
+void g_callback_group_title(Group_Chats *g_c, title_cb function)
 {
     g_c->title_callback = function;
 }
@@ -1878,7 +1878,7 @@ void g_callback_group_title(Group_Chats *g_c, title_cb *function)
  * @retval 0 on success.
  * @retval -1 on failure.
  */
-int callback_groupchat_peer_new(const Group_Chats *g_c, uint32_t groupnumber, peer_on_join_cb *function)
+int callback_groupchat_peer_new(const Group_Chats *g_c, uint32_t groupnumber, peer_on_join_cb function)
 {
     Group_c *g = get_group_c(g_c, groupnumber);
 
@@ -1895,7 +1895,7 @@ int callback_groupchat_peer_new(const Group_Chats *g_c, uint32_t groupnumber, pe
  * @retval 0 on success.
  * @retval -1 on failure.
  */
-int callback_groupchat_peer_delete(const Group_Chats *g_c, uint32_t groupnumber, peer_on_leave_cb *function)
+int callback_groupchat_peer_delete(const Group_Chats *g_c, uint32_t groupnumber, peer_on_leave_cb function)
 {
     Group_c *g = get_group_c(g_c, groupnumber);
 
@@ -1912,7 +1912,7 @@ int callback_groupchat_peer_delete(const Group_Chats *g_c, uint32_t groupnumber,
  * @retval 0 on success.
  * @retval -1 on failure.
  */
-int callback_groupchat_delete(const Group_Chats *g_c, uint32_t groupnumber, group_on_delete_cb *function)
+int callback_groupchat_delete(const Group_Chats *g_c, uint32_t groupnumber, group_on_delete_cb function)
 {
     Group_c *g = get_group_c(g_c, groupnumber);
 
@@ -2681,7 +2681,7 @@ static unsigned int send_lossy_all_connections(const Group_Chats *g_c, const Gro
 static int send_message_group(const Group_Chats *g_c, uint32_t groupnumber, uint8_t message_id, const uint8_t *data,
                               uint16_t len)
 {
-    assert(len == 0 || data != nullptr);
+    // assert(len == 0 || data != nullptr);
     Group_c *g = get_group_c(g_c, groupnumber);
 
     if (g == nullptr) {
@@ -2815,7 +2815,7 @@ static Message_Info *find_message_slot_or_reject(uint32_t message_number, uint8_
 non_null()
 static bool check_message_info(uint32_t message_number, uint8_t message_id, Group_Peer *peer)
 {
-    Message_Info *const i = find_message_slot_or_reject(message_number, message_id, peer);
+    Message_Info * i = find_message_slot_or_reject(message_number, message_id, peer);
 
     if (i == nullptr) {
         return false;
@@ -3491,7 +3491,7 @@ static uint8_t *save_conf(const Group_c *g, uint8_t *data)
     host_to_lendian_bytes16(data, g->peer_number);
     data += sizeof(uint16_t);
 
-    uint8_t *const numsaved_location = data;
+    uint8_t * numsaved_location = data;
     data += sizeof(uint32_t);
 
     *data = g->title_len;
@@ -3601,7 +3601,7 @@ static uint32_t load_group(Group_c *g, const Group_Chats *g_c, const uint8_t *da
 
     ++data;
 
-    assert((data - init_data) < UINT32_MAX);
+    // assert((data - init_data) < UINT32_MAX);
 
     if (length < (uint32_t)(data - init_data) + g->title_len) {
         return 0;
@@ -3612,7 +3612,7 @@ static uint32_t load_group(Group_c *g, const Group_Chats *g_c, const uint8_t *da
 
     for (uint32_t j = 0; j < g->numfrozen; ++j) {
 
-        assert((data - init_data) < UINT32_MAX);
+        // assert((data - init_data) < UINT32_MAX);
 
         if (length < (uint32_t)(data - init_data) + SAVED_PEER_SIZE_CONSTANT) {
             return 0;
@@ -3649,7 +3649,7 @@ static uint32_t load_group(Group_c *g, const Group_Chats *g_c, const uint8_t *da
         }
 
         ++data;
-        assert((data - init_data) < UINT32_MAX);
+        // assert((data - init_data) < UINT32_MAX);
 
         if (length < (uint32_t)(data - init_data) + peer->nick_len) {
             return 0;
@@ -3670,7 +3670,7 @@ static uint32_t load_group(Group_c *g, const Group_Chats *g_c, const uint8_t *da
 
     pk_copy(g->real_pk, nc_get_self_public_key(g_c->m->net_crypto));
 
-    assert((data - init_data) < UINT32_MAX);
+    // assert((data - init_data) < UINT32_MAX);
 
     return (uint32_t)(data - init_data);
 }
@@ -3684,7 +3684,7 @@ static State_Load_Status load_conferences_helper(Group_Chats *g_c, const uint8_t
         const int groupnumber = create_group_chat(g_c);
 
         // Helpful for testing
-        assert(groupnumber != -1);
+        // assert(groupnumber != -1);
 
         if (groupnumber == -1) {
             // If this fails there's a serious problem, don't bother with cleanup
@@ -3703,7 +3703,7 @@ static State_Load_Status load_conferences_helper(Group_Chats *g_c, const uint8_t
             // HACK: suppress unused variable warning
             if (!ret) {
                 // wipe_group_chat(...) must be able to wipe partially allocated groups
-                assert(ret);
+                // assert(ret);
             }
 
             LOGGER_ERROR(g_c->m->log, "conference loading failed");

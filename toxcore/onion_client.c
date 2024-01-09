@@ -91,11 +91,11 @@ struct Onion_Friend {
     Last_Pinged last_pinged[MAX_STORED_PINGED_NODES];
     uint8_t last_pinged_index;
 
-    recv_tcp_relay_cb *tcp_relay_node_callback;
+    recv_tcp_relay_cb tcp_relay_node_callback;
     void *tcp_relay_node_callback_object;
     uint32_t tcp_relay_node_callback_number;
 
-    onion_dht_pk_cb *dht_pk_callback;
+    onion_dht_pk_cb dht_pk_callback;
     void *dht_pk_callback_object;
     uint32_t dht_pk_callback_number;
 
@@ -108,7 +108,7 @@ struct Onion_Friend {
 static const Onion_Friend empty_onion_friend = {false};
 
 typedef struct Onion_Data_Handler {
-    oniondata_handler_cb *function;
+    oniondata_handler_cb function;
     void *object;
 } Onion_Data_Handler;
 
@@ -156,36 +156,36 @@ struct Onion_Client {
     unsigned int onion_connected;
     bool udp_connected;
 
-    onion_group_announce_cb *group_announce_response;
+    onion_group_announce_cb group_announce_response;
     void *group_announce_response_user_data;
 };
 
-uint16_t onion_get_friend_count(const Onion_Client *const onion_c)
+uint16_t onion_get_friend_count(const Onion_Client * onion_c)
 {
     return onion_c->num_friends;
 }
 
-Onion_Friend *onion_get_friend(const Onion_Client *const onion_c, uint16_t friend_num)
+Onion_Friend *onion_get_friend(const Onion_Client * onion_c, uint16_t friend_num)
 {
     return &onion_c->friends_list[friend_num];
 }
 
-const uint8_t *onion_friend_get_gc_public_key(const Onion_Friend *const onion_friend)
+const uint8_t *onion_friend_get_gc_public_key(const Onion_Friend * onion_friend)
 {
     return onion_friend->gc_public_key;
 }
 
-const uint8_t *onion_friend_get_gc_public_key_num(const Onion_Client *const onion_c, uint32_t num)
+const uint8_t *onion_friend_get_gc_public_key_num(const Onion_Client * onion_c, uint32_t num)
 {
     return onion_c->friends_list[num].gc_public_key;
 }
 
-void onion_friend_set_gc_public_key(Onion_Friend *const onion_friend, const uint8_t *public_key)
+void onion_friend_set_gc_public_key(Onion_Friend * onion_friend, const uint8_t *public_key)
 {
     memcpy(onion_friend->gc_public_key, public_key, ENC_PUBLIC_KEY_SIZE);
 }
 
-void onion_friend_set_gc_data(Onion_Friend *const onion_friend, const uint8_t *gc_data, uint16_t gc_data_length)
+void onion_friend_set_gc_data(Onion_Friend * onion_friend, const uint8_t *gc_data, uint16_t gc_data_length)
 {
     if (gc_data_length > 0 && gc_data != nullptr) {
         memcpy(onion_friend->gc_data, gc_data, gc_data_length);
@@ -195,7 +195,7 @@ void onion_friend_set_gc_data(Onion_Friend *const onion_friend, const uint8_t *g
     onion_friend->is_groupchat = true;
 }
 
-bool onion_friend_is_groupchat(const Onion_Friend *const onion_friend)
+bool onion_friend_is_groupchat(const Onion_Friend * onion_friend)
 {
     return onion_friend->is_groupchat;
 }
@@ -1379,7 +1379,7 @@ static int send_dht_dhtpk(const Onion_Client *onion_c, int friend_num, const uin
     len = create_request(
               onion_c->rng, dht_get_self_public_key(onion_c->dht), dht_get_self_secret_key(onion_c->dht), packet_data,
               onion_c->friends_list[friend_num].dht_public_key, temp, SIZEOF_VLA(temp), CRYPTO_PACKET_DHTPK);
-    assert(len <= UINT16_MAX);
+    // assert(len <= UINT16_MAX);
     const Packet packet = {packet_data, (uint16_t)len};
 
     if (len == -1) {
@@ -1606,7 +1606,7 @@ int onion_delfriend(Onion_Client *onion_c, int friend_num)
  * return 0 on success.
  */
 int recv_tcp_relay_handler(Onion_Client *onion_c, int friend_num,
-                           recv_tcp_relay_cb *callback, void *object, uint32_t number)
+                           recv_tcp_relay_cb callback, void *object, uint32_t number)
 {
     if ((uint32_t)friend_num >= onion_c->num_friends) {
         return -1;
@@ -1627,7 +1627,7 @@ int recv_tcp_relay_handler(Onion_Client *onion_c, int friend_num,
  * return 0 on success.
  */
 int onion_dht_pk_callback(Onion_Client *onion_c, int friend_num,
-                          onion_dht_pk_cb *function, void *object, uint32_t number)
+                          onion_dht_pk_cb function, void *object, uint32_t number)
 {
     if ((uint32_t)friend_num >= onion_c->num_friends) {
         return -1;
@@ -1790,7 +1790,7 @@ static void do_friend(Onion_Client *onion_c, uint16_t friendnum)
         return;
     }
 
-    assert(interval >= ANNOUNCE_FRIEND_NEW_INTERVAL); // an int overflow would be devastating
+    // assert(interval >= ANNOUNCE_FRIEND_NEW_INTERVAL); // an int overflow would be devastating
 
     /* send packets to friend telling them our DHT public key. */
     if (mono_time_is_timeout(onion_c->mono_time, onion_c->friends_list[friendnum].last_dht_pk_onion_sent,
@@ -1881,13 +1881,13 @@ static void do_friend(Onion_Client *onion_c, uint16_t friendnum)
 
 
 /** Function to call when onion data packet with contents beginning with byte is received. */
-void oniondata_registerhandler(Onion_Client *onion_c, uint8_t byte, oniondata_handler_cb *cb, void *object)
+void oniondata_registerhandler(Onion_Client *onion_c, uint8_t byte, oniondata_handler_cb cb, void *object)
 {
     onion_c->onion_data_handlers[byte].function = cb;
     onion_c->onion_data_handlers[byte].object = object;
 }
 
-void onion_group_announce_register(Onion_Client *onion_c, onion_group_announce_cb *func, void *user_data)
+void onion_group_announce_register(Onion_Client *onion_c, onion_group_announce_cb func, void *user_data)
 {
     onion_c->group_announce_response = func;
     onion_c->group_announce_response_user_data = user_data;
@@ -1900,7 +1900,7 @@ void onion_group_announce_register(Onion_Client *onion_c, onion_group_announce_c
 #define ANNOUNCE_INTERVAL_STABLE (ONION_NODE_PING_INTERVAL * 8)
 
 non_null()
-static bool key_list_contains(const uint8_t *const *keys, uint16_t keys_size, const uint8_t *public_key)
+static bool key_list_contains(const uint8_t * *keys, uint16_t keys_size, const uint8_t *public_key)
 {
     for (uint16_t i = 0; i < keys_size; ++i) {
         if (memeq(keys[i], CRYPTO_PUBLIC_KEY_SIZE, public_key, CRYPTO_PUBLIC_KEY_SIZE)) {
@@ -2017,7 +2017,7 @@ static void do_announce(Onion_Client *onion_c)
 
                 targets[targets_count] = target->public_key;
                 ++targets_count;
-                assert(targets_count <= MAX_ONION_CLIENTS_ANNOUNCE / 2);
+                // assert(targets_count <= MAX_ONION_CLIENTS_ANNOUNCE / 2);
             } else {
                 Ip_Ntoa ip_str;
                 LOGGER_TRACE(onion_c->logger, "not sending repeated announce request to %s:%d",

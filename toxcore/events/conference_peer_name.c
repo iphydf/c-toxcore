@@ -46,13 +46,13 @@ non_null()
 static void tox_event_conference_peer_name_set_conference_number(Tox_Event_Conference_Peer_Name *conference_peer_name,
         uint32_t conference_number)
 {
-    assert(conference_peer_name != nullptr);
+    // assert(conference_peer_name != nullptr);
     conference_peer_name->conference_number = conference_number;
 }
 uint32_t tox_event_conference_peer_name_get_conference_number(const Tox_Event_Conference_Peer_Name
         *conference_peer_name)
 {
-    assert(conference_peer_name != nullptr);
+    // assert(conference_peer_name != nullptr);
     return conference_peer_name->conference_number;
 }
 
@@ -60,12 +60,12 @@ non_null()
 static void tox_event_conference_peer_name_set_peer_number(Tox_Event_Conference_Peer_Name *conference_peer_name,
         uint32_t peer_number)
 {
-    assert(conference_peer_name != nullptr);
+    // assert(conference_peer_name != nullptr);
     conference_peer_name->peer_number = peer_number;
 }
 uint32_t tox_event_conference_peer_name_get_peer_number(const Tox_Event_Conference_Peer_Name *conference_peer_name)
 {
-    assert(conference_peer_name != nullptr);
+    // assert(conference_peer_name != nullptr);
     return conference_peer_name->peer_number;
 }
 
@@ -73,7 +73,7 @@ non_null()
 static bool tox_event_conference_peer_name_set_name(Tox_Event_Conference_Peer_Name *conference_peer_name,
         const uint8_t *name, uint32_t name_length)
 {
-    assert(conference_peer_name != nullptr);
+    // assert(conference_peer_name != nullptr);
 
     if (conference_peer_name->name != nullptr) {
         free(conference_peer_name->name);
@@ -93,12 +93,12 @@ static bool tox_event_conference_peer_name_set_name(Tox_Event_Conference_Peer_Na
 }
 uint32_t tox_event_conference_peer_name_get_name_length(const Tox_Event_Conference_Peer_Name *conference_peer_name)
 {
-    assert(conference_peer_name != nullptr);
+    // assert(conference_peer_name != nullptr);
     return conference_peer_name->name_length;
 }
 const uint8_t *tox_event_conference_peer_name_get_name(const Tox_Event_Conference_Peer_Name *conference_peer_name)
 {
-    assert(conference_peer_name != nullptr);
+    // assert(conference_peer_name != nullptr);
     return conference_peer_name->name;
 }
 
@@ -106,7 +106,7 @@ non_null()
 static bool tox_event_conference_peer_name_pack(
     const Tox_Event_Conference_Peer_Name *event, Bin_Pack *bp)
 {
-    assert(event != nullptr);
+    // assert(event != nullptr);
     return bin_pack_array(bp, 2)
            && bin_pack_u32(bp, TOX_EVENT_CONFERENCE_PEER_NAME)
            && bin_pack_array(bp, 3)
@@ -119,7 +119,7 @@ non_null()
 static bool tox_event_conference_peer_name_unpack(
     Tox_Event_Conference_Peer_Name *event, Bin_Unpack *bu)
 {
-    assert(event != nullptr);
+    // assert(event != nullptr);
     if (!bin_unpack_array_fixed(bu, 3, nullptr)) {
         return false;
     }
@@ -191,8 +191,8 @@ uint32_t tox_events_get_conference_peer_name_size(const Tox_Events *events)
 
 const Tox_Event_Conference_Peer_Name *tox_events_get_conference_peer_name(const Tox_Events *events, uint32_t index)
 {
-    assert(index < events->conference_peer_name_size);
-    assert(events->conference_peer_name != nullptr);
+    // assert(index < events->conference_peer_name_size);
+    // assert(events->conference_peer_name != nullptr);
     return &events->conference_peer_name[index];
 }
 
@@ -231,7 +231,7 @@ void tox_events_handle_conference_peer_name(Tox *tox, uint32_t conference_number
         const uint8_t *name, size_t length, void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);
-    assert(state != nullptr);
+    // assert(state != nullptr);
 
     if (state->events == nullptr) {
         return;

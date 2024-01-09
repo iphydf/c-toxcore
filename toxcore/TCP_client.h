@@ -72,7 +72,7 @@ void do_tcp_connection(const Logger *logger, const Mono_Time *mono_time,
 nullable(1)
 void kill_tcp_connection(TCP_Client_Connection *tcp_connection);
 
-typedef int tcp_onion_response_cb(void *object, const uint8_t *data, uint16_t length, void *userdata);
+typedef int(*tcp_onion_response_cb)(void *object, const uint8_t *data, uint16_t length, void *userdata);
 
 /**
  * @retval 1 on success.
@@ -82,16 +82,16 @@ typedef int tcp_onion_response_cb(void *object, const uint8_t *data, uint16_t le
 non_null()
 int send_onion_request(const Logger *logger, TCP_Client_Connection *con, const uint8_t *data, uint16_t length);
 non_null()
-void onion_response_handler(TCP_Client_Connection *con, tcp_onion_response_cb *onion_callback, void *object);
+void onion_response_handler(TCP_Client_Connection *con, tcp_onion_response_cb onion_callback, void *object);
 
 non_null()
 int send_forward_request_tcp(const Logger *logger, TCP_Client_Connection *con, const IP_Port *dest, const uint8_t *data,
                              uint16_t length);
 non_null()
-void forwarding_handler(TCP_Client_Connection *con, forwarded_response_cb *forwarded_response_callback, void *object);
+void forwarding_handler(TCP_Client_Connection *con, forwarded_response_cb forwarded_response_callback, void *object);
 
-typedef int tcp_routing_response_cb(void *object, uint8_t connection_id, const uint8_t *public_key);
-typedef int tcp_routing_status_cb(void *object, uint32_t number, uint8_t connection_id, uint8_t status);
+typedef int(*tcp_routing_response_cb)(void *object, uint8_t connection_id, const uint8_t *public_key);
+typedef int(*tcp_routing_status_cb)(void *object, uint32_t number, uint8_t connection_id, uint8_t status);
 
 /**
  * @retval 1 on success.
@@ -101,9 +101,9 @@ typedef int tcp_routing_status_cb(void *object, uint32_t number, uint8_t connect
 non_null()
 int send_routing_request(const Logger *logger, TCP_Client_Connection *con, const uint8_t *public_key);
 non_null()
-void routing_response_handler(TCP_Client_Connection *con, tcp_routing_response_cb *response_callback, void *object);
+void routing_response_handler(TCP_Client_Connection *con, tcp_routing_response_cb response_callback, void *object);
 non_null()
-void routing_status_handler(TCP_Client_Connection *con, tcp_routing_status_cb *status_callback, void *object);
+void routing_status_handler(TCP_Client_Connection *con, tcp_routing_status_cb status_callback, void *object);
 
 /**
  * @retval 1 on success.
@@ -123,7 +123,7 @@ int send_disconnect_request(const Logger *logger, TCP_Client_Connection *con, ui
 non_null()
 int set_tcp_connection_number(TCP_Client_Connection *con, uint8_t con_id, uint32_t number);
 
-typedef int tcp_routing_data_cb(void *object, uint32_t number, uint8_t connection_id, const uint8_t *data,
+typedef int(*tcp_routing_data_cb)(void *object, uint32_t number, uint8_t connection_id, const uint8_t *data,
                                 uint16_t length, void *userdata);
 
 /**
@@ -134,9 +134,9 @@ typedef int tcp_routing_data_cb(void *object, uint32_t number, uint8_t connectio
 non_null()
 int send_data(const Logger *logger, TCP_Client_Connection *con, uint8_t con_id, const uint8_t *data, uint16_t length);
 non_null()
-void routing_data_handler(TCP_Client_Connection *con, tcp_routing_data_cb *data_callback, void *object);
+void routing_data_handler(TCP_Client_Connection *con, tcp_routing_data_cb data_callback, void *object);
 
-typedef int tcp_oob_data_cb(void *object, const uint8_t *public_key, const uint8_t *data, uint16_t length,
+typedef int(*tcp_oob_data_cb)(void *object, const uint8_t *public_key, const uint8_t *data, uint16_t length,
                             void *userdata);
 
 /**
@@ -148,7 +148,7 @@ non_null()
 int send_oob_packet(const Logger *logger, TCP_Client_Connection *con, const uint8_t *public_key, const uint8_t *data,
                     uint16_t length);
 non_null()
-void oob_data_handler(TCP_Client_Connection *con, tcp_oob_data_cb *oob_data_callback, void *object);
+void oob_data_handler(TCP_Client_Connection *con, tcp_oob_data_cb oob_data_callback, void *object);
 
 
 #endif

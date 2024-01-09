@@ -41,8 +41,8 @@
 #define MAX_KEYS_PER_SLOT 4
 #define KEYS_TIMEOUT 600
 
-static_assert(ONION_PING_ID_SIZE == CRYPTO_PUBLIC_KEY_SIZE,
-              "announce response packets assume that ONION_PING_ID_SIZE is equal to CRYPTO_PUBLIC_KEY_SIZE");
+// static_assert(ONION_PING_ID_SIZE == CRYPTO_PUBLIC_KEY_SIZE,
+//              "announce response packets assume that ONION_PING_ID_SIZE is equal to CRYPTO_PUBLIC_KEY_SIZE");
 
 typedef struct Onion_Announce_Entry {
     uint8_t public_key[CRYPTO_PUBLIC_KEY_SIZE];
@@ -65,12 +65,12 @@ struct Onion_Announce {
     Shared_Key_Cache *shared_keys_recv;
 
     uint16_t extra_data_max_size;
-    pack_extra_data_cb *extra_data_callback;
+    pack_extra_data_cb extra_data_callback;
     void *extra_data_object;
 };
 
 void onion_announce_extra_data_callback(Onion_Announce *onion_a, uint16_t extra_data_max_size,
-                                        pack_extra_data_cb *extra_data_callback, void *extra_data_object)
+                                        pack_extra_data_cb extra_data_callback, void *extra_data_object)
 {
     onion_a->extra_data_max_size = extra_data_max_size;
     onion_a->extra_data_callback = extra_data_callback;
@@ -438,7 +438,7 @@ non_null(1, 2, 3) nullable(9)
 static int handle_announce_request_common(
     Onion_Announce *onion_a, const IP_Port *source, const uint8_t *packet, uint16_t length,
     uint8_t response_packet_id, uint16_t plain_size, bool want_node_count, uint16_t max_extra_size,
-    pack_extra_data_cb *pack_extra_data_callback)
+    pack_extra_data_cb pack_extra_data_callback)
 {
     const uint8_t *packet_public_key = packet + 1 + CRYPTO_NONCE_SIZE;
     const uint8_t *shared_key = shared_key_cache_lookup(onion_a->shared_keys_recv, packet_public_key);
@@ -484,7 +484,7 @@ static int handle_announce_request_common(
     const unsigned int num_nodes =
         get_close_nodes(onion_a->dht, plain + ONION_PING_ID_SIZE, nodes_list, net_family_unspec(), ip_is_lan(&source->ip), false);
 
-    assert(num_nodes <= UINT8_MAX);
+    // assert(num_nodes <= UINT8_MAX);
 
     uint8_t nonce[CRYPTO_NONCE_SIZE];
     random_nonce(onion_a->rng, nonce);

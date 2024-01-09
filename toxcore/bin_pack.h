@@ -24,7 +24,7 @@ typedef struct Bin_Pack Bin_Pack;
  * This function would typically cast the `void *` to the actual object pointer type and then call
  * more appropriately typed packing functions.
  */
-typedef bool bin_pack_cb(Bin_Pack *bp, const Logger *logger, const void *obj);
+typedef bool(*bin_pack_cb)(Bin_Pack *bp, const Logger *logger, const void *obj);
 
 /** @brief Function used to pack an array of objects.
  *
@@ -34,7 +34,7 @@ typedef bool bin_pack_cb(Bin_Pack *bp, const Logger *logger, const void *obj);
  * @param arr is the object array as void pointer.
  * @param index is the index in the object array that is currently being packed.
  */
-typedef bool bin_pack_array_cb(Bin_Pack *bp, const Logger *logger, const void *arr, uint32_t index);
+typedef bool(*bin_pack_array_cb)(Bin_Pack *bp, const Logger *logger, const void *arr, uint32_t index);
 
 /** @brief Determine the serialised size of an object.
  *
@@ -46,7 +46,7 @@ typedef bool bin_pack_array_cb(Bin_Pack *bp, const Logger *logger, const void *a
  * @retval UINT32_MAX in case of errors such as buffer overflow.
  */
 non_null(1) nullable(2, 3)
-uint32_t bin_pack_obj_size(bin_pack_cb *callback, const Logger *logger, const void *obj);
+uint32_t bin_pack_obj_size(bin_pack_cb callback, const Logger *logger, const void *obj);
 
 /** @brief Pack an object into a buffer of a given size.
  *
@@ -65,7 +65,7 @@ uint32_t bin_pack_obj_size(bin_pack_cb *callback, const Logger *logger, const vo
  * @retval false if an error occurred (e.g. buffer overflow).
  */
 non_null(1, 4) nullable(2, 3)
-bool bin_pack_obj(bin_pack_cb *callback, const Logger *logger, const void *obj, uint8_t *buf, uint32_t buf_size);
+bool bin_pack_obj(bin_pack_cb callback, const Logger *logger, const void *obj, uint8_t *buf, uint32_t buf_size);
 
 /** @brief Determine the serialised size of an object array.
  *
@@ -84,7 +84,7 @@ bool bin_pack_obj(bin_pack_cb *callback, const Logger *logger, const void *obj, 
  * @retval UINT32_MAX in case of errors such as buffer overflow.
  */
 non_null(1, 3) nullable(2)
-uint32_t bin_pack_obj_array_size(bin_pack_array_cb *callback, const Logger *logger, const void *arr, uint32_t count);
+uint32_t bin_pack_obj_array_size(bin_pack_array_cb callback, const Logger *logger, const void *arr, uint32_t count);
 
 /** @brief Pack an object array into a buffer of a given size.
  *
@@ -107,7 +107,7 @@ uint32_t bin_pack_obj_array_size(bin_pack_array_cb *callback, const Logger *logg
  * @retval false if an error occurred (e.g. buffer overflow).
  */
 non_null(1, 3, 5) nullable(2)
-bool bin_pack_obj_array(bin_pack_array_cb *callback, const Logger *logger, const void *arr, uint32_t count, uint8_t *buf, uint32_t buf_size);
+bool bin_pack_obj_array(bin_pack_array_cb callback, const Logger *logger, const void *arr, uint32_t count, uint8_t *buf, uint32_t buf_size);
 
 /** @brief Allocate a new packer object.
  *

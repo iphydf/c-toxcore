@@ -43,24 +43,24 @@ non_null()
 static void tox_event_friend_typing_set_friend_number(Tox_Event_Friend_Typing *friend_typing,
         uint32_t friend_number)
 {
-    assert(friend_typing != nullptr);
+    // assert(friend_typing != nullptr);
     friend_typing->friend_number = friend_number;
 }
 uint32_t tox_event_friend_typing_get_friend_number(const Tox_Event_Friend_Typing *friend_typing)
 {
-    assert(friend_typing != nullptr);
+    // assert(friend_typing != nullptr);
     return friend_typing->friend_number;
 }
 
 non_null()
 static void tox_event_friend_typing_set_typing(Tox_Event_Friend_Typing *friend_typing, bool typing)
 {
-    assert(friend_typing != nullptr);
+    // assert(friend_typing != nullptr);
     friend_typing->typing = typing;
 }
 bool tox_event_friend_typing_get_typing(const Tox_Event_Friend_Typing *friend_typing)
 {
-    assert(friend_typing != nullptr);
+    // assert(friend_typing != nullptr);
     return friend_typing->typing;
 }
 
@@ -68,7 +68,7 @@ non_null()
 static bool tox_event_friend_typing_pack(
     const Tox_Event_Friend_Typing *event, Bin_Pack *bp)
 {
-    assert(event != nullptr);
+    // assert(event != nullptr);
     return bin_pack_array(bp, 2)
            && bin_pack_u32(bp, TOX_EVENT_FRIEND_TYPING)
            && bin_pack_array(bp, 2)
@@ -80,7 +80,7 @@ non_null()
 static bool tox_event_friend_typing_unpack(
     Tox_Event_Friend_Typing *event, Bin_Unpack *bu)
 {
-    assert(event != nullptr);
+    // assert(event != nullptr);
     if (!bin_unpack_array_fixed(bu, 2, nullptr)) {
         return false;
     }
@@ -150,8 +150,8 @@ uint32_t tox_events_get_friend_typing_size(const Tox_Events *events)
 
 const Tox_Event_Friend_Typing *tox_events_get_friend_typing(const Tox_Events *events, uint32_t index)
 {
-    assert(index < events->friend_typing_size);
-    assert(events->friend_typing != nullptr);
+    // assert(index < events->friend_typing_size);
+    // assert(events->friend_typing != nullptr);
     return &events->friend_typing[index];
 }
 
@@ -189,7 +189,7 @@ bool tox_events_unpack_friend_typing(Tox_Events *events, Bin_Unpack *bu)
 void tox_events_handle_friend_typing(Tox *tox, uint32_t friend_number, bool typing, void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);
-    assert(state != nullptr);
+    // assert(state != nullptr);
 
     if (state->events == nullptr) {
         return;

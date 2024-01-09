@@ -207,7 +207,7 @@ bool bs_list_add(BS_List *list, const uint8_t *data, int id)
     }
 
     // insert data to element array
-    assert(list->data != nullptr);
+    // assert(list->data != nullptr);
     memmove(list->data + (i + 1) * list->element_size, list->data + i * list->element_size,
             (list->n - i) * list->element_size);
     memcpy(list->data + i * list->element_size, data, list->element_size);

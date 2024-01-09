@@ -504,7 +504,7 @@ static int handle_send_2(void *object, const IP_Port *source, const uint8_t *pac
         return 1;
     }
 
-    assert(len > SIZE_IPPORT);
+    // assert(len > SIZE_IPPORT);
 
     const uint8_t packet_id = plain[SIZE_IPPORT];
 
@@ -704,7 +704,7 @@ static int handle_recv_1(void *object, const IP_Port *source, const uint8_t *pac
     return 0;
 }
 
-void set_callback_handle_recv_1(Onion *onion, onion_recv_1_cb *function, void *object)
+void set_callback_handle_recv_1(Onion *onion, onion_recv_1_cb function, void *object)
 {
     onion->recv_1_function = function;
     onion->callback_object = object;

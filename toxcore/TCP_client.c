@@ -51,19 +51,19 @@ struct TCP_Client_Connection {
     uint64_t ping_request_id;
 
     TCP_Client_Conn connections[NUM_CLIENT_CONNECTIONS];
-    tcp_routing_response_cb *response_callback;
+    tcp_routing_response_cb response_callback;
     void *response_callback_object;
-    tcp_routing_status_cb *status_callback;
+    tcp_routing_status_cb status_callback;
     void *status_callback_object;
-    tcp_routing_data_cb *data_callback;
+    tcp_routing_data_cb data_callback;
     void *data_callback_object;
-    tcp_oob_data_cb *oob_data_callback;
+    tcp_oob_data_cb oob_data_callback;
     void *oob_data_callback_object;
 
-    tcp_onion_response_cb *onion_callback;
+    tcp_onion_response_cb onion_callback;
     void *onion_callback_object;
 
-    forwarded_response_cb *forwarded_response_callback;
+    forwarded_response_cb forwarded_response_callback;
     void *forwarded_response_callback_object;
 
     /* Can be used by user. */
@@ -360,13 +360,13 @@ int send_routing_request(const Logger *logger, TCP_Client_Connection *con, const
     return write_packet_tcp_secure_connection(logger, &con->con, packet, sizeof(packet), true);
 }
 
-void routing_response_handler(TCP_Client_Connection *con, tcp_routing_response_cb *response_callback, void *object)
+void routing_response_handler(TCP_Client_Connection *con, tcp_routing_response_cb response_callback, void *object)
 {
     con->response_callback = response_callback;
     con->response_callback_object = object;
 }
 
-void routing_status_handler(TCP_Client_Connection *con, tcp_routing_status_cb *status_callback, void *object)
+void routing_status_handler(TCP_Client_Connection *con, tcp_routing_status_cb status_callback, void *object)
 {
     con->status_callback = status_callback;
     con->status_callback_object = object;
@@ -441,13 +441,13 @@ int set_tcp_connection_number(TCP_Client_Connection *con, uint8_t con_id, uint32
     return 0;
 }
 
-void routing_data_handler(TCP_Client_Connection *con, tcp_routing_data_cb *data_callback, void *object)
+void routing_data_handler(TCP_Client_Connection *con, tcp_routing_data_cb data_callback, void *object)
 {
     con->data_callback = data_callback;
     con->data_callback_object = object;
 }
 
-void oob_data_handler(TCP_Client_Connection *con, tcp_oob_data_cb *oob_data_callback, void *object)
+void oob_data_handler(TCP_Client_Connection *con, tcp_oob_data_cb oob_data_callback, void *object)
 {
     con->oob_data_callback = oob_data_callback;
     con->oob_data_callback_object = object;
@@ -542,7 +542,7 @@ int send_onion_request(const Logger *logger, TCP_Client_Connection *con, const u
     return write_packet_tcp_secure_connection(logger, &con->con, packet, SIZEOF_VLA(packet), false);
 }
 
-void onion_response_handler(TCP_Client_Connection *con, tcp_onion_response_cb *onion_callback, void *object)
+void onion_response_handler(TCP_Client_Connection *con, tcp_onion_response_cb onion_callback, void *object)
 {
     con->onion_callback = onion_callback;
     con->onion_callback_object = object;
@@ -570,7 +570,7 @@ int send_forward_request_tcp(const Logger *logger, TCP_Client_Connection *con, c
     return write_packet_tcp_secure_connection(logger, &con->con, packet, 1 + ipport_length + length, false);
 }
 
-void forwarding_handler(TCP_Client_Connection *con, forwarded_response_cb *forwarded_response_callback, void *object)
+void forwarding_handler(TCP_Client_Connection *con, forwarded_response_cb forwarded_response_callback, void *object)
 {
     con->forwarded_response_callback = forwarded_response_callback;
     con->forwarded_response_callback_object = object;
@@ -582,11 +582,11 @@ TCP_Client_Connection *new_tcp_connection(
         const IP_Port *ip_port, const uint8_t *public_key, const uint8_t *self_public_key, const uint8_t *self_secret_key,
         const TCP_Proxy_Info *proxy_info)
 {
-    assert(logger != nullptr);
-    assert(mem != nullptr);
-    assert(mono_time != nullptr);
-    assert(rng != nullptr);
-    assert(ns != nullptr);
+    // assert(logger != nullptr);
+    // assert(mem != nullptr);
+    // assert(mono_time != nullptr);
+    // assert(rng != nullptr);
+    // assert(ns != nullptr);
 
     if (!net_family_is_ipv4(ip_port->ip.family) && !net_family_is_ipv6(ip_port->ip.family)) {
         return nullptr;

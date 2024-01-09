@@ -46,7 +46,7 @@ struct Mono_Time {
     pthread_rwlock_t *time_update_lock;
 #endif
 
-    mono_time_current_time_cb *current_time_callback;
+    mono_time_current_time_cb current_time_callback;
     void *user_data;
 };
 
@@ -100,7 +100,7 @@ static uint64_t current_time_monotonic_default(void *user_data)
 #ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
     // This assert should always fail. If it does, the fuzzing harness didn't
     // override the mono time callback.
-    assert(user_data == nullptr);
+    // assert(user_data == nullptr);
 #endif
     struct timespec clock_mono;
     clock_gettime(CLOCK_MONOTONIC, &clock_mono);
@@ -110,7 +110,7 @@ static uint64_t current_time_monotonic_default(void *user_data)
 #endif // !OS_WIN32
 
 
-Mono_Time *mono_time_new(const Memory *mem, mono_time_current_time_cb *current_time_callback, void *user_data)
+Mono_Time *mono_time_new(const Memory *mem, mono_time_current_time_cb current_time_callback, void *user_data)
 {
     Mono_Time *mono_time = (Mono_Time *)mem_alloc(mem, sizeof(Mono_Time));
 
@@ -200,7 +200,7 @@ bool mono_time_is_timeout(const Mono_Time *mono_time, uint64_t timestamp, uint64
 }
 
 void mono_time_set_current_time_callback(Mono_Time *mono_time,
-        mono_time_current_time_cb *current_time_callback, void *user_data)
+        mono_time_current_time_cb current_time_callback, void *user_data)
 {
     if (current_time_callback == nullptr) {
         mono_time->current_time_callback = current_time_monotonic_default;

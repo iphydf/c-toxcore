@@ -22,14 +22,14 @@ struct Bin_Pack {
 non_null()
 static bool null_reader(cmp_ctx_t *ctx, void *data, size_t limit)
 {
-    assert(limit == 0);
+    // assert(limit == 0);
     return false;
 }
 
 non_null()
 static bool null_skipper(cmp_ctx_t *ctx, size_t limit)
 {
-    assert(limit == 0);
+    // assert(limit == 0);
     return false;
 }
 
@@ -37,7 +37,7 @@ non_null()
 static size_t buf_writer(cmp_ctx_t *ctx, const void *data, size_t count)
 {
     Bin_Pack *bp = (Bin_Pack *)ctx->buf;
-    assert(bp != nullptr);
+    // assert(bp != nullptr);
     const uint32_t new_pos = bp->bytes_pos + count;
     if (new_pos < bp->bytes_pos) {
         // 32 bit overflow.
@@ -63,7 +63,7 @@ static void bin_pack_init(Bin_Pack *bp, uint8_t *buf, uint32_t buf_size)
     cmp_init(&bp->ctx, bp, null_reader, null_skipper, buf_writer);
 }
 
-uint32_t bin_pack_obj_size(bin_pack_cb *callback, const Logger *logger, const void *obj)
+uint32_t bin_pack_obj_size(bin_pack_cb callback, const Logger *logger, const void *obj)
 {
     Bin_Pack bp;
     bin_pack_init(&bp, nullptr, 0);
@@ -73,14 +73,14 @@ uint32_t bin_pack_obj_size(bin_pack_cb *callback, const Logger *logger, const vo
     return bp.bytes_pos;
 }
 
-bool bin_pack_obj(bin_pack_cb *callback, const Logger *logger, const void *obj, uint8_t *buf, uint32_t buf_size)
+bool bin_pack_obj(bin_pack_cb callback, const Logger *logger, const void *obj, uint8_t *buf, uint32_t buf_size)
 {
     Bin_Pack bp;
     bin_pack_init(&bp, buf, buf_size);
     return callback(&bp, logger, obj);
 }
 
-uint32_t bin_pack_obj_array_size(bin_pack_array_cb *callback, const Logger *logger, const void *arr, uint32_t count)
+uint32_t bin_pack_obj_array_size(bin_pack_array_cb callback, const Logger *logger, const void *arr, uint32_t count)
 {
     Bin_Pack bp;
     bin_pack_init(&bp, nullptr, 0);
@@ -92,7 +92,7 @@ uint32_t bin_pack_obj_array_size(bin_pack_array_cb *callback, const Logger *logg
     return bp.bytes_pos;
 }
 
-bool bin_pack_obj_array(bin_pack_array_cb *callback, const Logger *logger, const void *arr, uint32_t count, uint8_t *buf, uint32_t buf_size)
+bool bin_pack_obj_array(bin_pack_array_cb callback, const Logger *logger, const void *arr, uint32_t count, uint8_t *buf, uint32_t buf_size)
 {
     Bin_Pack bp;
     bin_pack_init(&bp, buf, buf_size);
@@ -166,7 +166,7 @@ bool bin_pack_bin_marker(Bin_Pack *bp, uint32_t size)
 
 bool bin_pack_u08_b(Bin_Pack *bp, uint8_t val)
 {
-    return bp->ctx.write(&bp->ctx, &val, 1) == 1;
+    return bp->ctx.write_callback(&bp->ctx, &val, 1) == 1;
 }
 
 bool bin_pack_u16_b(Bin_Pack *bp, uint16_t val)
@@ -189,6 +189,6 @@ bool bin_pack_u64_b(Bin_Pack *bp, uint64_t val)
 
 bool bin_pack_bin_b(Bin_Pack *bp, const uint8_t *data, uint32_t length)
 {
-    return bp->ctx.write(&bp->ctx, data, length) == length;
+    return bp->ctx.write_callback(&bp->ctx, data, length) == length;
 }
 

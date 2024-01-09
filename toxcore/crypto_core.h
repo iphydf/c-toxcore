@@ -75,12 +75,12 @@ extern "C" {
  */
 #define CRYPTO_SHA512_SIZE             64
 
-typedef void crypto_random_bytes_cb(void *obj, uint8_t *bytes, size_t length);
-typedef uint32_t crypto_random_uniform_cb(void *obj, uint32_t upper_bound);
+typedef void (*crypto_random_bytes_cb)(void *obj, uint8_t *bytes, size_t length);
+typedef uint32_t(*crypto_random_uniform_cb)(void *obj, uint32_t upper_bound);
 
 typedef struct Random_Funcs {
-    crypto_random_bytes_cb *random_bytes;
-    crypto_random_uniform_cb *random_uniform;
+    crypto_random_bytes_cb random_bytes;
+    crypto_random_uniform_cb random_uniform;
 } Random_Funcs;
 
 typedef struct Random {

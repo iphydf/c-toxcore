@@ -78,15 +78,15 @@ typedef struct Crypto_Connection {
     Packets_Array send_array;
     Packets_Array recv_array;
 
-    connection_status_cb *connection_status_callback;
+    connection_status_cb connection_status_callback;
     void *connection_status_callback_object;
     int connection_status_callback_id;
 
-    connection_data_cb *connection_data_callback;
+    connection_data_cb connection_data_callback;
     void *connection_data_callback_object;
     int connection_data_callback_id;
 
-    connection_lossy_data_cb *connection_lossy_data_callback;
+    connection_lossy_data_cb connection_lossy_data_callback;
     void *connection_lossy_data_callback_object;
     int connection_lossy_data_callback_id;
 
@@ -124,7 +124,7 @@ typedef struct Crypto_Connection {
     /* Must be a pointer, because the struct is moved in memory */
     pthread_mutex_t *mutex;
 
-    dht_pk_cb *dht_pk_callback;
+    dht_pk_cb dht_pk_callback;
     void *dht_pk_callback_object;
     uint32_t dht_pk_callback_number;
 } Crypto_Connection;
@@ -156,7 +156,7 @@ struct Net_Crypto {
     /* The secret key used for cookies */
     uint8_t secret_symmetric_key[CRYPTO_SYMMETRIC_KEY_SIZE];
 
-    new_connection_cb *new_connection_callback;
+    new_connection_cb new_connection_callback;
     void *new_connection_callback_object;
 
     /* The current optimal sleep time */
@@ -2006,7 +2006,7 @@ static int crypto_connection_add_source(Net_Crypto *c, int crypt_connection_id, 
  *
  * n_c is only valid for the duration of the function call.
  */
-void new_connection_handler(Net_Crypto *c, new_connection_cb *new_connection_callback, void *object)
+void new_connection_handler(Net_Crypto *c, new_connection_cb new_connection_callback, void *object)
 {
     c->new_connection_callback = new_connection_callback;
     c->new_connection_callback_object = object;
@@ -2458,7 +2458,7 @@ static void do_tcp(Net_Crypto *c, void *userdata)
  * return 0 on success.
  */
 int connection_status_handler(const Net_Crypto *c, int crypt_connection_id,
-                              connection_status_cb *connection_status_callback, void *object, int id)
+                              connection_status_cb connection_status_callback, void *object, int id)
 {
     Crypto_Connection *conn = get_crypto_connection(c, crypt_connection_id);
 
@@ -2481,7 +2481,7 @@ int connection_status_handler(const Net_Crypto *c, int crypt_connection_id,
  * return 0 on success.
  */
 int connection_data_handler(const Net_Crypto *c, int crypt_connection_id,
-                            connection_data_cb *connection_data_callback, void *object, int id)
+                            connection_data_cb connection_data_callback, void *object, int id)
 {
     Crypto_Connection *conn = get_crypto_connection(c, crypt_connection_id);
 
@@ -2504,7 +2504,7 @@ int connection_data_handler(const Net_Crypto *c, int crypt_connection_id,
  * return 0 on success.
  */
 int connection_lossy_data_handler(const Net_Crypto *c, int crypt_connection_id,
-                                  connection_lossy_data_cb *connection_lossy_data_callback,
+                                  connection_lossy_data_cb connection_lossy_data_callback,
                                   void *object, int id)
 {
     Crypto_Connection *conn = get_crypto_connection(c, crypt_connection_id);
@@ -2530,7 +2530,7 @@ int connection_lossy_data_handler(const Net_Crypto *c, int crypt_connection_id,
  * return -1 on failure.
  * return 0 on success.
  */
-int nc_dht_pk_callback(const Net_Crypto *c, int crypt_connection_id, dht_pk_cb *function, void *object, uint32_t number)
+int nc_dht_pk_callback(const Net_Crypto *c, int crypt_connection_id, dht_pk_cb function, void *object, uint32_t number)
 {
     Crypto_Connection *conn = get_crypto_connection(c, crypt_connection_id);
 

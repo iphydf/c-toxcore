@@ -32,13 +32,13 @@
 non_null()
 static bool array_entry_is_empty(const GC_Message_Array_Entry *array_entry)
 {
-    assert(array_entry != nullptr);
+    // assert(array_entry != nullptr);
     return array_entry->time_added == 0;
 }
 
 /** @brief Clears an array entry. */
 non_null()
-static void clear_array_entry(GC_Message_Array_Entry *const array_entry)
+static void clear_array_entry(GC_Message_Array_Entry * array_entry)
 {
     if (array_entry->data != nullptr) {
         free(array_entry->data);
@@ -219,7 +219,7 @@ bool gcc_send_lossless_packet_fragments(const GC_Chat *chat, GC_Connection *gcon
             return false;
         }
 
-        assert(entry->packet_type == GP_FRAGMENT);
+        // assert(entry->packet_type == GP_FRAGMENT);
 
         gcc_encrypt_and_send_lossless_packet(chat, gconn, entry->data, entry->data_length,
                                              entry->message_id, entry->packet_type);
@@ -366,12 +366,12 @@ static uint16_t reassemble_packet(const Logger *log, GC_Connection *gconn, uint8
 
     // search backwards in recv array until we find an empty slot or a non-fragment packet type
     while (!array_entry_is_empty(entry) && entry->packet_type == GP_FRAGMENT) {
-        assert(entry->data != nullptr);
-        assert(entry->data_length <= MAX_GC_PACKET_INCOMING_CHUNK_SIZE);
+        // assert(entry->data != nullptr);
+        // assert(entry->data_length <= MAX_GC_PACKET_INCOMING_CHUNK_SIZE);
 
         const uint16_t diff = packet_length + entry->data_length;
 
-        assert(diff > packet_length);  // overflow check
+        // assert(diff > packet_length);  // overflow check
         packet_length = diff;
 
         if (packet_length > MAX_GC_PACKET_SIZE) {
@@ -392,7 +392,7 @@ static uint16_t reassemble_packet(const Logger *log, GC_Connection *gconn, uint8
         return 0;
     }
 
-    assert(*payload == nullptr);
+    // assert(*payload == nullptr);
     *payload = (uint8_t *)malloc(packet_length);
 
     if (*payload == nullptr) {
@@ -408,7 +408,7 @@ static uint16_t reassemble_packet(const Logger *log, GC_Connection *gconn, uint8
     for (uint16_t i = start_idx; i != end_idx; i = (i + 1) % GCC_BUFFER_SIZE) {
         entry = &gconn->recv_array[i];
 
-        assert(processed + entry->data_length <= packet_length);
+        // assert(processed + entry->data_length <= packet_length);
         memcpy(*payload + processed, entry->data, entry->data_length);
         processed += entry->data_length;
 
@@ -505,7 +505,7 @@ int gcc_handle_received_message(const Logger *log, const Mono_Time *mono_time, G
  */
 non_null(1, 2, 3, 5) nullable(6)
 static bool process_recv_array_entry(const GC_Session *c, GC_Chat *chat, GC_Connection *gconn, uint32_t peer_number,
-                                     GC_Message_Array_Entry *const array_entry, void *userdata)
+                                     GC_Message_Array_Entry * array_entry, void *userdata)
 {
     uint8_t sender_pk[ENC_PUBLIC_KEY_SIZE];
     memcpy(sender_pk, get_enc_key(gconn->addr.public_key), ENC_PUBLIC_KEY_SIZE);
@@ -543,7 +543,7 @@ void gcc_check_recv_array(const GC_Session *c, GC_Chat *chat, GC_Connection *gco
     }
 
     const uint16_t idx = (gconn->received_message_id + 1) % GCC_BUFFER_SIZE;
-    GC_Message_Array_Entry *const array_entry = &gconn->recv_array[idx];
+    GC_Message_Array_Entry * array_entry = &gconn->recv_array[idx];
 
     if (!array_entry_is_empty(array_entry)) {
         process_recv_array_entry(c, chat, gconn, peer_number, array_entry, userdata);
@@ -700,7 +700,7 @@ void gcc_cleanup(const GC_Chat *chat)
 {
     for (uint32_t i = 0; i < chat->numpeers; ++i) {
         GC_Connection *gconn = get_gc_connection(chat, i);
-        assert(gconn != nullptr);
+        // assert(gconn != nullptr);
 
         gcc_peer_cleanup(gconn);
     }

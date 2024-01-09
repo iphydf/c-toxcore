@@ -43,13 +43,13 @@ non_null()
 static void tox_event_self_connection_status_set_connection_status(Tox_Event_Self_Connection_Status
         *self_connection_status, Tox_Connection connection_status)
 {
-    assert(self_connection_status != nullptr);
+    // assert(self_connection_status != nullptr);
     self_connection_status->connection_status = connection_status;
 }
 Tox_Connection tox_event_self_connection_status_get_connection_status(const Tox_Event_Self_Connection_Status
         *self_connection_status)
 {
-    assert(self_connection_status != nullptr);
+    // assert(self_connection_status != nullptr);
     return self_connection_status->connection_status;
 }
 
@@ -57,7 +57,7 @@ non_null()
 static bool tox_event_self_connection_status_pack(
     const Tox_Event_Self_Connection_Status *event, Bin_Pack *bp)
 {
-    assert(event != nullptr);
+    // assert(event != nullptr);
     return bin_pack_array(bp, 2)
            && bin_pack_u32(bp, TOX_EVENT_SELF_CONNECTION_STATUS)
            && bin_pack_u32(bp, event->connection_status);
@@ -67,7 +67,7 @@ non_null()
 static bool tox_event_self_connection_status_unpack(
     Tox_Event_Self_Connection_Status *event, Bin_Unpack *bu)
 {
-    assert(event != nullptr);
+    // assert(event != nullptr);
     return tox_connection_unpack(bu, &event->connection_status);
 }
 
@@ -133,8 +133,8 @@ uint32_t tox_events_get_self_connection_status_size(const Tox_Events *events)
 
 const Tox_Event_Self_Connection_Status *tox_events_get_self_connection_status(const Tox_Events *events, uint32_t index)
 {
-    assert(index < events->self_connection_status_size);
-    assert(events->self_connection_status != nullptr);
+    // assert(index < events->self_connection_status_size);
+    // assert(events->self_connection_status != nullptr);
     return &events->self_connection_status[index];
 }
 
@@ -172,7 +172,7 @@ bool tox_events_unpack_self_connection_status(Tox_Events *events, Bin_Unpack *bu
 void tox_events_handle_self_connection_status(Tox *tox, Tox_Connection connection_status, void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);
-    assert(state != nullptr);
+    // assert(state != nullptr);
 
     if (state->events == nullptr) {
         return;

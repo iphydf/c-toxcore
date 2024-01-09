@@ -42,7 +42,7 @@ uint8_t announce_response_of_request_type(uint8_t request_type)
             return NET_PACKET_STORE_ANNOUNCE_RESPONSE;
 
         default: {
-            assert(false);
+            // assert(false);
             return NET_PACKET_MAX;
         }
     }
@@ -101,7 +101,7 @@ static void delete_entry(Announce_Entry *entry)
 non_null()
 static uint8_t truncate_pk_at_index(const uint8_t *pk, uint16_t index, uint16_t bits)
 {
-    assert(bits < 8);
+    // assert(bits < 8);
     const uint8_t i = index / 8;
     const uint8_t j = index % 8;
     return ((uint8_t)((i < CRYPTO_PUBLIC_KEY_SIZE ? pk[i] : 0) << j) >> (8 - bits)) |
@@ -125,7 +125,7 @@ static Announce_Entry *bucket_of_key(Announcements *announce, const uint8_t *pk)
 non_null()
 static Announce_Entry *get_stored(Announcements *announce, const uint8_t *data_public_key)
 {
-    Announce_Entry *const bucket = bucket_of_key(announce, data_public_key);
+    Announce_Entry * bucket = bucket_of_key(announce, data_public_key);
 
     for (uint32_t i = 0; i < ANNOUNCE_BUCKET_SIZE; ++i) {
         if (pk_equal(bucket[i].data_public_key, data_public_key)) {
@@ -149,7 +149,7 @@ static const Announce_Entry *bucket_of_key_const(const Announcements *announce, 
 non_null()
 static const Announce_Entry *get_stored_const(const Announcements *announce, const uint8_t *data_public_key)
 {
-    const Announce_Entry *const bucket = bucket_of_key_const(announce, data_public_key);
+    const Announce_Entry * bucket = bucket_of_key_const(announce, data_public_key);
 
     for (uint32_t i = 0; i < ANNOUNCE_BUCKET_SIZE; ++i) {
         if (pk_equal(bucket[i].data_public_key, data_public_key)) {
@@ -166,9 +166,9 @@ static const Announce_Entry *get_stored_const(const Announcements *announce, con
 
 
 bool announce_on_stored(const Announcements *announce, const uint8_t *data_public_key,
-                        announce_on_retrieve_cb *on_retrieve_callback, void *object)
+                        announce_on_retrieve_cb on_retrieve_callback, void *object)
 {
-    const Announce_Entry *const entry = get_stored_const(announce, data_public_key);
+    const Announce_Entry * entry = get_stored_const(announce, data_public_key);
 
     if (entry == nullptr || entry->data == nullptr) {
         return false;
@@ -190,7 +190,7 @@ bool announce_on_stored(const Announcements *announce, const uint8_t *data_publi
 non_null()
 static Announce_Entry *find_entry_slot(Announcements *announce, const uint8_t *data_public_key)
 {
-    Announce_Entry *const bucket = bucket_of_key(announce, data_public_key);
+    Announce_Entry * bucket = bucket_of_key(announce, data_public_key);
 
     Announce_Entry *slot = nullptr;
     uint16_t min_index = bit_by_bit_cmp(announce->public_key, data_public_key);
@@ -237,7 +237,7 @@ bool announce_store_data(Announcements *announce, const uint8_t *data_public_key
     }
 
     if (length > 0) {
-        assert(data != nullptr);
+        // assert(data != nullptr);
 
         if (entry->data != nullptr) {
             free(entry->data);
@@ -295,7 +295,7 @@ static int create_data_search_to_auth(const Logger *logger, const uint8_t *data_
     }
 
     if (sendback_length > 0) {
-        assert(sendback != nullptr);
+        // assert(sendback != nullptr);
         memcpy(dest + CRYPTO_PUBLIC_KEY_SIZE * 2 + ipport_length, sendback, sendback_length);
     }
 
@@ -316,7 +316,7 @@ static int create_reply_plain_data_search_request(Announcements *announce,
         return -1;
     }
 
-    const uint8_t *const data_public_key = data;
+    const uint8_t * data_public_key = data;
 
     const uint8_t *previous_hash = nullptr;
 
@@ -336,7 +336,7 @@ static int create_reply_plain_data_search_request(Announcements *announce,
     memcpy(p, data_public_key, CRYPTO_PUBLIC_KEY_SIZE);
     p += CRYPTO_PUBLIC_KEY_SIZE;
 
-    const Announce_Entry *const stored = get_stored_const(announce, data_public_key);
+    const Announce_Entry * stored = get_stored_const(announce, data_public_key);
 
     if (stored == nullptr) {
         *p = 0;
@@ -399,15 +399,15 @@ static int create_reply_plain_data_retrieve_request(
         return -1;
     }
 
-    const uint8_t *const data_public_key = data;
-    const uint8_t *const auth = data + CRYPTO_PUBLIC_KEY_SIZE + 1;
+    const uint8_t * data_public_key = data;
+    const uint8_t * auth = data + CRYPTO_PUBLIC_KEY_SIZE + 1;
 
     if (!check_timed_auth(announce->mono_time, DATA_SEARCH_TIMEOUT, announce->hmac_key,
                           to_auth, to_auth_length, auth)) {
         return -1;
     }
 
-    const Announce_Entry *const entry = get_stored_const(announce, data_public_key);
+    const Announce_Entry * entry = get_stored_const(announce, data_public_key);
 
     if (entry == nullptr) {
         return -1;
@@ -436,7 +436,7 @@ static int create_reply_plain_store_announce_request(Announcements *announce,
     const int plain_len = (int)length - (CRYPTO_PUBLIC_KEY_SIZE + CRYPTO_NONCE_SIZE + CRYPTO_MAC_SIZE);
     const int announcement_len = plain_len - (TIMED_AUTH_SIZE + sizeof(uint32_t) + 1);
 
-    const uint8_t *const data_public_key = data;
+    const uint8_t * data_public_key = data;
 
     if (announcement_len < 0) {
         return -1;
@@ -459,7 +459,7 @@ static int create_reply_plain_store_announce_request(Announcements *announce,
         return -1;
     }
 
-    const uint8_t *const auth = plain;
+    const uint8_t * auth = plain;
     uint32_t requested_timeout;
     net_unpack_u32(plain + TIMED_AUTH_SIZE, &requested_timeout);
     const uint32_t timeout = calculate_timeout(announce, requested_timeout);
@@ -525,7 +525,7 @@ static int create_reply_plain(Announcements *announce,
         return -1;
     }
 
-    const uint8_t *const data_public_key = data;
+    const uint8_t * data_public_key = data;
 
     uint8_t to_auth[DATA_SEARCH_TO_AUTH_MAX_SIZE];
     const int to_auth_length = create_data_search_to_auth(announce->log, data_public_key, requester_key, source,

@@ -14,7 +14,7 @@
 #include "mono_time.h"
 #include "shared_key_cache.h"
 
-typedef int onion_recv_1_cb(void *object, const IP_Port *dest, const uint8_t *data, uint16_t length);
+typedef int(*onion_recv_1_cb)(void *object, const IP_Port *dest, const uint8_t *data, uint16_t length);
 
 typedef struct Onion {
     const Logger *log;
@@ -30,7 +30,7 @@ typedef struct Onion {
     Shared_Key_Cache *shared_keys_2;
     Shared_Key_Cache *shared_keys_3;
 
-    onion_recv_1_cb *recv_1_function;
+    onion_recv_1_cb recv_1_function;
     void *callback_object;
 } Onion;
 
@@ -146,7 +146,7 @@ int onion_send_1(const Onion *onion, const uint8_t *plain, uint16_t len, const I
 
 /** Set the callback to be called when the dest ip_port doesn't have TOX_AF_INET6 or TOX_AF_INET as the family. */
 non_null(1) nullable(2, 3)
-void set_callback_handle_recv_1(Onion *onion, onion_recv_1_cb *function, void *object);
+void set_callback_handle_recv_1(Onion *onion, onion_recv_1_cb function, void *object);
 
 non_null()
 Onion *new_onion(const Logger *log, const Memory *mem, const Mono_Time *mono_time, const Random *rng, DHT *dht);

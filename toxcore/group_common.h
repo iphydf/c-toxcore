@@ -327,34 +327,34 @@ typedef struct GC_Chat {
 typedef struct Messenger Messenger;
 #endif /* MESSENGER_DEFINED */
 
-typedef void gc_message_cb(const Messenger *m, uint32_t group_number, uint32_t peer_id, unsigned int type,
+typedef void(*gc_message_cb)(const Messenger *m, uint32_t group_number, uint32_t peer_id, unsigned int type,
                            const uint8_t *data, size_t length, uint32_t message_id, void *user_data);
-typedef void gc_private_message_cb(const Messenger *m, uint32_t group_number, uint32_t peer_id, unsigned int type,
+typedef void(*gc_private_message_cb)(const Messenger *m, uint32_t group_number, uint32_t peer_id, unsigned int type,
                                    const uint8_t *data, size_t length, void *user_data);
-typedef void gc_custom_packet_cb(const Messenger *m, uint32_t group_number, uint32_t peer_id, const uint8_t *data,
+typedef void(*gc_custom_packet_cb)(const Messenger *m, uint32_t group_number, uint32_t peer_id, const uint8_t *data,
                                  size_t length, void *user_data);
-typedef void gc_custom_private_packet_cb(const Messenger *m, uint32_t group_number, uint32_t peer_id,
+typedef void(*gc_custom_private_packet_cb)(const Messenger *m, uint32_t group_number, uint32_t peer_id,
         const uint8_t *data,
         size_t length, void *user_data);
-typedef void gc_moderation_cb(const Messenger *m, uint32_t group_number, uint32_t peer_id, uint32_t target_peer,
+typedef void(*gc_moderation_cb)(const Messenger *m, uint32_t group_number, uint32_t peer_id, uint32_t target_peer,
                               unsigned int mod_event, void *user_data);
-typedef void gc_nick_change_cb(const Messenger *m, uint32_t group_number, uint32_t peer_id, const uint8_t *data,
+typedef void(*gc_nick_change_cb)(const Messenger *m, uint32_t group_number, uint32_t peer_id, const uint8_t *data,
                                size_t length, void *user_data);
-typedef void gc_status_change_cb(const Messenger *m, uint32_t group_number, uint32_t peer_id, unsigned int status,
+typedef void(*gc_status_change_cb)(const Messenger *m, uint32_t group_number, uint32_t peer_id, unsigned int status,
                                  void *user_data);
-typedef void gc_topic_change_cb(const Messenger *m, uint32_t group_number, uint32_t peer_id, const uint8_t *data,
+typedef void(*gc_topic_change_cb)(const Messenger *m, uint32_t group_number, uint32_t peer_id, const uint8_t *data,
                                 size_t length, void *user_data);
-typedef void gc_topic_lock_cb(const Messenger *m, uint32_t group_number, unsigned int topic_lock, void *user_data);
-typedef void gc_voice_state_cb(const Messenger *m, uint32_t group_number, unsigned int voice_state, void *user_data);
-typedef void gc_peer_limit_cb(const Messenger *m, uint32_t group_number, uint32_t max_peers, void *user_data);
-typedef void gc_privacy_state_cb(const Messenger *m, uint32_t group_number, unsigned int state, void *user_data);
-typedef void gc_password_cb(const Messenger *m, uint32_t group_number, const uint8_t *data, size_t length,
+typedef void(*gc_topic_lock_cb)(const Messenger *m, uint32_t group_number, unsigned int topic_lock, void *user_data);
+typedef void(*gc_voice_state_cb)(const Messenger *m, uint32_t group_number, unsigned int voice_state, void *user_data);
+typedef void(*gc_peer_limit_cb)(const Messenger *m, uint32_t group_number, uint32_t max_peers, void *user_data);
+typedef void(*gc_privacy_state_cb)(const Messenger *m, uint32_t group_number, unsigned int state, void *user_data);
+typedef void(*gc_password_cb)(const Messenger *m, uint32_t group_number, const uint8_t *data, size_t length,
                             void *user_data);
-typedef void gc_peer_join_cb(const Messenger *m, uint32_t group_number, uint32_t peer_id, void *user_data);
-typedef void gc_peer_exit_cb(const Messenger *m, uint32_t group_number, uint32_t peer_id, unsigned int exit_type,
+typedef void(*gc_peer_join_cb)(const Messenger *m, uint32_t group_number, uint32_t peer_id, void *user_data);
+typedef void(*gc_peer_exit_cb)(const Messenger *m, uint32_t group_number, uint32_t peer_id, unsigned int exit_type,
                              const uint8_t *nick, size_t nick_len, const uint8_t *data, size_t length, void *user_data);
-typedef void gc_self_join_cb(const Messenger *m, uint32_t group_number, void *user_data);
-typedef void gc_rejected_cb(const Messenger *m, uint32_t group_number, unsigned int type, void *user_data);
+typedef void(*gc_self_join_cb)(const Messenger *m, uint32_t group_number, void *user_data);
+typedef void(*gc_rejected_cb)(const Messenger *m, uint32_t group_number, unsigned int type, void *user_data);
 
 typedef struct GC_Session {
     Messenger                 *messenger;
@@ -363,23 +363,23 @@ typedef struct GC_Session {
 
     uint32_t     chats_index;
 
-    gc_message_cb *message;
-    gc_private_message_cb *private_message;
-    gc_custom_packet_cb *custom_packet;
-    gc_custom_private_packet_cb *custom_private_packet;
-    gc_moderation_cb *moderation;
-    gc_nick_change_cb *nick_change;
-    gc_status_change_cb *status_change;
-    gc_topic_change_cb *topic_change;
-    gc_topic_lock_cb *topic_lock;
-    gc_voice_state_cb *voice_state;
-    gc_peer_limit_cb *peer_limit;
-    gc_privacy_state_cb *privacy_state;
-    gc_password_cb *password;
-    gc_peer_join_cb *peer_join;
-    gc_peer_exit_cb *peer_exit;
-    gc_self_join_cb *self_join;
-    gc_rejected_cb *rejected;
+    gc_message_cb message;
+    gc_private_message_cb private_message;
+    gc_custom_packet_cb custom_packet;
+    gc_custom_private_packet_cb custom_private_packet;
+    gc_moderation_cb moderation;
+    gc_nick_change_cb nick_change;
+    gc_status_change_cb status_change;
+    gc_topic_change_cb topic_change;
+    gc_topic_lock_cb topic_lock;
+    gc_voice_state_cb voice_state;
+    gc_peer_limit_cb peer_limit;
+    gc_privacy_state_cb privacy_state;
+    gc_password_cb password;
+    gc_peer_join_cb peer_join;
+    gc_peer_exit_cb peer_exit;
+    gc_self_join_cb self_join;
+    gc_rejected_cb rejected;
 } GC_Session;
 
 /** @brief Adds a new peer to group_number's peer list.

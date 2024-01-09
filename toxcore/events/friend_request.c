@@ -44,14 +44,14 @@ static void tox_event_friend_request_destruct(Tox_Event_Friend_Request *friend_r
 non_null()
 static bool tox_event_friend_request_set_public_key(Tox_Event_Friend_Request *friend_request, const uint8_t *public_key)
 {
-    assert(friend_request != nullptr);
+    // assert(friend_request != nullptr);
 
     memcpy(friend_request->public_key, public_key, TOX_PUBLIC_KEY_SIZE);
     return true;
 }
 const uint8_t *tox_event_friend_request_get_public_key(const Tox_Event_Friend_Request *friend_request)
 {
-    assert(friend_request != nullptr);
+    // assert(friend_request != nullptr);
     return friend_request->public_key;
 }
 
@@ -59,7 +59,7 @@ non_null()
 static bool tox_event_friend_request_set_message(Tox_Event_Friend_Request *friend_request, const uint8_t *message,
         uint32_t message_length)
 {
-    assert(friend_request != nullptr);
+    // assert(friend_request != nullptr);
 
     if (friend_request->message != nullptr) {
         free(friend_request->message);
@@ -79,12 +79,12 @@ static bool tox_event_friend_request_set_message(Tox_Event_Friend_Request *frien
 }
 uint32_t tox_event_friend_request_get_message_length(const Tox_Event_Friend_Request *friend_request)
 {
-    assert(friend_request != nullptr);
+    // assert(friend_request != nullptr);
     return friend_request->message_length;
 }
 const uint8_t *tox_event_friend_request_get_message(const Tox_Event_Friend_Request *friend_request)
 {
-    assert(friend_request != nullptr);
+    // assert(friend_request != nullptr);
     return friend_request->message;
 }
 
@@ -92,7 +92,7 @@ non_null()
 static bool tox_event_friend_request_pack(
     const Tox_Event_Friend_Request *event, Bin_Pack *bp)
 {
-    assert(event != nullptr);
+    // assert(event != nullptr);
     return bin_pack_array(bp, 2)
            && bin_pack_u32(bp, TOX_EVENT_FRIEND_REQUEST)
            && bin_pack_array(bp, 2)
@@ -104,7 +104,7 @@ non_null()
 static bool tox_event_friend_request_unpack(
     Tox_Event_Friend_Request *event, Bin_Unpack *bu)
 {
-    assert(event != nullptr);
+    // assert(event != nullptr);
     if (!bin_unpack_array_fixed(bu, 2, nullptr)) {
         return false;
     }
@@ -174,8 +174,8 @@ uint32_t tox_events_get_friend_request_size(const Tox_Events *events)
 
 const Tox_Event_Friend_Request *tox_events_get_friend_request(const Tox_Events *events, uint32_t index)
 {
-    assert(index < events->friend_request_size);
-    assert(events->friend_request != nullptr);
+    // assert(index < events->friend_request_size);
+    // assert(events->friend_request != nullptr);
     return &events->friend_request[index];
 }
 
@@ -214,7 +214,7 @@ void tox_events_handle_friend_request(Tox *tox, const uint8_t *public_key, const
                                       void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);
-    assert(state != nullptr);
+    // assert(state != nullptr);
 
     if (state->events == nullptr) {
         return;

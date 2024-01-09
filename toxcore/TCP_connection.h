@@ -156,7 +156,7 @@ non_null()
 int tcp_send_oob_packet(const TCP_Connections *tcp_c, unsigned int tcp_connections_number, const uint8_t *public_key,
                         const uint8_t *packet, uint16_t length);
 
-typedef int tcp_data_cb(void *object, int id, const uint8_t *data, uint16_t length, void *userdata);
+typedef int(*tcp_data_cb)(void *object, int id, const uint8_t *data, uint16_t length, void *userdata);
 
 non_null()
 int tcp_send_oob_packet_using_relay(const TCP_Connections *tcp_c, const uint8_t *relay_pk, const uint8_t *public_key,
@@ -164,27 +164,27 @@ int tcp_send_oob_packet_using_relay(const TCP_Connections *tcp_c, const uint8_t 
 
 /** @brief Set the callback for TCP data packets. */
 non_null()
-void set_packet_tcp_connection_callback(TCP_Connections *tcp_c, tcp_data_cb *tcp_data_callback, void *object);
+void set_packet_tcp_connection_callback(TCP_Connections *tcp_c, tcp_data_cb tcp_data_callback, void *object);
 
-typedef int tcp_onion_cb(void *object, const uint8_t *data, uint16_t length, void *userdata);
+typedef int(*tcp_onion_cb)(void *object, const uint8_t *data, uint16_t length, void *userdata);
 
 /** @brief Set the callback for TCP onion packets. */
 non_null(1) nullable(2, 3)
-void set_onion_packet_tcp_connection_callback(TCP_Connections *tcp_c, tcp_onion_cb *tcp_onion_callback, void *object);
+void set_onion_packet_tcp_connection_callback(TCP_Connections *tcp_c, tcp_onion_cb tcp_onion_callback, void *object);
 
 /** @brief Set the callback for TCP forwarding packets. */
 non_null(1) nullable(2, 3)
 void set_forwarding_packet_tcp_connection_callback(TCP_Connections *tcp_c,
-        forwarded_response_cb *tcp_forwarded_response_callback,
+        forwarded_response_cb tcp_forwarded_response_callback,
         void *object);
 
 
-typedef int tcp_oob_cb(void *object, const uint8_t *public_key, unsigned int tcp_connections_number,
+typedef int(*tcp_oob_cb)(void *object, const uint8_t *public_key, unsigned int tcp_connections_number,
                        const uint8_t *data, uint16_t length, void *userdata);
 
 /** @brief Set the callback for TCP oob data packets. */
 non_null()
-void set_oob_packet_tcp_connection_callback(TCP_Connections *tcp_c, tcp_oob_cb *tcp_oob_callback, void *object);
+void set_oob_packet_tcp_connection_callback(TCP_Connections *tcp_c, tcp_oob_cb tcp_oob_callback, void *object);
 
 /** @brief Encode tcp_connections_number as a custom ip_port.
  *

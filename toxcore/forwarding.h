@@ -85,16 +85,16 @@ bool forward_reply(const Networking_Core *net, const IP_Port *forwarder,
  * To reply to the packet, callback should use `forward_reply()` to send a reply
  * forwarded via forwarder, passing the provided sendback.
  */
-typedef void forwarded_request_cb(void *object, const IP_Port *forwarder, const uint8_t *sendback,
+typedef void(*forwarded_request_cb)(void *object, const IP_Port *forwarder, const uint8_t *sendback,
                                   uint16_t sendback_length, const uint8_t *data,
                                   uint16_t length, void *userdata);
 non_null(1) nullable(2, 3)
-void set_callback_forwarded_request(Forwarding *forwarding, forwarded_request_cb *function, void *object);
+void set_callback_forwarded_request(Forwarding *forwarding, forwarded_request_cb function, void *object);
 
 /** @brief Set callback to handle a forwarded response. */
-typedef void forwarded_response_cb(void *object, const uint8_t *data, uint16_t length, void *userdata);
+typedef void(*forwarded_response_cb)(void *object, const uint8_t *data, uint16_t length, void *userdata);
 non_null(1) nullable(2, 3)
-void set_callback_forwarded_response(Forwarding *forwarding, forwarded_response_cb *function, void *object);
+void set_callback_forwarded_response(Forwarding *forwarding, forwarded_response_cb function, void *object);
 
 /** @brief Send forwarding packet to dest with given sendback data and data. */
 non_null(1, 2, 5) nullable(3)
@@ -102,7 +102,7 @@ bool send_forwarding(const Forwarding *forwarding, const IP_Port *dest,
                      const uint8_t *sendback_data, uint16_t sendback_data_len,
                      const uint8_t *data, uint16_t length);
 
-typedef bool forward_reply_cb(void *object, const uint8_t *sendback_data, uint16_t sendback_data_len,
+typedef bool(*forward_reply_cb)(void *object, const uint8_t *sendback_data, uint16_t sendback_data_len,
                               const uint8_t *data, uint16_t length);
 
 /**
@@ -110,7 +110,7 @@ typedef bool forward_reply_cb(void *object, const uint8_t *sendback_data, uint16
  * sendback.
  */
 non_null(1) nullable(2, 3)
-void set_callback_forward_reply(Forwarding *forwarding, forward_reply_cb *function, void *object);
+void set_callback_forward_reply(Forwarding *forwarding, forward_reply_cb function, void *object);
 
 non_null()
 Forwarding *new_forwarding(const Logger *log, const Random *rng, const Mono_Time *mono_time, DHT *dht);

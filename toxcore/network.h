@@ -25,21 +25,21 @@ extern "C" {
  */
 typedef struct Network_Addr Network_Addr;
 
-typedef int net_close_cb(void *obj, int sock);
-typedef int net_accept_cb(void *obj, int sock);
-typedef int net_bind_cb(void *obj, int sock, const Network_Addr *addr);
-typedef int net_listen_cb(void *obj, int sock, int backlog);
-typedef int net_recvbuf_cb(void *obj, int sock);
-typedef int net_recv_cb(void *obj, int sock, uint8_t *buf, size_t len);
-typedef int net_recvfrom_cb(void *obj, int sock, uint8_t *buf, size_t len, Network_Addr *addr);
-typedef int net_send_cb(void *obj, int sock, const uint8_t *buf, size_t len);
-typedef int net_sendto_cb(void *obj, int sock, const uint8_t *buf, size_t len, const Network_Addr *addr);
-typedef int net_socket_cb(void *obj, int domain, int type, int proto);
-typedef int net_socket_nonblock_cb(void *obj, int sock, bool nonblock);
-typedef int net_getsockopt_cb(void *obj, int sock, int level, int optname, void *optval, size_t *optlen);
-typedef int net_setsockopt_cb(void *obj, int sock, int level, int optname, const void *optval, size_t optlen);
-typedef int net_getaddrinfo_cb(void *obj, int family, Network_Addr **addrs);
-typedef int net_freeaddrinfo_cb(void *obj, Network_Addr *addrs);
+typedef int(*net_close_cb)(void *obj, int sock);
+typedef int(*net_accept_cb)(void *obj, int sock);
+typedef int(*net_bind_cb)(void *obj, int sock, const Network_Addr *addr);
+typedef int(*net_listen_cb)(void *obj, int sock, int backlog);
+typedef int(*net_recvbuf_cb)(void *obj, int sock);
+typedef int(*net_recv_cb)(void *obj, int sock, uint8_t *buf, size_t len);
+typedef int(*net_recvfrom_cb)(void *obj, int sock, uint8_t *buf, size_t len, Network_Addr *addr);
+typedef int(*net_send_cb)(void *obj, int sock, const uint8_t *buf, size_t len);
+typedef int(*net_sendto_cb)(void *obj, int sock, const uint8_t *buf, size_t len, const Network_Addr *addr);
+typedef int(*net_socket_cb)(void *obj, int domain, int type, int proto);
+typedef int(*net_socket_nonblock_cb)(void *obj, int sock, bool nonblock);
+typedef int(*net_getsockopt_cb)(void *obj, int sock, int level, int optname, void *optval, size_t *optlen);
+typedef int(*net_setsockopt_cb)(void *obj, int sock, int level, int optname, const void *optval, size_t optlen);
+typedef int(*net_getaddrinfo_cb)(void *obj, int family, Network_Addr **addrs);
+typedef int(*net_freeaddrinfo_cb)(void *obj, Network_Addr *addrs);
 
 /** @brief Functions wrapping POSIX network functions.
  *
@@ -47,21 +47,21 @@ typedef int net_freeaddrinfo_cb(void *obj, Network_Addr *addrs);
  * expected to do when providing alternative Network implementations.
  */
 typedef struct Network_Funcs {
-    net_close_cb *close;
-    net_accept_cb *accept;
-    net_bind_cb *bind;
-    net_listen_cb *listen;
-    net_recvbuf_cb *recvbuf;
-    net_recv_cb *recv;
-    net_recvfrom_cb *recvfrom;
-    net_send_cb *send;
-    net_sendto_cb *sendto;
-    net_socket_cb *socket;
-    net_socket_nonblock_cb *socket_nonblock;
-    net_getsockopt_cb *getsockopt;
-    net_setsockopt_cb *setsockopt;
-    net_getaddrinfo_cb *getaddrinfo;
-    net_freeaddrinfo_cb *freeaddrinfo;
+    net_close_cb close_callback;
+    net_accept_cb accept_callback;
+    net_bind_cb bind_callback;
+    net_listen_cb listen_callback;
+    net_recvbuf_cb recvbuf_callback;
+    net_recv_cb recv_callback;
+    net_recvfrom_cb recvfrom_callback;
+    net_send_cb send_callback;
+    net_sendto_cb sendto_callback;
+    net_socket_cb socket_callback;
+    net_socket_nonblock_cb socket_nonblock_callback;
+    net_getsockopt_cb getsockopt_callback;
+    net_setsockopt_cb setsockopt_callback;
+    net_getaddrinfo_cb getaddrinfo_callback;
+    net_freeaddrinfo_cb freeaddrinfo_callback;
 } Network_Funcs;
 
 typedef struct Network {
@@ -399,7 +399,7 @@ bool addr_resolve_or_parse_ip(const Network *ns, const char *address, IP *to, IP
  * Packet data is put into data.
  * Packet length is put into length.
  */
-typedef int packet_handler_cb(void *object, const IP_Port *ip_port, const uint8_t *data, uint16_t len, void *userdata);
+typedef int(*packet_handler_cb)(void *object, const IP_Port *ip_port, const uint8_t *data, uint16_t len, void *userdata);
 
 typedef struct Networking_Core Networking_Core;
 
@@ -472,7 +472,7 @@ int sendpacket(const Networking_Core *net, const IP_Port *ip_port, const uint8_t
 
 /** Function to call when packet beginning with byte is received. */
 non_null(1) nullable(3, 4)
-void networking_registerhandler(Networking_Core *net, uint8_t byte, packet_handler_cb *cb, void *object);
+void networking_registerhandler(Networking_Core *net, uint8_t byte, packet_handler_cb cb, void *object);
 
 /** Call this several times a second. */
 non_null(1) nullable(2)

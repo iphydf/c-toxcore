@@ -84,15 +84,15 @@ int get_friendcon_public_keys(uint8_t *real_pk, uint8_t *dht_temp_pk, const Frie
 non_null()
 void set_dht_temp_pk(Friend_Connections *fr_c, int friendcon_id, const uint8_t *dht_temp_pk, void *userdata);
 
-typedef int global_status_cb(void *object, int id, bool status, void *userdata);
+typedef int(*global_status_cb)(void *object, int id, bool status, void *userdata);
 
-typedef int fc_status_cb(void *object, int id, bool status, void *userdata);
-typedef int fc_data_cb(void *object, int id, const uint8_t *data, uint16_t length, void *userdata);
-typedef int fc_lossy_data_cb(void *object, int id, const uint8_t *data, uint16_t length, void *userdata);
+typedef int(*fc_status_cb)(void *object, int id, bool status, void *userdata);
+typedef int(*fc_data_cb)(void *object, int id, const uint8_t *data, uint16_t length, void *userdata);
+typedef int(*fc_lossy_data_cb)(void *object, int id, const uint8_t *data, uint16_t length, void *userdata);
 
 /** Set global status callback for friend connections. */
 non_null(1) nullable(2, 3)
-void set_global_status_callback(Friend_Connections *fr_c, global_status_cb *global_status_callback, void *object);
+void set_global_status_callback(Friend_Connections *fr_c, global_status_cb global_status_callback, void *object);
 
 /** @brief Set the callbacks for the friend connection.
  * @param index is the index (0 to (MAX_FRIEND_CONNECTION_CALLBACKS - 1)) we
@@ -103,9 +103,9 @@ void set_global_status_callback(Friend_Connections *fr_c, global_status_cb *glob
  */
 non_null(1) nullable(4, 5, 6, 7)
 int friend_connection_callbacks(const Friend_Connections *fr_c, int friendcon_id, unsigned int index,
-                                fc_status_cb *status_callback,
-                                fc_data_cb *data_callback,
-                                fc_lossy_data_cb *lossy_data_callback,
+                                fc_status_cb status_callback,
+                                fc_data_cb data_callback,
+                                fc_lossy_data_cb lossy_data_callback,
                                 void *object, int number);
 
 /** @brief return the crypt_connection_id for the connection.
@@ -143,7 +143,7 @@ non_null()
 int send_friend_request_packet(
     Friend_Connections *fr_c, int friendcon_id, uint32_t nospam_num, const uint8_t *data, uint16_t length);
 
-typedef int fr_request_cb(
+typedef int(*fr_request_cb)(
     void *object, const uint8_t *source_pubkey, const uint8_t *data, uint16_t len, void *userdata);
 
 /** @brief Set friend request callback.
@@ -151,7 +151,7 @@ typedef int fr_request_cb(
  * This function will be called every time a friend request packet is received.
  */
 non_null()
-void set_friend_request_callback(Friend_Connections *fr_c, fr_request_cb *fr_request_callback, void *object);
+void set_friend_request_callback(Friend_Connections *fr_c, fr_request_cb fr_request_callback, void *object);
 
 /** Create new friend_connections instance. */
 non_null()

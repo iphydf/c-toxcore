@@ -32,7 +32,7 @@ typedef enum Logger_Level {
 
 typedef struct Logger Logger;
 
-typedef void logger_cb(void *context, Logger_Level level, const char *file, int line,
+typedef void(*logger_cb)(void *context, Logger_Level level, const char *file, int line,
                        const char *func, const char *message, void *userdata);
 
 /**
@@ -51,7 +51,7 @@ void logger_kill(Logger *log);
  * The context parameter is passed to the callback as first argument.
  */
 non_null(1) nullable(2, 3, 4)
-void logger_callback_log(Logger *log, logger_cb *function, void *context, void *userdata);
+void logger_callback_log(Logger *log, logger_cb function, void *context, void *userdata);
 
 /** @brief Main write function. If logging is disabled, this does nothing.
  *
@@ -70,11 +70,16 @@ void logger_write(
 /* @brief Terminate the program with a signal. */
 void logger_abort(void);
 
+#ifdef PLAIN_C
+#define LOGGER_FUNC __func__
+#else
+#define LOGGER_FUNC "func"
+#endif
 
 #define LOGGER_WRITE(log, level, ...)                                            \
     do {                                                                         \
         if (level >= MIN_LOGGER_LEVEL) {                                         \
-            logger_write(log, level, __FILE__, __LINE__, __func__, __VA_ARGS__); \
+            logger_write(log, level, __FILE__, __LINE__, LOGGER_FUNC, __VA_ARGS__); \
         }                                                                        \
     } while (0)
 

@@ -43,7 +43,7 @@ Ping_Array *ping_array_new(const Memory *mem, uint32_t size, uint32_t timeout)
         return nullptr;
     }
 
-    Ping_Array *const empty_array = (Ping_Array *)mem_alloc(mem, sizeof(Ping_Array));
+    Ping_Array * empty_array = (Ping_Array *)mem_alloc(mem, sizeof(Ping_Array));
 
     if (empty_array == nullptr) {
         return nullptr;

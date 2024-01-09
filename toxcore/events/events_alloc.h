@@ -105,106 +105,134 @@ typedef struct Tox_Events_State {
     Tox_Events *events;
 } Tox_Events_State;
 
-tox_conference_connected_cb tox_events_handle_conference_connected;
-tox_conference_invite_cb tox_events_handle_conference_invite;
-tox_conference_message_cb tox_events_handle_conference_message;
-tox_conference_peer_list_changed_cb tox_events_handle_conference_peer_list_changed;
-tox_conference_peer_name_cb tox_events_handle_conference_peer_name;
-tox_conference_title_cb tox_events_handle_conference_title;
-tox_file_chunk_request_cb tox_events_handle_file_chunk_request;
-tox_file_recv_cb tox_events_handle_file_recv;
-tox_file_recv_chunk_cb tox_events_handle_file_recv_chunk;
-tox_file_recv_control_cb tox_events_handle_file_recv_control;
-tox_friend_connection_status_cb tox_events_handle_friend_connection_status;
-tox_friend_lossless_packet_cb tox_events_handle_friend_lossless_packet;
-tox_friend_lossy_packet_cb tox_events_handle_friend_lossy_packet;
-tox_friend_message_cb tox_events_handle_friend_message;
-tox_friend_name_cb tox_events_handle_friend_name;
-tox_friend_read_receipt_cb tox_events_handle_friend_read_receipt;
-tox_friend_request_cb tox_events_handle_friend_request;
-tox_friend_status_cb tox_events_handle_friend_status;
-tox_friend_status_message_cb tox_events_handle_friend_status_message;
-tox_friend_typing_cb tox_events_handle_friend_typing;
-tox_self_connection_status_cb tox_events_handle_self_connection_status;
+void tox_events_handle_self_connection_status(Tox *tox, Tox_Connection connection_status, void *user_data);
+void tox_events_handle_friend_name(
+        Tox *tox, Tox_Friend_Number friend_number,
+        const uint8_t name[], size_t length, void *user_data);
+void tox_events_handle_friend_status_message(
+        Tox *tox, Tox_Friend_Number friend_number,
+        const uint8_t message[], size_t length, void *user_data);
+void tox_events_handle_friend_status(
+        Tox *tox, Tox_Friend_Number friend_number, Tox_User_Status status, void *user_data);
+void tox_events_handle_friend_connection_status(
+        Tox *tox, Tox_Friend_Number friend_number, Tox_Connection connection_status, void *user_data);
+void tox_events_handle_friend_typing(
+        Tox *tox, Tox_Friend_Number friend_number, bool typing, void *user_data);
+void tox_events_handle_friend_read_receipt(
+        Tox *tox, Tox_Friend_Number friend_number, Tox_Friend_Message_Id message_id, void *user_data);
+void tox_events_handle_friend_request(
+        Tox *tox, const uint8_t public_key[TOX_PUBLIC_KEY_SIZE],
+        const uint8_t message[], size_t length,
+        void *user_data);
+void tox_events_handle_friend_message(
+        Tox *tox, Tox_Friend_Number friend_number, Tox_Message_Type type,
+        const uint8_t message[], size_t length, void *user_data);
+void tox_events_handle_file_recv_control(
+        Tox *tox, Tox_Friend_Number friend_number, Tox_File_Number file_number, Tox_File_Control control,
+        void *user_data);
+void tox_events_handle_file_chunk_request(
+        Tox *tox, Tox_Friend_Number friend_number, Tox_File_Number file_number, uint64_t position,
+        size_t length, void *user_data);
+void tox_events_handle_file_recv(
+        Tox *tox, Tox_Friend_Number friend_number, Tox_File_Number file_number, uint32_t kind, uint64_t file_size,
+        const uint8_t filename[], size_t filename_length, void *user_data);
+void tox_events_handle_file_recv_chunk(
+        Tox *tox, Tox_Friend_Number friend_number, Tox_File_Number file_number, uint64_t position,
+        const uint8_t data[], size_t length, void *user_data);
+void tox_events_handle_conference_invite(
+        Tox *tox, Tox_Friend_Number friend_number, Tox_Conference_Type type,
+        const uint8_t cookie[], size_t length, void *user_data);
+void tox_events_handle_conference_connected(Tox *tox, Tox_Conference_Number conference_number, void *user_data);
+void tox_events_handle_conference_message(
+        Tox *tox, Tox_Conference_Number conference_number, Tox_Conference_Peer_Number peer_number,
+        Tox_Message_Type type, const uint8_t message[], size_t length, void *user_data);
+void tox_events_handle_conference_title(
+        Tox *tox, Tox_Conference_Number conference_number, Tox_Conference_Peer_Number peer_number,
+        const uint8_t title[], size_t length, void *user_data);
+void tox_events_handle_conference_peer_name(
+        Tox *tox, Tox_Conference_Number conference_number, Tox_Conference_Peer_Number peer_number,
+        const uint8_t name[], size_t length, void *user_data);
+void tox_events_handle_conference_peer_list_changed(Tox *tox, Tox_Conference_Number conference_number, void *user_data);
+void tox_events_handle_friend_lossy_packet(
+        Tox *tox, Tox_Friend_Number friend_number,
+        const uint8_t data[], size_t length,
+        void *user_data);
+void tox_events_handle_friend_lossless_packet(
+        Tox *tox, Tox_Friend_Number friend_number,
+        const uint8_t data[], size_t length,
+        void *user_data);
 
-// non_null()
-typedef void tox_events_clear_cb(Tox_Events *events);
 
-tox_events_clear_cb tox_events_clear_conference_connected;
-tox_events_clear_cb tox_events_clear_conference_invite;
-tox_events_clear_cb tox_events_clear_conference_message;
-tox_events_clear_cb tox_events_clear_conference_peer_list_changed;
-tox_events_clear_cb tox_events_clear_conference_peer_name;
-tox_events_clear_cb tox_events_clear_conference_title;
-tox_events_clear_cb tox_events_clear_file_chunk_request;
-tox_events_clear_cb tox_events_clear_file_recv_chunk;
-tox_events_clear_cb tox_events_clear_file_recv_control;
-tox_events_clear_cb tox_events_clear_file_recv;
-tox_events_clear_cb tox_events_clear_friend_connection_status;
-tox_events_clear_cb tox_events_clear_friend_lossless_packet;
-tox_events_clear_cb tox_events_clear_friend_lossy_packet;
-tox_events_clear_cb tox_events_clear_friend_message;
-tox_events_clear_cb tox_events_clear_friend_name;
-tox_events_clear_cb tox_events_clear_friend_read_receipt;
-tox_events_clear_cb tox_events_clear_friend_request;
-tox_events_clear_cb tox_events_clear_friend_status_message;
-tox_events_clear_cb tox_events_clear_friend_status;
-tox_events_clear_cb tox_events_clear_friend_typing;
-tox_events_clear_cb tox_events_clear_self_connection_status;
+void tox_events_clear_conference_connected(Tox_Events *events);
+void tox_events_clear_conference_invite(Tox_Events *events);
+void tox_events_clear_conference_message(Tox_Events *events);
+void tox_events_clear_conference_peer_list_changed(Tox_Events *events);
+void tox_events_clear_conference_peer_name(Tox_Events *events);
+void tox_events_clear_conference_title(Tox_Events *events);
+void tox_events_clear_file_chunk_request(Tox_Events *events);
+void tox_events_clear_file_recv_chunk(Tox_Events *events);
+void tox_events_clear_file_recv_control(Tox_Events *events);
+void tox_events_clear_file_recv(Tox_Events *events);
+void tox_events_clear_friend_connection_status(Tox_Events *events);
+void tox_events_clear_friend_lossless_packet(Tox_Events *events);
+void tox_events_clear_friend_lossy_packet(Tox_Events *events);
+void tox_events_clear_friend_message(Tox_Events *events);
+void tox_events_clear_friend_name(Tox_Events *events);
+void tox_events_clear_friend_read_receipt(Tox_Events *events);
+void tox_events_clear_friend_request(Tox_Events *events);
+void tox_events_clear_friend_status_message(Tox_Events *events);
+void tox_events_clear_friend_status(Tox_Events *events);
+void tox_events_clear_friend_typing(Tox_Events *events);
+void tox_events_clear_self_connection_status(Tox_Events *events);
 
-// non_null()
-typedef bool tox_events_pack_cb(const Tox_Events *events, Bin_Pack *bp);
 
-tox_events_pack_cb tox_events_pack_conference_connected;
-tox_events_pack_cb tox_events_pack_conference_invite;
-tox_events_pack_cb tox_events_pack_conference_message;
-tox_events_pack_cb tox_events_pack_conference_peer_list_changed;
-tox_events_pack_cb tox_events_pack_conference_peer_name;
-tox_events_pack_cb tox_events_pack_conference_title;
-tox_events_pack_cb tox_events_pack_file_chunk_request;
-tox_events_pack_cb tox_events_pack_file_recv_chunk;
-tox_events_pack_cb tox_events_pack_file_recv_control;
-tox_events_pack_cb tox_events_pack_file_recv;
-tox_events_pack_cb tox_events_pack_friend_connection_status;
-tox_events_pack_cb tox_events_pack_friend_lossless_packet;
-tox_events_pack_cb tox_events_pack_friend_lossy_packet;
-tox_events_pack_cb tox_events_pack_friend_message;
-tox_events_pack_cb tox_events_pack_friend_name;
-tox_events_pack_cb tox_events_pack_friend_read_receipt;
-tox_events_pack_cb tox_events_pack_friend_request;
-tox_events_pack_cb tox_events_pack_friend_status_message;
-tox_events_pack_cb tox_events_pack_friend_status;
-tox_events_pack_cb tox_events_pack_friend_typing;
-tox_events_pack_cb tox_events_pack_self_connection_status;
+bool tox_events_pack_conference_connected(const Tox_Events *events, Bin_Pack *bp);
+bool tox_events_pack_conference_invite(const Tox_Events *events, Bin_Pack *bp);
+bool tox_events_pack_conference_message(const Tox_Events *events, Bin_Pack *bp);
+bool tox_events_pack_conference_peer_list_changed(const Tox_Events *events, Bin_Pack *bp);
+bool tox_events_pack_conference_peer_name(const Tox_Events *events, Bin_Pack *bp);
+bool tox_events_pack_conference_title(const Tox_Events *events, Bin_Pack *bp);
+bool tox_events_pack_file_chunk_request(const Tox_Events *events, Bin_Pack *bp);
+bool tox_events_pack_file_recv_chunk(const Tox_Events *events, Bin_Pack *bp);
+bool tox_events_pack_file_recv_control(const Tox_Events *events, Bin_Pack *bp);
+bool tox_events_pack_file_recv(const Tox_Events *events, Bin_Pack *bp);
+bool tox_events_pack_friend_connection_status(const Tox_Events *events, Bin_Pack *bp);
+bool tox_events_pack_friend_lossless_packet(const Tox_Events *events, Bin_Pack *bp);
+bool tox_events_pack_friend_lossy_packet(const Tox_Events *events, Bin_Pack *bp);
+bool tox_events_pack_friend_message(const Tox_Events *events, Bin_Pack *bp);
+bool tox_events_pack_friend_name(const Tox_Events *events, Bin_Pack *bp);
+bool tox_events_pack_friend_read_receipt(const Tox_Events *events, Bin_Pack *bp);
+bool tox_events_pack_friend_request(const Tox_Events *events, Bin_Pack *bp);
+bool tox_events_pack_friend_status_message(const Tox_Events *events, Bin_Pack *bp);
+bool tox_events_pack_friend_status(const Tox_Events *events, Bin_Pack *bp);
+bool tox_events_pack_friend_typing(const Tox_Events *events, Bin_Pack *bp);
+bool tox_events_pack_self_connection_status(const Tox_Events *events, Bin_Pack *bp);
 
-tox_events_pack_cb tox_events_pack;
+bool tox_events_pack(const Tox_Events *events, Bin_Pack *bp);
 
-// non_null()
-typedef bool tox_events_unpack_cb(Tox_Events *events, Bin_Unpack *bu);
+bool tox_events_unpack_conference_connected(Tox_Events *events, Bin_Unpack *bu);
+bool tox_events_unpack_conference_invite(Tox_Events *events, Bin_Unpack *bu);
+bool tox_events_unpack_conference_message(Tox_Events *events, Bin_Unpack *bu);
+bool tox_events_unpack_conference_peer_list_changed(Tox_Events *events, Bin_Unpack *bu);
+bool tox_events_unpack_conference_peer_name(Tox_Events *events, Bin_Unpack *bu);
+bool tox_events_unpack_conference_title(Tox_Events *events, Bin_Unpack *bu);
+bool tox_events_unpack_file_chunk_request(Tox_Events *events, Bin_Unpack *bu);
+bool tox_events_unpack_file_recv_chunk(Tox_Events *events, Bin_Unpack *bu);
+bool tox_events_unpack_file_recv_control(Tox_Events *events, Bin_Unpack *bu);
+bool tox_events_unpack_file_recv(Tox_Events *events, Bin_Unpack *bu);
+bool tox_events_unpack_friend_connection_status(Tox_Events *events, Bin_Unpack *bu);
+bool tox_events_unpack_friend_lossless_packet(Tox_Events *events, Bin_Unpack *bu);
+bool tox_events_unpack_friend_lossy_packet(Tox_Events *events, Bin_Unpack *bu);
+bool tox_events_unpack_friend_message(Tox_Events *events, Bin_Unpack *bu);
+bool tox_events_unpack_friend_name(Tox_Events *events, Bin_Unpack *bu);
+bool tox_events_unpack_friend_read_receipt(Tox_Events *events, Bin_Unpack *bu);
+bool tox_events_unpack_friend_request(Tox_Events *events, Bin_Unpack *bu);
+bool tox_events_unpack_friend_status_message(Tox_Events *events, Bin_Unpack *bu);
+bool tox_events_unpack_friend_status(Tox_Events *events, Bin_Unpack *bu);
+bool tox_events_unpack_friend_typing(Tox_Events *events, Bin_Unpack *bu);
+bool tox_events_unpack_self_connection_status(Tox_Events *events, Bin_Unpack *bu);
 
-tox_events_unpack_cb tox_events_unpack_conference_connected;
-tox_events_unpack_cb tox_events_unpack_conference_invite;
-tox_events_unpack_cb tox_events_unpack_conference_message;
-tox_events_unpack_cb tox_events_unpack_conference_peer_list_changed;
-tox_events_unpack_cb tox_events_unpack_conference_peer_name;
-tox_events_unpack_cb tox_events_unpack_conference_title;
-tox_events_unpack_cb tox_events_unpack_file_chunk_request;
-tox_events_unpack_cb tox_events_unpack_file_recv_chunk;
-tox_events_unpack_cb tox_events_unpack_file_recv_control;
-tox_events_unpack_cb tox_events_unpack_file_recv;
-tox_events_unpack_cb tox_events_unpack_friend_connection_status;
-tox_events_unpack_cb tox_events_unpack_friend_lossless_packet;
-tox_events_unpack_cb tox_events_unpack_friend_lossy_packet;
-tox_events_unpack_cb tox_events_unpack_friend_message;
-tox_events_unpack_cb tox_events_unpack_friend_name;
-tox_events_unpack_cb tox_events_unpack_friend_read_receipt;
-tox_events_unpack_cb tox_events_unpack_friend_request;
-tox_events_unpack_cb tox_events_unpack_friend_status_message;
-tox_events_unpack_cb tox_events_unpack_friend_status;
-tox_events_unpack_cb tox_events_unpack_friend_typing;
-tox_events_unpack_cb tox_events_unpack_self_connection_status;
-
-tox_events_unpack_cb tox_events_unpack;
+bool tox_events_unpack(Tox_Events *events, Bin_Unpack *bu);
 
 non_null()
 Tox_Events_State *tox_events_alloc(void *user_data);

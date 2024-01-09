@@ -570,24 +570,24 @@ void gc_get_chat_id(const GC_Chat *chat, uint8_t *dest);
 
 
 /** Group callbacks */
-non_null(1) nullable(2) void gc_callback_message(const Messenger *m, gc_message_cb *function);
-non_null(1) nullable(2) void gc_callback_private_message(const Messenger *m, gc_private_message_cb *function);
-non_null(1) nullable(2) void gc_callback_custom_packet(const Messenger *m, gc_custom_packet_cb *function);
+non_null(1) nullable(2) void gc_callback_message(const Messenger *m, gc_message_cb function);
+non_null(1) nullable(2) void gc_callback_private_message(const Messenger *m, gc_private_message_cb function);
+non_null(1) nullable(2) void gc_callback_custom_packet(const Messenger *m, gc_custom_packet_cb function);
 non_null(1) nullable(2) void gc_callback_custom_private_packet(const Messenger *m,
-        gc_custom_private_packet_cb *function);
-non_null(1) nullable(2) void gc_callback_moderation(const Messenger *m, gc_moderation_cb *function);
-non_null(1) nullable(2) void gc_callback_nick_change(const Messenger *m, gc_nick_change_cb *function);
-non_null(1) nullable(2) void gc_callback_status_change(const Messenger *m, gc_status_change_cb *function);
-non_null(1) nullable(2) void gc_callback_topic_change(const Messenger *m, gc_topic_change_cb *function);
-non_null(1) nullable(2) void gc_callback_peer_limit(const Messenger *m, gc_peer_limit_cb *function);
-non_null(1) nullable(2) void gc_callback_privacy_state(const Messenger *m, gc_privacy_state_cb *function);
-non_null(1) nullable(2) void gc_callback_topic_lock(const Messenger *m, gc_topic_lock_cb *function);
-non_null(1) nullable(2) void gc_callback_password(const Messenger *m, gc_password_cb *function);
-non_null(1) nullable(2) void gc_callback_peer_join(const Messenger *m, gc_peer_join_cb *function);
-non_null(1) nullable(2) void gc_callback_peer_exit(const Messenger *m, gc_peer_exit_cb *function);
-non_null(1) nullable(2) void gc_callback_self_join(const Messenger *m, gc_self_join_cb *function);
-non_null(1) nullable(2) void gc_callback_rejected(const Messenger *m, gc_rejected_cb *function);
-non_null(1) nullable(2) void gc_callback_voice_state(const Messenger *m, gc_voice_state_cb *function);
+        gc_custom_private_packet_cb function);
+non_null(1) nullable(2) void gc_callback_moderation(const Messenger *m, gc_moderation_cb function);
+non_null(1) nullable(2) void gc_callback_nick_change(const Messenger *m, gc_nick_change_cb function);
+non_null(1) nullable(2) void gc_callback_status_change(const Messenger *m, gc_status_change_cb function);
+non_null(1) nullable(2) void gc_callback_topic_change(const Messenger *m, gc_topic_change_cb function);
+non_null(1) nullable(2) void gc_callback_peer_limit(const Messenger *m, gc_peer_limit_cb function);
+non_null(1) nullable(2) void gc_callback_privacy_state(const Messenger *m, gc_privacy_state_cb function);
+non_null(1) nullable(2) void gc_callback_topic_lock(const Messenger *m, gc_topic_lock_cb function);
+non_null(1) nullable(2) void gc_callback_password(const Messenger *m, gc_password_cb function);
+non_null(1) nullable(2) void gc_callback_peer_join(const Messenger *m, gc_peer_join_cb function);
+non_null(1) nullable(2) void gc_callback_peer_exit(const Messenger *m, gc_peer_exit_cb function);
+non_null(1) nullable(2) void gc_callback_self_join(const Messenger *m, gc_self_join_cb function);
+non_null(1) nullable(2) void gc_callback_rejected(const Messenger *m, gc_rejected_cb function);
+non_null(1) nullable(2) void gc_callback_voice_state(const Messenger *m, gc_voice_state_cb function);
 
 /** @brief The main loop. Should be called with every Messenger iteration. */
 non_null(1) nullable(2)
@@ -694,7 +694,7 @@ non_null(1, 3, 5) nullable(7)
 int gc_accept_invite(GC_Session *c, int32_t friend_number, const uint8_t *data, uint16_t length, const uint8_t *nick,
                      size_t nick_length, const uint8_t *passwd, uint16_t passwd_len);
 
-typedef bool gc_send_group_invite_packet_cb(const Messenger *m, uint32_t friendnumber, const uint8_t *packet,
+typedef bool(*gc_send_group_invite_packet_cb)(const Messenger *m, uint32_t friendnumber, const uint8_t *packet,
         uint16_t length);
 
 /** @brief Invites friend designated by `friendnumber` to chat.
@@ -707,7 +707,7 @@ typedef bool gc_send_group_invite_packet_cb(const Messenger *m, uint32_t friendn
  */
 non_null()
 int gc_invite_friend(const GC_Session *c, GC_Chat *chat, int32_t friend_number,
-                     gc_send_group_invite_packet_cb *callback);
+                     gc_send_group_invite_packet_cb callback);
 
 /** @brief Leaves a group and sends an exit broadcast packet with an optional parting message.
  *

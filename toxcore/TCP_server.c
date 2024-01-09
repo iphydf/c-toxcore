@@ -672,7 +672,7 @@ static int handle_tcp_packet(TCP_Server *tcp_server, uint32_t con_id, const uint
         return -1;
     }
 
-    TCP_Secure_Connection *const con = &tcp_server->accepted_connection_array[con_id];
+    TCP_Secure_Connection * con = &tcp_server->accepted_connection_array[con_id];
 
     switch (data[0]) {
         case TCP_PACKET_ROUTING_REQUEST: {
@@ -787,7 +787,7 @@ static int handle_tcp_packet(TCP_Server *tcp_server, uint32_t con_id, const uint
                 return -1;
             }
 
-            const uint8_t *const forward_data = data + (1 + ipport_length);
+            const uint8_t * forward_data = data + (1 + ipport_length);
             const uint16_t forward_data_len = length - (1 + ipport_length);
 
             if (forward_data_len > MAX_FORWARD_DATA_SIZE) {
@@ -930,7 +930,7 @@ static Socket new_listening_tcp_socket(const Logger *logger, const Network *ns, 
     ok = ok && bind_to_port(ns, sock, family, port) && (net_listen(ns, sock, TCP_MAX_BACKLOG) == 0);
 
     if (!ok) {
-        char *const error = net_new_strerror(net_error());
+        char * error = net_new_strerror(net_error());
         LOGGER_WARNING(logger, "could not bind to TCP port %d (family = %d): %s",
                        port, family.value, error != nullptr ? error : "(null)");
         net_kill_strerror(error);
@@ -1057,7 +1057,7 @@ static void do_tcp_accept_new(TCP_Server *tcp_server)
 non_null()
 static int do_incoming(TCP_Server *tcp_server, uint32_t i)
 {
-    TCP_Secure_Connection *const conn = &tcp_server->incoming_connection_queue[i];
+    TCP_Secure_Connection * conn = &tcp_server->incoming_connection_queue[i];
 
     if (conn->status != TCP_STATUS_CONNECTED) {
         return -1;
@@ -1095,7 +1095,7 @@ static int do_incoming(TCP_Server *tcp_server, uint32_t i)
 non_null()
 static int do_unconfirmed(TCP_Server *tcp_server, const Mono_Time *mono_time, uint32_t i)
 {
-    TCP_Secure_Connection *const conn = &tcp_server->unconfirmed_connection_queue[i];
+    TCP_Secure_Connection * conn = &tcp_server->unconfirmed_connection_queue[i];
 
     if (conn->status != TCP_STATUS_UNCONFIRMED) {
         return -1;
@@ -1121,7 +1121,7 @@ static int do_unconfirmed(TCP_Server *tcp_server, const Mono_Time *mono_time, ui
 non_null()
 static bool tcp_process_secure_packet(TCP_Server *tcp_server, uint32_t i)
 {
-    TCP_Secure_Connection *const conn = &tcp_server->accepted_connection_array[i];
+    TCP_Secure_Connection * conn = &tcp_server->accepted_connection_array[i];
 
     uint8_t packet[MAX_PACKET_SIZE];
     const int len = read_packet_tcp_secure_connection(tcp_server->logger, conn->con.mem, conn->con.ns, conn->con.sock, &conn->next_packet_length, conn->con.shared_key, conn->recv_nonce, packet, sizeof(packet), &conn->con.ip_port);

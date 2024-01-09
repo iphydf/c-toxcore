@@ -46,10 +46,10 @@ extern "C" {
  */
 typedef struct Mono_Time Mono_Time;
 
-typedef uint64_t mono_time_current_time_cb(void *user_data);
+typedef uint64_t(*mono_time_current_time_cb)(void *user_data);
 
 non_null(1) nullable(2, 3)
-Mono_Time *mono_time_new(const Memory *mem, mono_time_current_time_cb *current_time_callback, void *user_data);
+Mono_Time *mono_time_new(const Memory *mem, mono_time_current_time_cb current_time_callback, void *user_data);
 
 non_null(1) nullable(2)
 void mono_time_free(const Memory *mem, Mono_Time *mono_time);
@@ -97,7 +97,7 @@ uint64_t current_time_monotonic(Mono_Time *mono_time);
  */
 non_null(1) nullable(2, 3)
 void mono_time_set_current_time_callback(Mono_Time *mono_time,
-        mono_time_current_time_cb *current_time_callback, void *user_data);
+        mono_time_current_time_cb current_time_callback, void *user_data);
 
 #ifdef __cplusplus
 }

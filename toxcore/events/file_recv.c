@@ -48,12 +48,12 @@ non_null()
 static void tox_event_file_recv_set_friend_number(Tox_Event_File_Recv *file_recv,
         uint32_t friend_number)
 {
-    assert(file_recv != nullptr);
+    // assert(file_recv != nullptr);
     file_recv->friend_number = friend_number;
 }
 uint32_t tox_event_file_recv_get_friend_number(const Tox_Event_File_Recv *file_recv)
 {
-    assert(file_recv != nullptr);
+    // assert(file_recv != nullptr);
     return file_recv->friend_number;
 }
 
@@ -61,12 +61,12 @@ non_null()
 static void tox_event_file_recv_set_file_number(Tox_Event_File_Recv *file_recv,
         uint32_t file_number)
 {
-    assert(file_recv != nullptr);
+    // assert(file_recv != nullptr);
     file_recv->file_number = file_number;
 }
 uint32_t tox_event_file_recv_get_file_number(const Tox_Event_File_Recv *file_recv)
 {
-    assert(file_recv != nullptr);
+    // assert(file_recv != nullptr);
     return file_recv->file_number;
 }
 
@@ -74,12 +74,12 @@ non_null()
 static void tox_event_file_recv_set_kind(Tox_Event_File_Recv *file_recv,
         uint32_t kind)
 {
-    assert(file_recv != nullptr);
+    // assert(file_recv != nullptr);
     file_recv->kind = kind;
 }
 uint32_t tox_event_file_recv_get_kind(const Tox_Event_File_Recv *file_recv)
 {
-    assert(file_recv != nullptr);
+    // assert(file_recv != nullptr);
     return file_recv->kind;
 }
 
@@ -87,12 +87,12 @@ non_null()
 static void tox_event_file_recv_set_file_size(Tox_Event_File_Recv *file_recv,
         uint64_t file_size)
 {
-    assert(file_recv != nullptr);
+    // assert(file_recv != nullptr);
     file_recv->file_size = file_size;
 }
 uint64_t tox_event_file_recv_get_file_size(const Tox_Event_File_Recv *file_recv)
 {
-    assert(file_recv != nullptr);
+    // assert(file_recv != nullptr);
     return file_recv->file_size;
 }
 
@@ -100,7 +100,7 @@ non_null()
 static bool tox_event_file_recv_set_filename(Tox_Event_File_Recv *file_recv, const uint8_t *filename,
         uint32_t filename_length)
 {
-    assert(file_recv != nullptr);
+    // assert(file_recv != nullptr);
 
     if (file_recv->filename != nullptr) {
         free(file_recv->filename);
@@ -120,12 +120,12 @@ static bool tox_event_file_recv_set_filename(Tox_Event_File_Recv *file_recv, con
 }
 uint32_t tox_event_file_recv_get_filename_length(const Tox_Event_File_Recv *file_recv)
 {
-    assert(file_recv != nullptr);
+    // assert(file_recv != nullptr);
     return file_recv->filename_length;
 }
 const uint8_t *tox_event_file_recv_get_filename(const Tox_Event_File_Recv *file_recv)
 {
-    assert(file_recv != nullptr);
+    // assert(file_recv != nullptr);
     return file_recv->filename;
 }
 
@@ -133,7 +133,7 @@ non_null()
 static bool tox_event_file_recv_pack(
     const Tox_Event_File_Recv *event, Bin_Pack *bp)
 {
-    assert(event != nullptr);
+    // assert(event != nullptr);
     return bin_pack_array(bp, 2)
            && bin_pack_u32(bp, TOX_EVENT_FILE_RECV)
            && bin_pack_array(bp, 5)
@@ -148,7 +148,7 @@ non_null()
 static bool tox_event_file_recv_unpack(
     Tox_Event_File_Recv *event, Bin_Unpack *bu)
 {
-    assert(event != nullptr);
+    // assert(event != nullptr);
     if (!bin_unpack_array_fixed(bu, 5, nullptr)) {
         return false;
     }
@@ -221,8 +221,8 @@ uint32_t tox_events_get_file_recv_size(const Tox_Events *events)
 
 const Tox_Event_File_Recv *tox_events_get_file_recv(const Tox_Events *events, uint32_t index)
 {
-    assert(index < events->file_recv_size);
-    assert(events->file_recv != nullptr);
+    // assert(index < events->file_recv_size);
+    // assert(events->file_recv != nullptr);
     return &events->file_recv[index];
 }
 
@@ -261,7 +261,7 @@ void tox_events_handle_file_recv(Tox *tox, uint32_t friend_number, uint32_t file
                                  uint64_t file_size, const uint8_t *filename, size_t filename_length, void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);
-    assert(state != nullptr);
+    // assert(state != nullptr);
 
     if (state->events == nullptr) {
         return;

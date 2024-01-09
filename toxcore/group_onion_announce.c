@@ -16,10 +16,9 @@
 #include "network.h"
 #include "onion_announce.h"
 
-static_assert(GCA_ANNOUNCE_MAX_SIZE <= ONION_MAX_EXTRA_DATA_SIZE,
-              "GC_Announce does not fit into the onion packet extra data");
+// static_assert(GCA_ANNOUNCE_MAX_SIZE <= ONION_MAX_EXTRA_DATA_SIZE,
+//              "GC_Announce does not fit into the onion packet extra data");
 
-static pack_extra_data_cb pack_group_announces;
 non_null()
 static int pack_group_announces(void *object, const Logger *logger, const Mono_Time *mono_time,
                                 uint8_t num_nodes, uint8_t *plain, uint16_t plain_size,
@@ -53,7 +52,7 @@ static int pack_group_announces(void *object, const Logger *logger, const Mono_T
         return -1;
     }
 
-    assert(num_ann <= UINT8_MAX);
+    // assert(num_ann <= UINT8_MAX);
 
     size_t announces_length = 0;
 

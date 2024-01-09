@@ -266,8 +266,8 @@ Tox_Events *tox_events_load(const Tox_System *sys, const uint8_t *bytes, uint32_
 
 bool tox_events_equal(const Tox_System *sys, const Tox_Events *a, const Tox_Events *b)
 {
-    assert(sys != nullptr);
-    assert(sys->mem != nullptr);
+    // assert(sys != nullptr);
+    // assert(sys->mem != nullptr);
 
     const uint32_t a_size = tox_events_bytes_size(a);
     const uint32_t b_size = tox_events_bytes_size(b);

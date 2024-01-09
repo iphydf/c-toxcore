@@ -47,24 +47,24 @@ non_null()
 static void tox_event_friend_message_set_friend_number(Tox_Event_Friend_Message *friend_message,
         uint32_t friend_number)
 {
-    assert(friend_message != nullptr);
+    // assert(friend_message != nullptr);
     friend_message->friend_number = friend_number;
 }
 uint32_t tox_event_friend_message_get_friend_number(const Tox_Event_Friend_Message *friend_message)
 {
-    assert(friend_message != nullptr);
+    // assert(friend_message != nullptr);
     return friend_message->friend_number;
 }
 
 non_null()
 static void tox_event_friend_message_set_type(Tox_Event_Friend_Message *friend_message, Tox_Message_Type type)
 {
-    assert(friend_message != nullptr);
+    // assert(friend_message != nullptr);
     friend_message->type = type;
 }
 Tox_Message_Type tox_event_friend_message_get_type(const Tox_Event_Friend_Message *friend_message)
 {
-    assert(friend_message != nullptr);
+    // assert(friend_message != nullptr);
     return friend_message->type;
 }
 
@@ -72,7 +72,7 @@ non_null()
 static bool tox_event_friend_message_set_message(Tox_Event_Friend_Message *friend_message, const uint8_t *message,
         uint32_t message_length)
 {
-    assert(friend_message != nullptr);
+    // assert(friend_message != nullptr);
 
     if (friend_message->message != nullptr) {
         free(friend_message->message);
@@ -92,12 +92,12 @@ static bool tox_event_friend_message_set_message(Tox_Event_Friend_Message *frien
 }
 uint32_t tox_event_friend_message_get_message_length(const Tox_Event_Friend_Message *friend_message)
 {
-    assert(friend_message != nullptr);
+    // assert(friend_message != nullptr);
     return friend_message->message_length;
 }
 const uint8_t *tox_event_friend_message_get_message(const Tox_Event_Friend_Message *friend_message)
 {
-    assert(friend_message != nullptr);
+    // assert(friend_message != nullptr);
     return friend_message->message;
 }
 
@@ -105,7 +105,7 @@ non_null()
 static bool tox_event_friend_message_pack(
     const Tox_Event_Friend_Message *event, Bin_Pack *bp)
 {
-    assert(event != nullptr);
+    // assert(event != nullptr);
     return bin_pack_array(bp, 2)
            && bin_pack_u32(bp, TOX_EVENT_FRIEND_MESSAGE)
            && bin_pack_array(bp, 3)
@@ -118,7 +118,7 @@ non_null()
 static bool tox_event_friend_message_unpack(
     Tox_Event_Friend_Message *event, Bin_Unpack *bu)
 {
-    assert(event != nullptr);
+    // assert(event != nullptr);
     if (!bin_unpack_array_fixed(bu, 3, nullptr)) {
         return false;
     }
@@ -189,8 +189,8 @@ uint32_t tox_events_get_friend_message_size(const Tox_Events *events)
 
 const Tox_Event_Friend_Message *tox_events_get_friend_message(const Tox_Events *events, uint32_t index)
 {
-    assert(index < events->friend_message_size);
-    assert(events->friend_message != nullptr);
+    // assert(index < events->friend_message_size);
+    // assert(events->friend_message != nullptr);
     return &events->friend_message[index];
 }
 
@@ -229,7 +229,7 @@ void tox_events_handle_friend_message(Tox *tox, uint32_t friend_number, Tox_Mess
                                       size_t length, void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);
-    assert(state != nullptr);
+    // assert(state != nullptr);
 
     if (state->events == nullptr) {
         return;

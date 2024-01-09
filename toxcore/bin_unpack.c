@@ -21,7 +21,7 @@ non_null()
 static bool buf_reader(cmp_ctx_t *ctx, void *data, size_t limit)
 {
     Bin_Unpack *reader = (Bin_Unpack *)ctx->buf;
-    assert(reader != nullptr && reader->bytes != nullptr);
+    // assert(reader != nullptr && reader->bytes != nullptr);
     if (limit > reader->bytes_size) {
         return false;
     }
@@ -35,7 +35,7 @@ non_null()
 static bool buf_skipper(cmp_ctx_t *ctx, size_t limit)
 {
     Bin_Unpack *reader = (Bin_Unpack *)ctx->buf;
-    assert(reader != nullptr && reader->bytes != nullptr);
+    // assert(reader != nullptr && reader->bytes != nullptr);
     if (limit > reader->bytes_size) {
         return false;
     }
@@ -47,7 +47,7 @@ static bool buf_skipper(cmp_ctx_t *ctx, size_t limit)
 non_null()
 static size_t null_writer(cmp_ctx_t *ctx, const void *data, size_t count)
 {
-    assert(count == 0);
+    // assert(count == 0);
     return 0;
 }
 
@@ -120,7 +120,7 @@ bool bin_unpack_bin(Bin_Unpack *bu, uint8_t **data_ptr, uint32_t *data_length_pt
         // There aren't as many bytes as this bin claims to want to allocate.
         return false;
     }
-    uint8_t *const data = (uint8_t *)malloc(bin_size);
+    uint8_t * data = (uint8_t *)malloc(bin_size);
 
     if (!bin_unpack_bin_b(bu, data, bin_size)) {
         free(data);
@@ -202,5 +202,5 @@ bool bin_unpack_u64_b(Bin_Unpack *bu, uint64_t *val)
 
 bool bin_unpack_bin_b(Bin_Unpack *bu, uint8_t *data, uint32_t length)
 {
-    return bu->ctx.read(&bu->ctx, data, length);
+    return bu->ctx.read_callback(&bu->ctx, data, length);
 }

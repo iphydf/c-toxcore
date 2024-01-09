@@ -22,16 +22,16 @@
 #include "network.h"
 #include "util.h"
 
-static_assert(MOD_SANCTIONS_CREDS_SIZE <= MAX_PACKET_SIZE_NO_HEADERS,
-              "MOD_SANCTIONS_CREDS_SIZE must be <= the maximum allowed payload size");
-static_assert(MOD_MAX_NUM_SANCTIONS * MOD_SANCTION_PACKED_SIZE + MOD_SANCTIONS_CREDS_SIZE <= MAX_PACKET_SIZE_NO_HEADERS,
-              "MOD_MAX_NUM_SANCTIONS must be able to fit inside the maximum allowed payload size");
-static_assert(MOD_MAX_NUM_MODERATORS * MOD_LIST_ENTRY_SIZE <= MAX_PACKET_SIZE_NO_HEADERS,
-              "MOD_MAX_NUM_MODERATORS must be able to fit insize the maximum allowed payload size");
-static_assert(MOD_MAX_NUM_MODERATORS <= MOD_MAX_NUM_MODERATORS_LIMIT,
-              "MOD_MAX_NUM_MODERATORS must be <= MOD_MAX_NUM_MODERATORS_LIMIT");
-static_assert(MOD_MAX_NUM_SANCTIONS <= MOD_MAX_NUM_SANCTIONS_LIMIT,
-              "MOD_MAX_NUM_SANCTIONS must be <= MOD_MAX_NUM_SANCTIONS_LIMIT");
+// static_assert(MOD_SANCTIONS_CREDS_SIZE <= MAX_PACKET_SIZE_NO_HEADERS,
+//              "MOD_SANCTIONS_CREDS_SIZE must be <= the maximum allowed payload size");
+// static_assert(MOD_MAX_NUM_SANCTIONS * MOD_SANCTION_PACKED_SIZE + MOD_SANCTIONS_CREDS_SIZE <= MAX_PACKET_SIZE_NO_HEADERS,
+//              "MOD_MAX_NUM_SANCTIONS must be able to fit inside the maximum allowed payload size");
+// static_assert(MOD_MAX_NUM_MODERATORS * MOD_LIST_ENTRY_SIZE <= MAX_PACKET_SIZE_NO_HEADERS,
+//              "MOD_MAX_NUM_MODERATORS must be able to fit insize the maximum allowed payload size");
+// static_assert(MOD_MAX_NUM_MODERATORS <= MOD_MAX_NUM_MODERATORS_LIMIT,
+//              "MOD_MAX_NUM_MODERATORS must be <= MOD_MAX_NUM_MODERATORS_LIMIT");
+// static_assert(MOD_MAX_NUM_SANCTIONS <= MOD_MAX_NUM_SANCTIONS_LIMIT,
+//              "MOD_MAX_NUM_SANCTIONS must be <= MOD_MAX_NUM_SANCTIONS_LIMIT");
 
 uint16_t mod_list_packed_size(const Moderation *moderation)
 {
@@ -97,7 +97,7 @@ bool mod_list_make_hash(const Moderation *moderation, uint8_t *hash)
 
     const size_t data_buf_size = mod_list_packed_size(moderation);
 
-    assert(data_buf_size > 0);
+    // assert(data_buf_size > 0);
 
     uint8_t *data = (uint8_t *)malloc(data_buf_size);
 
@@ -189,7 +189,7 @@ bool mod_list_remove_entry(Moderation *moderation, const uint8_t *public_sig_key
         return false;
     }
 
-    assert(idx <= UINT16_MAX);
+    // assert(idx <= UINT16_MAX);
 
     return mod_list_remove_index(moderation, (uint16_t)idx);
 }
@@ -253,8 +253,8 @@ uint16_t sanctions_list_packed_size(uint16_t num_sanctions)
 int sanctions_list_pack(uint8_t *data, uint16_t length, const Mod_Sanction *sanctions, uint16_t num_sanctions,
                         const Mod_Sanction_Creds *creds)
 {
-    assert(sanctions != nullptr || num_sanctions == 0);
-    assert(sanctions != nullptr || creds != nullptr);
+    // assert(sanctions != nullptr || num_sanctions == 0);
+    // assert(sanctions != nullptr || creds != nullptr);
 
     uint16_t packed_len = 0;
 

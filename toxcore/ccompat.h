@@ -48,7 +48,7 @@
 
 #define ALLOC_VLA(type, name, size)                       \
     const size_t name##_vla_size = (size) * sizeof(type); \
-    type *const name = (type *)alloca(name##_vla_size)
+    type * name = (type *)alloca(name##_vla_size)
 #define SIZEOF_VLA(name) name##_vla_size
 
 #endif

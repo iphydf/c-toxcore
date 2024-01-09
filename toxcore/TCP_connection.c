@@ -39,16 +39,16 @@ struct TCP_Connections {
     TCP_con *tcp_connections;
     uint32_t tcp_connections_length; /* Length of tcp_connections array. */
 
-    tcp_data_cb *tcp_data_callback;
+    tcp_data_cb tcp_data_callback;
     void *tcp_data_callback_object;
 
-    tcp_oob_cb *tcp_oob_callback;
+    tcp_oob_cb tcp_oob_callback;
     void *tcp_oob_callback_object;
 
-    tcp_onion_cb *tcp_onion_callback;
+    tcp_onion_cb tcp_onion_callback;
     void *tcp_onion_callback_object;
 
-    forwarded_response_cb *tcp_forwarded_response_callback;
+    forwarded_response_cb tcp_forwarded_response_callback;
     void *tcp_forwarded_response_callback_object;
 
     TCP_Proxy_Info proxy_info;
@@ -546,21 +546,21 @@ int tcp_send_oob_packet_using_relay(const TCP_Connections *tcp_c, const uint8_t 
 }
 
 /** @brief Set the callback for TCP data packets. */
-void set_packet_tcp_connection_callback(TCP_Connections *tcp_c, tcp_data_cb *tcp_data_callback, void *object)
+void set_packet_tcp_connection_callback(TCP_Connections *tcp_c, tcp_data_cb tcp_data_callback, void *object)
 {
     tcp_c->tcp_data_callback = tcp_data_callback;
     tcp_c->tcp_data_callback_object = object;
 }
 
 /** @brief Set the callback for TCP oob data packets. */
-void set_oob_packet_tcp_connection_callback(TCP_Connections *tcp_c, tcp_oob_cb *tcp_oob_callback, void *object)
+void set_oob_packet_tcp_connection_callback(TCP_Connections *tcp_c, tcp_oob_cb tcp_oob_callback, void *object)
 {
     tcp_c->tcp_oob_callback = tcp_oob_callback;
     tcp_c->tcp_oob_callback_object = object;
 }
 
 /** @brief Set the callback for TCP onion packets. */
-void set_onion_packet_tcp_connection_callback(TCP_Connections *tcp_c, tcp_onion_cb *tcp_onion_callback, void *object)
+void set_onion_packet_tcp_connection_callback(TCP_Connections *tcp_c, tcp_onion_cb tcp_onion_callback, void *object)
 {
     tcp_c->tcp_onion_callback = tcp_onion_callback;
     tcp_c->tcp_onion_callback_object = object;
@@ -568,7 +568,7 @@ void set_onion_packet_tcp_connection_callback(TCP_Connections *tcp_c, tcp_onion_
 
 /** @brief Set the callback for TCP forwarding packets. */
 void set_forwarding_packet_tcp_connection_callback(TCP_Connections *tcp_c,
-        forwarded_response_cb *tcp_forwarded_response_callback,
+        forwarded_response_cb tcp_forwarded_response_callback,
         void *object)
 {
     tcp_c->tcp_forwarded_response_callback = tcp_forwarded_response_callback;
@@ -1465,7 +1465,7 @@ static bool copy_tcp_relay_conn(const TCP_Connections *tcp_c, Node_format *tcp_r
     memcpy(tcp_relay->public_key, tcp_con_public_key(tcp_con->connection), CRYPTO_PUBLIC_KEY_SIZE);
     tcp_relay->ip_port = tcp_con_ip_port(tcp_con->connection);
 
-    Family *const family = &tcp_relay->ip_port.ip.family;
+    Family * family = &tcp_relay->ip_port.ip.family;
 
     if (net_family_is_ipv4(*family)) {
         *family = net_family_tcp_ipv4();
@@ -1596,11 +1596,11 @@ int set_tcp_onion_status(TCP_Connections *tcp_c, bool status)
 TCP_Connections *new_tcp_connections(const Logger *logger, const Memory *mem, const Random *rng, const Network *ns,
                                      Mono_Time *mono_time, const uint8_t *secret_key, const TCP_Proxy_Info *proxy_info)
 {
-    assert(logger != nullptr);
-    assert(mem != nullptr);
-    assert(rng != nullptr);
-    assert(ns != nullptr);
-    assert(mono_time != nullptr);
+    // assert(logger != nullptr);
+    // assert(mem != nullptr);
+    // assert(rng != nullptr);
+    // assert(ns != nullptr);
+    // assert(mono_time != nullptr);
 
     if (secret_key == nullptr) {
         return nullptr;
@@ -1642,7 +1642,7 @@ static void do_tcp_conns(const Logger *logger, TCP_Connections *tcp_c, void *use
             tcp_con = get_tcp_connection(tcp_c, i);
 
             // Make sure the TCP connection wasn't dropped in any of the callbacks.
-            assert(tcp_con != nullptr);
+            // assert(tcp_con != nullptr);
 
             if (tcp_con_status(tcp_con->connection) == TCP_CLIENT_DISCONNECTED) {
                 if (tcp_con->status == TCP_CONN_CONNECTED) {

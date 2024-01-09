@@ -44,13 +44,13 @@ non_null()
 static void tox_event_conference_peer_list_changed_set_conference_number(Tox_Event_Conference_Peer_List_Changed
         *conference_peer_list_changed, uint32_t conference_number)
 {
-    assert(conference_peer_list_changed != nullptr);
+    // assert(conference_peer_list_changed != nullptr);
     conference_peer_list_changed->conference_number = conference_number;
 }
 uint32_t tox_event_conference_peer_list_changed_get_conference_number(const Tox_Event_Conference_Peer_List_Changed
         *conference_peer_list_changed)
 {
-    assert(conference_peer_list_changed != nullptr);
+    // assert(conference_peer_list_changed != nullptr);
     return conference_peer_list_changed->conference_number;
 }
 
@@ -58,7 +58,7 @@ non_null()
 static bool tox_event_conference_peer_list_changed_pack(
     const Tox_Event_Conference_Peer_List_Changed *event, Bin_Pack *bp)
 {
-    assert(event != nullptr);
+    // assert(event != nullptr);
     return bin_pack_array(bp, 2)
            && bin_pack_u32(bp, TOX_EVENT_CONFERENCE_PEER_LIST_CHANGED)
            && bin_pack_u32(bp, event->conference_number);
@@ -68,7 +68,7 @@ non_null()
 static bool tox_event_conference_peer_list_changed_unpack(
     Tox_Event_Conference_Peer_List_Changed *event, Bin_Unpack *bu)
 {
-    assert(event != nullptr);
+    // assert(event != nullptr);
     return bin_unpack_u32(bu, &event->conference_number);
 }
 
@@ -137,8 +137,8 @@ uint32_t tox_events_get_conference_peer_list_changed_size(const Tox_Events *even
 const Tox_Event_Conference_Peer_List_Changed *tox_events_get_conference_peer_list_changed(const Tox_Events *events,
         uint32_t index)
 {
-    assert(index < events->conference_peer_list_changed_size);
-    assert(events->conference_peer_list_changed != nullptr);
+    // assert(index < events->conference_peer_list_changed_size);
+    // assert(events->conference_peer_list_changed != nullptr);
     return &events->conference_peer_list_changed[index];
 }
 
@@ -176,7 +176,7 @@ bool tox_events_unpack_conference_peer_list_changed(Tox_Events *events, Bin_Unpa
 void tox_events_handle_conference_peer_list_changed(Tox *tox, uint32_t conference_number, void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);
-    assert(state != nullptr);
+    // assert(state != nullptr);
 
     if (state->events == nullptr) {
         return;

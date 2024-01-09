@@ -48,13 +48,13 @@ const Memory *system_memory(void)
 
 void *mem_balloc(const Memory *mem, uint32_t size)
 {
-    void *const ptr = mem->funcs->malloc(mem->obj, size);
+    void * ptr = mem->funcs->malloc_callback(mem->obj, size);
     return ptr;
 }
 
 void *mem_alloc(const Memory *mem, uint32_t size)
 {
-    void *const ptr = mem->funcs->calloc(mem->obj, 1, size);
+    void * ptr = mem->funcs->calloc_callback(mem->obj, 1, size);
     return ptr;
 }
 
@@ -66,7 +66,7 @@ void *mem_valloc(const Memory *mem, uint32_t nmemb, uint32_t size)
         return nullptr;
     }
 
-    void *const ptr = mem->funcs->calloc(mem->obj, nmemb, size);
+    void * ptr = mem->funcs->calloc_callback(mem->obj, nmemb, size);
     return ptr;
 }
 
@@ -78,11 +78,11 @@ void *mem_vrealloc(const Memory *mem, void *ptr, uint32_t nmemb, uint32_t size)
         return nullptr;
     }
 
-    void *const new_ptr = mem->funcs->realloc(mem->obj, ptr, bytes);
+    void * new_ptr = mem->funcs->realloc_callback(mem->obj, ptr, bytes);
     return new_ptr;
 }
 
 void mem_delete(const Memory *mem, void *ptr)
 {
-    mem->funcs->free(mem->obj, ptr);
+    mem->funcs->free_callback(mem->obj, ptr);
 }

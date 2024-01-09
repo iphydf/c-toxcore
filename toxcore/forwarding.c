@@ -25,13 +25,13 @@ struct Forwarding {
 
     uint8_t hmac_key[CRYPTO_HMAC_KEY_SIZE];
 
-    forward_reply_cb *forward_reply_callback;
+    forward_reply_cb forward_reply_callback;
     void *forward_reply_callback_object;
 
-    forwarded_request_cb *forwarded_request_callback;
+    forwarded_request_cb forwarded_request_callback;
     void *forwarded_request_callback_object;
 
-    forwarded_response_cb *forwarded_response_callback;
+    forwarded_response_cb forwarded_response_callback;
     void *forwarded_response_callback_object;
 };
 
@@ -115,7 +115,7 @@ static bool create_forwarding_packet(const Forwarding *forwarding,
                             sendback_data_len, packet + 1 + 1);
 
         if (sendback_data_len != 0) {
-            assert(sendback_data != nullptr);
+            // assert(sendback_data != nullptr);
             memcpy(packet + 1 + 1 + TIMED_AUTH_SIZE, sendback_data, sendback_data_len);
         }
 
@@ -150,8 +150,8 @@ static bool handle_forward_request_dht(const Forwarding *forwarding,
         return false;
     }
 
-    const uint8_t *const public_key = packet + 1;
-    const uint8_t *const forward_data = packet + (1 + CRYPTO_PUBLIC_KEY_SIZE);
+    const uint8_t * public_key = packet + 1;
+    const uint8_t * forward_data = packet + (1 + CRYPTO_PUBLIC_KEY_SIZE);
     const uint16_t forward_data_len = length - (1 + CRYPTO_PUBLIC_KEY_SIZE);
 
     if (TIMED_AUTH_SIZE + sendback_data_len > MAX_SENDBACK_SIZE ||
@@ -200,8 +200,8 @@ static int handle_forward_reply(void *object, const IP_Port *source, const uint8
     }
 
     const uint8_t sendback_len = packet[1];
-    const uint8_t *const sendback_auth = packet + 1 + 1;
-    const uint8_t *const sendback_data = sendback_auth + TIMED_AUTH_SIZE;
+    const uint8_t * sendback_auth = packet + 1 + 1;
+    const uint8_t * sendback_data = sendback_auth + TIMED_AUTH_SIZE;
 
     if (sendback_len > MAX_SENDBACK_SIZE) {
         /* value 0xff is reserved for possible future expansion */
@@ -218,7 +218,7 @@ static int handle_forward_reply(void *object, const IP_Port *source, const uint8
         return 1;
     }
 
-    const uint8_t *const to_forward = packet + (1 + 1 + sendback_len);
+    const uint8_t * to_forward = packet + (1 + 1 + sendback_len);
     const uint16_t to_forward_len = length - (1 + 1 + sendback_len);
 
     if (!check_timed_auth(forwarding->mono_time, SENDBACK_TIMEOUT, forwarding->hmac_key, sendback_data, sendback_data_len,
@@ -245,7 +245,7 @@ static int handle_forward_reply(void *object, const IP_Port *source, const uint8
             return 1;
         }
 
-        const uint8_t *const forward_sendback = sendback_data + (1 + ipport_length);
+        const uint8_t * forward_sendback = sendback_data + (1 + ipport_length);
         const uint16_t forward_sendback_len = sendback_data_len - (1 + ipport_length);
 
         return forward_reply(forwarding->net, &forwarder, forward_sendback, forward_sendback_len, to_forward,
@@ -279,9 +279,9 @@ static int handle_forwarding(void *object, const IP_Port *source, const uint8_t 
         return 1;
     }
 
-    const uint8_t *const sendback = packet + 1 + 1;
+    const uint8_t * sendback = packet + 1 + 1;
 
-    const uint8_t *const forwarded = sendback + sendback_len;
+    const uint8_t * forwarded = sendback + sendback_len;
     const uint16_t forwarded_len = length - (1 + 1 + sendback_len);
 
     if (forwarded_len >= 1 && forwarded[0] == NET_PACKET_FORWARD_REQUEST) {
@@ -338,19 +338,19 @@ bool forward_reply(const Networking_Core *net, const IP_Port *forwarder,
     return sendpacket(net, forwarder, packet, len) == len;
 }
 
-void set_callback_forwarded_request(Forwarding *forwarding, forwarded_request_cb *function, void *object)
+void set_callback_forwarded_request(Forwarding *forwarding, forwarded_request_cb function, void *object)
 {
     forwarding->forwarded_request_callback = function;
     forwarding->forwarded_request_callback_object = object;
 }
 
-void set_callback_forwarded_response(Forwarding *forwarding, forwarded_response_cb *function, void *object)
+void set_callback_forwarded_response(Forwarding *forwarding, forwarded_response_cb function, void *object)
 {
     forwarding->forwarded_response_callback = function;
     forwarding->forwarded_response_callback_object = object;
 }
 
-void set_callback_forward_reply(Forwarding *forwarding, forward_reply_cb *function, void *object)
+void set_callback_forward_reply(Forwarding *forwarding, forward_reply_cb function, void *object)
 {
     forwarding->forward_reply_callback = function;
     forwarding->forward_reply_callback_object = object;

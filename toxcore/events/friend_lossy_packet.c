@@ -45,12 +45,12 @@ non_null()
 static void tox_event_friend_lossy_packet_set_friend_number(Tox_Event_Friend_Lossy_Packet *friend_lossy_packet,
         uint32_t friend_number)
 {
-    assert(friend_lossy_packet != nullptr);
+    // assert(friend_lossy_packet != nullptr);
     friend_lossy_packet->friend_number = friend_number;
 }
 uint32_t tox_event_friend_lossy_packet_get_friend_number(const Tox_Event_Friend_Lossy_Packet *friend_lossy_packet)
 {
-    assert(friend_lossy_packet != nullptr);
+    // assert(friend_lossy_packet != nullptr);
     return friend_lossy_packet->friend_number;
 }
 
@@ -58,7 +58,7 @@ non_null()
 static bool tox_event_friend_lossy_packet_set_data(Tox_Event_Friend_Lossy_Packet *friend_lossy_packet,
         const uint8_t *data, uint32_t data_length)
 {
-    assert(friend_lossy_packet != nullptr);
+    // assert(friend_lossy_packet != nullptr);
 
     if (friend_lossy_packet->data != nullptr) {
         free(friend_lossy_packet->data);
@@ -78,12 +78,12 @@ static bool tox_event_friend_lossy_packet_set_data(Tox_Event_Friend_Lossy_Packet
 }
 uint32_t tox_event_friend_lossy_packet_get_data_length(const Tox_Event_Friend_Lossy_Packet *friend_lossy_packet)
 {
-    assert(friend_lossy_packet != nullptr);
+    // assert(friend_lossy_packet != nullptr);
     return friend_lossy_packet->data_length;
 }
 const uint8_t *tox_event_friend_lossy_packet_get_data(const Tox_Event_Friend_Lossy_Packet *friend_lossy_packet)
 {
-    assert(friend_lossy_packet != nullptr);
+    // assert(friend_lossy_packet != nullptr);
     return friend_lossy_packet->data;
 }
 
@@ -91,7 +91,7 @@ non_null()
 static bool tox_event_friend_lossy_packet_pack(
     const Tox_Event_Friend_Lossy_Packet *event, Bin_Pack *bp)
 {
-    assert(event != nullptr);
+    // assert(event != nullptr);
     return bin_pack_array(bp, 2)
            && bin_pack_u32(bp, TOX_EVENT_FRIEND_LOSSY_PACKET)
            && bin_pack_array(bp, 2)
@@ -103,7 +103,7 @@ non_null()
 static bool tox_event_friend_lossy_packet_unpack(
     Tox_Event_Friend_Lossy_Packet *event, Bin_Unpack *bu)
 {
-    assert(event != nullptr);
+    // assert(event != nullptr);
     if (!bin_unpack_array_fixed(bu, 2, nullptr)) {
         return false;
     }
@@ -174,8 +174,8 @@ uint32_t tox_events_get_friend_lossy_packet_size(const Tox_Events *events)
 
 const Tox_Event_Friend_Lossy_Packet *tox_events_get_friend_lossy_packet(const Tox_Events *events, uint32_t index)
 {
-    assert(index < events->friend_lossy_packet_size);
-    assert(events->friend_lossy_packet != nullptr);
+    // assert(index < events->friend_lossy_packet_size);
+    // assert(events->friend_lossy_packet != nullptr);
     return &events->friend_lossy_packet[index];
 }
 
@@ -214,7 +214,7 @@ void tox_events_handle_friend_lossy_packet(Tox *tox, uint32_t friend_number, con
         void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);
-    assert(state != nullptr);
+    // assert(state != nullptr);
 
     if (state->events == nullptr) {
         return;

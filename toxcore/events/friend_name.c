@@ -45,12 +45,12 @@ non_null()
 static void tox_event_friend_name_set_friend_number(Tox_Event_Friend_Name *friend_name,
         uint32_t friend_number)
 {
-    assert(friend_name != nullptr);
+    // assert(friend_name != nullptr);
     friend_name->friend_number = friend_number;
 }
 uint32_t tox_event_friend_name_get_friend_number(const Tox_Event_Friend_Name *friend_name)
 {
-    assert(friend_name != nullptr);
+    // assert(friend_name != nullptr);
     return friend_name->friend_number;
 }
 
@@ -58,7 +58,7 @@ non_null()
 static bool tox_event_friend_name_set_name(Tox_Event_Friend_Name *friend_name, const uint8_t *name,
         uint32_t name_length)
 {
-    assert(friend_name != nullptr);
+    // assert(friend_name != nullptr);
 
     if (friend_name->name != nullptr) {
         free(friend_name->name);
@@ -78,12 +78,12 @@ static bool tox_event_friend_name_set_name(Tox_Event_Friend_Name *friend_name, c
 }
 uint32_t tox_event_friend_name_get_name_length(const Tox_Event_Friend_Name *friend_name)
 {
-    assert(friend_name != nullptr);
+    // assert(friend_name != nullptr);
     return friend_name->name_length;
 }
 const uint8_t *tox_event_friend_name_get_name(const Tox_Event_Friend_Name *friend_name)
 {
-    assert(friend_name != nullptr);
+    // assert(friend_name != nullptr);
     return friend_name->name;
 }
 
@@ -91,7 +91,7 @@ non_null()
 static bool tox_event_friend_name_pack(
     const Tox_Event_Friend_Name *event, Bin_Pack *bp)
 {
-    assert(event != nullptr);
+    // assert(event != nullptr);
     return bin_pack_array(bp, 2)
            && bin_pack_u32(bp, TOX_EVENT_FRIEND_NAME)
            && bin_pack_array(bp, 2)
@@ -103,7 +103,7 @@ non_null()
 static bool tox_event_friend_name_unpack(
     Tox_Event_Friend_Name *event, Bin_Unpack *bu)
 {
-    assert(event != nullptr);
+    // assert(event != nullptr);
     if (!bin_unpack_array_fixed(bu, 2, nullptr)) {
         return false;
     }
@@ -173,8 +173,8 @@ uint32_t tox_events_get_friend_name_size(const Tox_Events *events)
 
 const Tox_Event_Friend_Name *tox_events_get_friend_name(const Tox_Events *events, uint32_t index)
 {
-    assert(index < events->friend_name_size);
-    assert(events->friend_name != nullptr);
+    // assert(index < events->friend_name_size);
+    // assert(events->friend_name != nullptr);
     return &events->friend_name[index];
 }
 
@@ -213,7 +213,7 @@ void tox_events_handle_friend_name(Tox *tox, uint32_t friend_number, const uint8
                                    void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);
-    assert(state != nullptr);
+    // assert(state != nullptr);
 
     if (state->events == nullptr) {
         return;

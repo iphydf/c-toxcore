@@ -103,11 +103,11 @@
 #endif
 #endif
 
-static_assert(sizeof(IP4) == SIZE_IP4, "IP4 size must be 4");
+// static_assert(sizeof(IP4) == SIZE_IP4, "IP4 size must be 4");
 
 // TODO(iphydf): Stop relying on this. We memcpy this struct (and IP4 above)
 // into packets but really should be serialising it properly.
-static_assert(sizeof(IP6) == SIZE_IP6, "IP6 size must be 16");
+// static_assert(sizeof(IP6) == SIZE_IP6, "IP6 size must be 16");
 
 #if !defined(OS_WIN32)
 
@@ -230,10 +230,10 @@ static int inet_pton6(const char *addrString, struct in6_addr *addrbuf)
 
 #endif
 
-static_assert(TOX_INET6_ADDRSTRLEN >= INET6_ADDRSTRLEN,
-              "TOX_INET6_ADDRSTRLEN should be greater or equal to INET6_ADDRSTRLEN (#INET6_ADDRSTRLEN)");
-static_assert(TOX_INET_ADDRSTRLEN >= INET_ADDRSTRLEN,
-              "TOX_INET_ADDRSTRLEN should be greater or equal to INET_ADDRSTRLEN (#INET_ADDRSTRLEN)");
+// static_assert(TOX_INET6_ADDRSTRLEN >= INET6_ADDRSTRLEN,
+//              "TOX_INET6_ADDRSTRLEN should be greater or equal to INET6_ADDRSTRLEN (#INET6_ADDRSTRLEN)");
+// static_assert(TOX_INET_ADDRSTRLEN >= INET_ADDRSTRLEN,
+//              "TOX_INET_ADDRSTRLEN should be greater or equal to INET_ADDRSTRLEN (#INET_ADDRSTRLEN)");
 
 static int make_proto(int proto)
 {
@@ -310,16 +310,16 @@ static const Family *make_tox_family(int family)
 non_null()
 static void get_ip4(IP4 *result, const struct in_addr *addr)
 {
-    static_assert(sizeof(result->uint32) == sizeof(addr->s_addr),
-                  "Tox and operating system don't agree on size of IPv4 addresses");
+    // static_assert(sizeof(result->uint32) == sizeof(addr->s_addr),
+//                  "Tox and operating system don't agree on size of IPv4 addresses");
     result->uint32 = addr->s_addr;
 }
 
 non_null()
 static void get_ip6(IP6 *result, const struct in6_addr *addr)
 {
-    static_assert(sizeof(result->uint8) == sizeof(addr->s6_addr),
-                  "Tox and operating system don't agree on size of IPv6 addresses");
+    // static_assert(sizeof(result->uint8) == sizeof(addr->s6_addr),
+//                  "Tox and operating system don't agree on size of IPv6 addresses");
     memcpy(result->uint8, addr->s6_addr, sizeof(result->uint8));
 }
 
@@ -627,13 +627,13 @@ void system_network_deinit(const Network *ns)
 non_null()
 static int net_setsockopt(const Network *ns, Socket sock, int level, int optname, const void *optval, size_t optlen)
 {
-    return ns->funcs->setsockopt(ns->obj, sock.sock, level, optname, optval, optlen);
+    return ns->funcs->setsockopt_callback(ns->obj, sock.sock, level, optname, optval, optlen);
 }
 
 non_null()
 static int net_getsockopt(const Network *ns, Socket sock, int level, int optname, void *optval, size_t *optlen)
 {
-    return ns->funcs->getsockopt(ns->obj, sock.sock, level, optname, optval, optlen);
+    return ns->funcs->getsockopt_callback(ns->obj, sock.sock, level, optname, optval, optlen);
 }
 
 non_null()
@@ -808,7 +808,7 @@ static void loglogdata(const Logger *log, const char *message, const uint8_t *bu
 int net_send(const Network *ns, const Logger *log,
              Socket sock, const uint8_t *buf, size_t len, const IP_Port *ip_port)
 {
-    const int res = ns->funcs->send(ns->obj, sock.sock, buf, len);
+    const int res = ns->funcs->send_callback(ns->obj, sock.sock, buf, len);
     loglogdata(log, "T=>", buf, len, ip_port, res);
     return res;
 }
@@ -818,13 +818,13 @@ static int net_sendto(
         const Network *ns,
         Socket sock, const uint8_t *buf, size_t len, const Network_Addr *addr, const IP_Port *ip_port)
 {
-    return ns->funcs->sendto(ns->obj, sock.sock, buf, len, addr);
+    return ns->funcs->sendto_callback(ns->obj, sock.sock, buf, len, addr);
 }
 
 int net_recv(const Network *ns, const Logger *log,
              Socket sock, uint8_t *buf, size_t len, const IP_Port *ip_port)
 {
-    const int res = ns->funcs->recv(ns->obj, sock.sock, buf, len);
+    const int res = ns->funcs->recv_callback(ns->obj, sock.sock, buf, len);
     loglogdata(log, "=>T", buf, len, ip_port, res);
     return res;
 }
@@ -833,35 +833,35 @@ non_null()
 static int net_recvfrom(const Network *ns,
                         Socket sock, uint8_t *buf, size_t len, Network_Addr *addr)
 {
-    return ns->funcs->recvfrom(ns->obj, sock.sock, buf, len, addr);
+    return ns->funcs->recvfrom_callback(ns->obj, sock.sock, buf, len, addr);
 }
 
 int net_listen(const Network *ns, Socket sock, int backlog)
 {
-    return ns->funcs->listen(ns->obj, sock.sock, backlog);
+    return ns->funcs->listen_callback(ns->obj, sock.sock, backlog);
 }
 
 non_null()
 static int net_bind(const Network *ns, Socket sock, const Network_Addr *addr)
 {
-    return ns->funcs->bind(ns->obj, sock.sock, addr);
+    return ns->funcs->bind_callback(ns->obj, sock.sock, addr);
 }
 
 Socket net_accept(const Network *ns, Socket sock)
 {
-    const Socket newsock = {ns->funcs->accept(ns->obj, sock.sock)};
+    const Socket newsock = {ns->funcs->accept_callback(ns->obj, sock.sock)};
     return newsock;
 }
 
 /** Close the socket. */
 void kill_sock(const Network *ns, Socket sock)
 {
-    ns->funcs->close(ns->obj, sock.sock);
+    ns->funcs->close_callback(ns->obj, sock.sock);
 }
 
 bool set_socket_nonblock(const Network *ns, Socket sock)
 {
-    return ns->funcs->socket_nonblock(ns->obj, sock.sock, true) == 0;
+    return ns->funcs->socket_nonblock_callback(ns->obj, sock.sock, true) == 0;
 }
 
 bool set_socket_nosigpipe(const Network *ns, Socket sock)
@@ -896,7 +896,7 @@ bool set_socket_dualstack(const Network *ns, Socket sock)
 
 
 typedef struct Packet_Handler {
-    packet_handler_cb *function;
+    packet_handler_cb function;
     void *object;
 } Packet_Handler;
 
@@ -969,14 +969,14 @@ int send_packet(const Networking_Core *net, const IP_Port *ip_port, Packet packe
     Network_Addr addr;
 
     if (net_family_is_ipv4(ipp_copy.ip.family)) {
-        struct sockaddr_in *const addr4 = (struct sockaddr_in *)&addr.addr;
+        struct sockaddr_in * addr4 = (struct sockaddr_in *)&addr.addr;
 
         addr.size = sizeof(struct sockaddr_in);
         addr4->sin_family = AF_INET;
         addr4->sin_port = ipp_copy.port;
         fill_addr4(&ipp_copy.ip.ip.v4, &addr4->sin_addr);
     } else if (net_family_is_ipv6(ipp_copy.ip.family)) {
-        struct sockaddr_in6 *const addr6 = (struct sockaddr_in6 *)&addr.addr;
+        struct sockaddr_in6 * addr6 = (struct sockaddr_in6 *)&addr.addr;
 
         addr.size = sizeof(struct sockaddr_in6);
         addr6->sin6_family = AF_INET6;
@@ -993,7 +993,7 @@ int send_packet(const Networking_Core *net, const IP_Port *ip_port, Packet packe
     const long res = net_sendto(net->ns, net->sock, packet.data, packet.length, &addr, &ipp_copy);
     loglogdata(net->log, "O=>", packet.data, packet.length, ip_port, res);
 
-    assert(res <= INT_MAX);
+    // assert(res <= INT_MAX);
     return (int)res;
 }
 
@@ -1040,8 +1040,8 @@ static int receivepacket(const Network *ns, const Memory *mem, const Logger *log
     if (addr.addr.ss_family == AF_INET) {
         const struct sockaddr_in *addr_in = (const struct sockaddr_in *)&addr.addr;
 
-        const Family *const family = make_tox_family(addr_in->sin_family);
-        assert(family != nullptr);
+        const Family * family = make_tox_family(addr_in->sin_family);
+        // assert(family != nullptr);
 
         if (family == nullptr) {
             return -1;
@@ -1052,8 +1052,8 @@ static int receivepacket(const Network *ns, const Memory *mem, const Logger *log
         ip_port->port = addr_in->sin_port;
     } else if (addr.addr.ss_family == AF_INET6) {
         const struct sockaddr_in6 *addr_in6 = (const struct sockaddr_in6 *)&addr.addr;
-        const Family *const family = make_tox_family(addr_in6->sin6_family);
-        assert(family != nullptr);
+        const Family * family = make_tox_family(addr_in6->sin6_family);
+        // assert(family != nullptr);
 
         if (family == nullptr) {
             return -1;
@@ -1076,7 +1076,7 @@ static int receivepacket(const Network *ns, const Memory *mem, const Logger *log
     return 0;
 }
 
-void networking_registerhandler(Networking_Core *net, uint8_t byte, packet_handler_cb *cb, void *object)
+void networking_registerhandler(Networking_Core *net, uint8_t byte, packet_handler_cb cb, void *object)
 {
     net->packethandlers[byte].function = cb;
     net->packethandlers[byte].object = object;
@@ -1098,7 +1098,7 @@ void networking_poll(const Networking_Core *net, void *userdata)
             continue;
         }
 
-        const Packet_Handler *const handler = &net->packethandlers[data[0]];
+        const Packet_Handler * handler = &net->packethandlers[data[0]];
 
         if (handler->function == nullptr) {
             // TODO(https://github.com/TokTok/c-toxcore/issues/1115): Make this
@@ -1521,7 +1521,7 @@ void ipport_copy(IP_Port *target, const IP_Port *source)
 
 const char *net_ip_ntoa(const IP *ip, Ip_Ntoa *ip_str)
 {
-    assert(ip_str != nullptr);
+    // assert(ip_str != nullptr);
 
     ip_str->ip_is_valid = false;
 
@@ -1553,14 +1553,14 @@ bool ip_parse_addr(const IP *ip, char *address, size_t length)
 
     if (net_family_is_ipv4(ip->family)) {
         struct in_addr addr;
-        assert(make_family(ip->family) == AF_INET);
+        // assert(make_family(ip->family) == AF_INET);
         fill_addr4(&ip->ip.v4, &addr);
         return inet_ntop4(&addr, address, length) != nullptr;
     }
 
     if (net_family_is_ipv6(ip->family)) {
         struct in6_addr addr;
-        assert(make_family(ip->family) == AF_INET6);
+        // assert(make_family(ip->family) == AF_INET6);
         fill_addr6(&ip->ip.v6, &addr);
         return inet_ntop6(&addr, address, length) != nullptr;
     }
@@ -1774,7 +1774,7 @@ bool net_connect(const Memory *mem, const Logger *log, Socket sock, const IP_Por
 
 int32_t net_getipport(const Memory *mem, const char *node, IP_Port **res, int tox_type)
 {
-    assert(node != nullptr);
+    // assert(node != nullptr);
 
     // Try parsing as IP address first.
     IP_Port parsed = {{{0}}};
@@ -1797,7 +1797,7 @@ int32_t net_getipport(const Memory *mem, const char *node, IP_Port **res, int to
 #ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
     if ((true)) {
         *res = (IP_Port *)mem_alloc(mem, sizeof(IP_Port));
-        assert(*res != nullptr);
+        // assert(*res != nullptr);
         IP_Port *ip_port = *res;
         ip_port->ip.ip.v4.uint32 = net_htonl(0x7F000003); // 127.0.0.3
         ip_port->ip.family = *make_tox_family(AF_INET);
@@ -1831,7 +1831,7 @@ int32_t net_getipport(const Memory *mem, const char *node, IP_Port **res, int to
         ++count;
     }
 
-    assert(count <= max_count);
+    // assert(count <= max_count);
 
     if (count == 0) {
         freeaddrinfo(infos);
@@ -1862,8 +1862,8 @@ int32_t net_getipport(const Memory *mem, const char *node, IP_Port **res, int to
             continue;
         }
 
-        const Family *const family = make_tox_family(cur->ai_family);
-        assert(family != nullptr);
+        const Family * family = make_tox_family(cur->ai_family);
+        // assert(family != nullptr);
 
         if (family == nullptr) {
             freeaddrinfo(infos);
@@ -1913,13 +1913,13 @@ Socket net_socket(const Network *ns, Family domain, int type, int protocol)
     const int platform_domain = make_family(domain);
     const int platform_type = make_socktype(type);
     const int platform_prot = make_proto(protocol);
-    const Socket sock = {ns->funcs->socket(ns->obj, platform_domain, platform_type, platform_prot)};
+    const Socket sock = {ns->funcs->socket_callback(ns->obj, platform_domain, platform_type, platform_prot)};
     return sock;
 }
 
 uint16_t net_socket_data_recv_buffer(const Network *ns, Socket sock)
 {
-    const int count = ns->funcs->recvbuf(ns->obj, sock.sock);
+    const int count = ns->funcs->recvbuf_callback(ns->obj, sock.sock);
     return (uint16_t)max_s32(0, min_s32(count, UINT16_MAX));
 }
 

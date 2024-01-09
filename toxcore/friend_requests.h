@@ -27,20 +27,20 @@ non_null() uint32_t get_nospam(const Friend_Requests *fr);
 non_null()
 int remove_request_received(Friend_Requests *fr, const uint8_t *real_pk);
 
-typedef void fr_friend_request_cb(void *object, const uint8_t *public_key, const uint8_t *message, size_t length,
+typedef void(*fr_friend_request_cb)(void *object, const uint8_t *public_key, const uint8_t *message, size_t length,
                                   void *user_data);
 
 /** Set the function that will be executed when a friend request for us is received. */
 non_null()
-void callback_friendrequest(Friend_Requests *fr, fr_friend_request_cb *function, void *object);
+void callback_friendrequest(Friend_Requests *fr, fr_friend_request_cb function, void *object);
 
-typedef int filter_function_cb(const uint8_t *public_key, void *user_data);
+typedef int(*filter_function_cb)(const uint8_t *public_key, void *user_data);
 
 /** @brief Set the function used to check if a friend request should be displayed to the user or not.
  * It must return 0 if the request is ok (anything else if it is bad).
  */
 non_null()
-void set_filter_function(Friend_Requests *fr, filter_function_cb *function, void *userdata);
+void set_filter_function(Friend_Requests *fr, filter_function_cb function, void *userdata);
 
 /** Sets up friendreq packet handlers. */
 non_null()

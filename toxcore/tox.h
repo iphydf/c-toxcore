@@ -507,7 +507,7 @@ const char *tox_log_level_to_string(Tox_Log_Level value);
  * @param message The log message.
  * @param user_data The user data pointer passed to tox_new in options.
  */
-typedef void tox_log_cb(Tox *tox, Tox_Log_Level level, const char *file, uint32_t line, const char *func,
+typedef void(*tox_log_cb)(Tox *tox, Tox_Log_Level level, const char *file, uint32_t line, const char *func,
                         const char *message, void *user_data);
 
 
@@ -672,7 +672,7 @@ struct Tox_Options {
     /**
      * Logging callback for the new tox instance.
      */
-    tox_log_cb *log_callback;
+    tox_log_cb log_callback;
 
 
     /**
@@ -759,9 +759,9 @@ size_t tox_options_get_savedata_length(const Tox_Options *options);
 
 void tox_options_set_savedata_length(Tox_Options *options, size_t savedata_length);
 
-tox_log_cb *tox_options_get_log_callback(const Tox_Options *options);
+tox_log_cb tox_options_get_log_callback(const Tox_Options *options);
 
-void tox_options_set_log_callback(Tox_Options *options, tox_log_cb *log_callback);
+void tox_options_set_log_callback(Tox_Options *options, tox_log_cb log_callback);
 
 void *tox_options_get_log_user_data(const Tox_Options *options);
 
@@ -1060,7 +1060,7 @@ Tox_Connection tox_self_get_connection_status(const Tox *tox);
 /**
  * @param connection_status Whether we are connected to the DHT.
  */
-typedef void tox_self_connection_status_cb(Tox *tox, Tox_Connection connection_status, void *user_data);
+typedef void(*tox_self_connection_status_cb)(Tox *tox, Tox_Connection connection_status, void *user_data);
 
 
 /**
@@ -1076,7 +1076,7 @@ typedef void tox_self_connection_status_cb(Tox *tox, Tox_Connection connection_s
  *
  * TODO(iphydf): how long should a client wait before bootstrapping again?
  */
-void tox_callback_self_connection_status(Tox *tox, tox_self_connection_status_cb *callback);
+void tox_callback_self_connection_status(Tox *tox, tox_self_connection_status_cb callback);
 
 /**
  * @brief Return the time in milliseconds before `tox_iterate()` should be called again
@@ -1589,7 +1589,7 @@ bool tox_friend_get_name(
  * @param length A value equal to the return value of
  *   tox_friend_get_name_size.
  */
-typedef void tox_friend_name_cb(
+typedef void(*tox_friend_name_cb)(
         Tox *tox, Tox_Friend_Number friend_number,
         const uint8_t name[], size_t length, void *user_data);
 
@@ -1601,7 +1601,7 @@ typedef void tox_friend_name_cb(
  *
  * This event is triggered when a friend changes their name.
  */
-void tox_callback_friend_name(Tox *tox, tox_friend_name_cb *callback);
+void tox_callback_friend_name(Tox *tox, tox_friend_name_cb callback);
 
 /**
  * @brief Return the length of the friend's status message.
@@ -1635,7 +1635,7 @@ bool tox_friend_get_status_message(
  * @param length A value equal to the return value of
  *   tox_friend_get_status_message_size.
  */
-typedef void tox_friend_status_message_cb(
+typedef void(*tox_friend_status_message_cb)(
         Tox *tox, Tox_Friend_Number friend_number,
         const uint8_t message[], size_t length, void *user_data);
 
@@ -1647,7 +1647,7 @@ typedef void tox_friend_status_message_cb(
  *
  * This event is triggered when a friend changes their status message.
  */
-void tox_callback_friend_status_message(Tox *tox, tox_friend_status_message_cb *callback);
+void tox_callback_friend_status_message(Tox *tox, tox_friend_status_message_cb callback);
 
 /**
  * @brief Return the friend's user status (away/busy/...).
@@ -1668,7 +1668,7 @@ Tox_User_Status tox_friend_get_status(
  *   changed.
  * @param status The new user status.
  */
-typedef void tox_friend_status_cb(
+typedef void(*tox_friend_status_cb)(
         Tox *tox, Tox_Friend_Number friend_number, Tox_User_Status status, void *user_data);
 
 
@@ -1679,7 +1679,7 @@ typedef void tox_friend_status_cb(
  *
  * This event is triggered when a friend changes their user status.
  */
-void tox_callback_friend_status(Tox *tox, tox_friend_status_cb *callback);
+void tox_callback_friend_status(Tox *tox, tox_friend_status_cb callback);
 
 /**
  * @brief Check whether a friend is currently connected to this client.
@@ -1705,7 +1705,7 @@ Tox_Connection tox_friend_get_connection_status(
  * @param connection_status The result of calling
  *   tox_friend_get_connection_status on the passed friend_number.
  */
-typedef void tox_friend_connection_status_cb(
+typedef void(*tox_friend_connection_status_cb)(
         Tox *tox, Tox_Friend_Number friend_number, Tox_Connection connection_status, void *user_data);
 
 
@@ -1720,7 +1720,7 @@ typedef void tox_friend_connection_status_cb(
  * This callback is not called when adding friends. It is assumed that when
  * adding friends, their connection status is initially offline.
  */
-void tox_callback_friend_connection_status(Tox *tox, tox_friend_connection_status_cb *callback);
+void tox_callback_friend_connection_status(Tox *tox, tox_friend_connection_status_cb callback);
 
 /**
  * @brief Check whether a friend is currently typing a message.
@@ -1743,7 +1743,7 @@ bool tox_friend_get_typing(
  * @param typing The result of calling tox_friend_get_typing on the passed
  *   friend_number.
  */
-typedef void tox_friend_typing_cb(
+typedef void(*tox_friend_typing_cb)(
         Tox *tox, Tox_Friend_Number friend_number, bool typing, void *user_data);
 
 
@@ -1754,7 +1754,7 @@ typedef void tox_friend_typing_cb(
  *
  * This event is triggered when a friend starts or stops typing.
  */
-void tox_callback_friend_typing(Tox *tox, tox_friend_typing_cb *callback);
+void tox_callback_friend_typing(Tox *tox, tox_friend_typing_cb callback);
 
 /** @} */
 
@@ -1868,7 +1868,7 @@ Tox_Friend_Message_Id tox_friend_send_message(
  * @param message_id The message ID as returned from tox_friend_send_message
  *   corresponding to the message sent.
  */
-typedef void tox_friend_read_receipt_cb(
+typedef void(*tox_friend_read_receipt_cb)(
         Tox *tox, Tox_Friend_Number friend_number, Tox_Friend_Message_Id message_id, void *user_data);
 
 
@@ -1880,7 +1880,7 @@ typedef void tox_friend_read_receipt_cb(
  * This event is triggered when the friend receives the message sent with
  * tox_friend_send_message with the corresponding message ID.
  */
-void tox_callback_friend_read_receipt(Tox *tox, tox_friend_read_receipt_cb *callback);
+void tox_callback_friend_read_receipt(Tox *tox, tox_friend_read_receipt_cb callback);
 
 /** @} */
 
@@ -1894,7 +1894,7 @@ void tox_callback_friend_read_receipt(Tox *tox, tox_friend_read_receipt_cb *call
  * @param message The message they sent along with the request.
  * @param length The size of the message byte array.
  */
-typedef void tox_friend_request_cb(
+typedef void(*tox_friend_request_cb)(
         Tox *tox, const uint8_t public_key[TOX_PUBLIC_KEY_SIZE],
         const uint8_t message[], size_t length,
         void *user_data);
@@ -1907,14 +1907,14 @@ typedef void tox_friend_request_cb(
  *
  * This event is triggered when a friend request is received.
  */
-void tox_callback_friend_request(Tox *tox, tox_friend_request_cb *callback);
+void tox_callback_friend_request(Tox *tox, tox_friend_request_cb callback);
 
 /**
  * @param friend_number The friend number of the friend who sent the message.
  * @param message The message data they sent.
  * @param length The size of the message byte array.
  */
-typedef void tox_friend_message_cb(
+typedef void(*tox_friend_message_cb)(
         Tox *tox, Tox_Friend_Number friend_number, Tox_Message_Type type,
         const uint8_t message[], size_t length, void *user_data);
 
@@ -1926,7 +1926,7 @@ typedef void tox_friend_message_cb(
  *
  * This event is triggered when a message from a friend is received.
  */
-void tox_callback_friend_message(Tox *tox, tox_friend_message_cb *callback);
+void tox_callback_friend_message(Tox *tox, tox_friend_message_cb callback);
 
 /** @} */
 
@@ -2098,7 +2098,7 @@ bool tox_file_control(
  *   associated with.
  * @param control The file control command received.
  */
-typedef void tox_file_recv_control_cb(
+typedef void(*tox_file_recv_control_cb)(
         Tox *tox, Tox_Friend_Number friend_number, Tox_File_Number file_number, Tox_File_Control control,
         void *user_data);
 
@@ -2111,7 +2111,7 @@ typedef void tox_file_recv_control_cb(
  * This event is triggered when a file control command is received from a
  * friend.
  */
-void tox_callback_file_recv_control(Tox *tox, tox_file_recv_control_cb *callback);
+void tox_callback_file_recv_control(Tox *tox, tox_file_recv_control_cb callback);
 
 typedef enum Tox_Err_File_Seek {
 
@@ -2417,7 +2417,7 @@ bool tox_file_send_chunk(
  * @param position The file or stream position from which to continue reading.
  * @param length The number of bytes requested for the current chunk.
  */
-typedef void tox_file_chunk_request_cb(
+typedef void(*tox_file_chunk_request_cb)(
         Tox *tox, Tox_Friend_Number friend_number, Tox_File_Number file_number, uint64_t position,
         size_t length, void *user_data);
 
@@ -2429,7 +2429,7 @@ typedef void tox_file_chunk_request_cb(
  *
  * This event is triggered when Core is ready to send more file data.
  */
-void tox_callback_file_chunk_request(Tox *tox, tox_file_chunk_request_cb *callback);
+void tox_callback_file_chunk_request(Tox *tox, tox_file_chunk_request_cb callback);
 
 /** @} */
 
@@ -2456,7 +2456,7 @@ void tox_callback_file_chunk_request(Tox *tox, tox_file_chunk_request_cb *callba
  *   name will be sent along with the file send request.
  * @param filename_length Size in bytes of the filename.
  */
-typedef void tox_file_recv_cb(
+typedef void(*tox_file_recv_cb)(
         Tox *tox, Tox_Friend_Number friend_number, Tox_File_Number file_number, uint32_t kind, uint64_t file_size,
         const uint8_t filename[], size_t filename_length, void *user_data);
 
@@ -2468,7 +2468,7 @@ typedef void tox_file_recv_cb(
  *
  * This event is triggered when a file transfer request is received.
  */
-void tox_callback_file_recv(Tox *tox, tox_file_recv_cb *callback);
+void tox_callback_file_recv(Tox *tox, tox_file_recv_cb callback);
 
 /**
  * When length is 0, the transfer is finished and the client should release the
@@ -2486,7 +2486,7 @@ void tox_callback_file_recv(Tox *tox, tox_file_recv_cb *callback);
  * @param data A byte array containing the received chunk.
  * @param length The length of the received chunk.
  */
-typedef void tox_file_recv_chunk_cb(
+typedef void(*tox_file_recv_chunk_cb)(
         Tox *tox, Tox_Friend_Number friend_number, Tox_File_Number file_number, uint64_t position,
         const uint8_t data[], size_t length, void *user_data);
 
@@ -2499,7 +2499,7 @@ typedef void tox_file_recv_chunk_cb(
  * This event is first triggered when a file transfer request is received, and
  * subsequently when a chunk of file data for an accepted request was received.
  */
-void tox_callback_file_recv_chunk(Tox *tox, tox_file_recv_chunk_cb *callback);
+void tox_callback_file_recv_chunk(Tox *tox, tox_file_recv_chunk_cb callback);
 
 /** @} */
 
@@ -2541,7 +2541,7 @@ const char *tox_conference_type_to_string(Tox_Conference_Type value);
  *   conference.
  * @param length The length of the cookie.
  */
-typedef void tox_conference_invite_cb(
+typedef void(*tox_conference_invite_cb)(
         Tox *tox, Tox_Friend_Number friend_number, Tox_Conference_Type type,
         const uint8_t cookie[], size_t length, void *user_data);
 
@@ -2553,12 +2553,12 @@ typedef void tox_conference_invite_cb(
  *
  * This event is triggered when the client is invited to join a conference.
  */
-void tox_callback_conference_invite(Tox *tox, tox_conference_invite_cb *callback);
+void tox_callback_conference_invite(Tox *tox, tox_conference_invite_cb callback);
 
 /**
  * @param conference_number The conference number of the conference to which we have connected.
  */
-typedef void tox_conference_connected_cb(Tox *tox, Tox_Conference_Number conference_number, void *user_data);
+typedef void(*tox_conference_connected_cb)(Tox *tox, Tox_Conference_Number conference_number, void *user_data);
 
 
 /**
@@ -2569,7 +2569,7 @@ typedef void tox_conference_connected_cb(Tox *tox, Tox_Conference_Number confere
  * This event is triggered when the client successfully connects to a
  * conference after joining it with the tox_conference_join function.
  */
-void tox_callback_conference_connected(Tox *tox, tox_conference_connected_cb *callback);
+void tox_callback_conference_connected(Tox *tox, tox_conference_connected_cb callback);
 
 /**
  * @param conference_number The conference number of the conference the message
@@ -2579,7 +2579,7 @@ void tox_callback_conference_connected(Tox *tox, tox_conference_connected_cb *ca
  * @param message The message data.
  * @param length The length of the message.
  */
-typedef void tox_conference_message_cb(
+typedef void(*tox_conference_message_cb)(
         Tox *tox, Tox_Conference_Number conference_number, Tox_Conference_Peer_Number peer_number,
         Tox_Message_Type type, const uint8_t message[], size_t length, void *user_data);
 
@@ -2591,7 +2591,7 @@ typedef void tox_conference_message_cb(
  *
  * This event is triggered when the client receives a conference message.
  */
-void tox_callback_conference_message(Tox *tox, tox_conference_message_cb *callback);
+void tox_callback_conference_message(Tox *tox, tox_conference_message_cb callback);
 
 /**
  * @param conference_number The conference number of the conference the title
@@ -2600,7 +2600,7 @@ void tox_callback_conference_message(Tox *tox, tox_conference_message_cb *callba
  * @param title The title data.
  * @param length The title length.
  */
-typedef void tox_conference_title_cb(
+typedef void(*tox_conference_title_cb)(
         Tox *tox, Tox_Conference_Number conference_number, Tox_Conference_Peer_Number peer_number,
         const uint8_t title[], size_t length, void *user_data);
 
@@ -2614,7 +2614,7 @@ typedef void tox_conference_title_cb(
  *
  * If peer_number == UINT32_MAX, then author is unknown (e.g. initial joining the conference).
  */
-void tox_callback_conference_title(Tox *tox, tox_conference_title_cb *callback);
+void tox_callback_conference_title(Tox *tox, tox_conference_title_cb callback);
 
 /**
  * @param conference_number The conference number of the conference the
@@ -2623,7 +2623,7 @@ void tox_callback_conference_title(Tox *tox, tox_conference_title_cb *callback);
  * @param name A byte array containing the new nickname.
  * @param length The size of the name byte array.
  */
-typedef void tox_conference_peer_name_cb(
+typedef void(*tox_conference_peer_name_cb)(
         Tox *tox, Tox_Conference_Number conference_number, Tox_Conference_Peer_Number peer_number,
         const uint8_t name[], size_t length, void *user_data);
 
@@ -2635,13 +2635,13 @@ typedef void tox_conference_peer_name_cb(
  *
  * This event is triggered when a peer changes their name.
  */
-void tox_callback_conference_peer_name(Tox *tox, tox_conference_peer_name_cb *callback);
+void tox_callback_conference_peer_name(Tox *tox, tox_conference_peer_name_cb callback);
 
 /**
  * @param conference_number The conference number of the conference the
  *   peer is in.
  */
-typedef void tox_conference_peer_list_changed_cb(Tox *tox, Tox_Conference_Number conference_number, void *user_data);
+typedef void(*tox_conference_peer_list_changed_cb)(Tox *tox, Tox_Conference_Number conference_number, void *user_data);
 
 
 /**
@@ -2651,7 +2651,7 @@ typedef void tox_conference_peer_list_changed_cb(Tox *tox, Tox_Conference_Number
  *
  * This event is triggered when a peer joins or leaves the conference.
  */
-void tox_callback_conference_peer_list_changed(Tox *tox, tox_conference_peer_list_changed_cb *callback);
+void tox_callback_conference_peer_list_changed(Tox *tox, tox_conference_peer_list_changed_cb callback);
 
 typedef enum Tox_Err_Conference_New {
 
@@ -3339,7 +3339,7 @@ bool tox_friend_send_lossless_packet(
  * @param data A byte array containing the received packet data.
  * @param length The length of the packet data byte array.
  */
-typedef void tox_friend_lossy_packet_cb(
+typedef void(*tox_friend_lossy_packet_cb)(
         Tox *tox, Tox_Friend_Number friend_number,
         const uint8_t data[], size_t length,
         void *user_data);
@@ -3350,14 +3350,14 @@ typedef void tox_friend_lossy_packet_cb(
  *
  * Pass NULL to unset.
  */
-void tox_callback_friend_lossy_packet(Tox *tox, tox_friend_lossy_packet_cb *callback);
+void tox_callback_friend_lossy_packet(Tox *tox, tox_friend_lossy_packet_cb callback);
 
 /**
  * @param friend_number The friend number of the friend who sent the packet.
  * @param data A byte array containing the received packet data.
  * @param length The length of the packet data byte array.
  */
-typedef void tox_friend_lossless_packet_cb(
+typedef void(*tox_friend_lossless_packet_cb)(
         Tox *tox, Tox_Friend_Number friend_number,
         const uint8_t data[], size_t length,
         void *user_data);
@@ -3368,7 +3368,7 @@ typedef void tox_friend_lossless_packet_cb(
  *
  * Pass NULL to unset.
  */
-void tox_callback_friend_lossless_packet(Tox *tox, tox_friend_lossless_packet_cb *callback);
+void tox_callback_friend_lossless_packet(Tox *tox, tox_friend_lossless_packet_cb callback);
 
 /** @} */
 
@@ -4199,7 +4199,7 @@ bool tox_group_peer_get_public_key(
  * @param name The name data.
  * @param length The length of the name.
  */
-typedef void tox_group_peer_name_cb(
+typedef void(*tox_group_peer_name_cb)(
         Tox *tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id,
         const uint8_t name[], size_t length, void *user_data);
 
@@ -4209,14 +4209,14 @@ typedef void tox_group_peer_name_cb(
  *
  * This event is triggered when a peer changes their nickname.
  */
-void tox_callback_group_peer_name(Tox *tox, tox_group_peer_name_cb *callback);
+void tox_callback_group_peer_name(Tox *tox, tox_group_peer_name_cb callback);
 
 /**
  * @param group_number The group number of the group the status change is intended for.
  * @param peer_id The ID of the peer who has changed their status.
  * @param status The new status of the peer.
  */
-typedef void tox_group_peer_status_cb(Tox *tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, Tox_User_Status status,
+typedef void(*tox_group_peer_status_cb)(Tox *tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, Tox_User_Status status,
                                       void *user_data);
 
 
@@ -4225,7 +4225,7 @@ typedef void tox_group_peer_status_cb(Tox *tox, Tox_Group_Number group_number, T
  *
  * This event is triggered when a peer changes their status.
  */
-void tox_callback_group_peer_status(Tox *tox, tox_group_peer_status_cb *callback);
+void tox_callback_group_peer_status(Tox *tox, tox_group_peer_status_cb callback);
 
 
 /*******************************************************************************
@@ -4347,7 +4347,7 @@ bool tox_group_get_topic(
  * @param topic The topic data.
  * @param length The topic length.
  */
-typedef void tox_group_topic_cb(
+typedef void(*tox_group_topic_cb)(
         Tox *tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id,
         const uint8_t topic[], size_t length,
         void *user_data);
@@ -4358,7 +4358,7 @@ typedef void tox_group_topic_cb(
  *
  * This event is triggered when a peer changes the group topic.
  */
-void tox_callback_group_topic(Tox *tox, tox_group_topic_cb *callback);
+void tox_callback_group_topic(Tox *tox, tox_group_topic_cb callback);
 
 /**
  * Return the length of the group name. If the group number is invalid, the
@@ -4415,7 +4415,7 @@ Tox_Group_Privacy_State tox_group_get_privacy_state(const Tox *tox, Tox_Group_Nu
  * @param group_number The group number of the group the privacy state is intended for.
  * @param privacy_state The new privacy state.
  */
-typedef void tox_group_privacy_state_cb(Tox *tox, Tox_Group_Number group_number, Tox_Group_Privacy_State privacy_state,
+typedef void(*tox_group_privacy_state_cb)(Tox *tox, Tox_Group_Number group_number, Tox_Group_Privacy_State privacy_state,
                                         void *user_data);
 
 
@@ -4424,7 +4424,7 @@ typedef void tox_group_privacy_state_cb(Tox *tox, Tox_Group_Number group_number,
  *
  * This event is triggered when the group founder changes the privacy state.
  */
-void tox_callback_group_privacy_state(Tox *tox, tox_group_privacy_state_cb *callback);
+void tox_callback_group_privacy_state(Tox *tox, tox_group_privacy_state_cb callback);
 
 /**
  * Return the voice state of the group designated by the given group number. If group number
@@ -4441,7 +4441,7 @@ Tox_Group_Voice_State tox_group_get_voice_state(const Tox *tox, Tox_Group_Number
  * @param group_number The group number of the group the voice state change is intended for.
  * @param voice_state The new voice state.
  */
-typedef void tox_group_voice_state_cb(Tox *tox, Tox_Group_Number group_number, Tox_Group_Voice_State voice_state,
+typedef void(*tox_group_voice_state_cb)(Tox *tox, Tox_Group_Number group_number, Tox_Group_Voice_State voice_state,
                                       void *user_data);
 
 
@@ -4450,7 +4450,7 @@ typedef void tox_group_voice_state_cb(Tox *tox, Tox_Group_Number group_number, T
  *
  * This event is triggered when the group founder changes the voice state.
  */
-void tox_callback_group_voice_state(Tox *tox, tox_group_voice_state_cb *callback);
+void tox_callback_group_voice_state(Tox *tox, tox_group_voice_state_cb callback);
 
 /**
  * Return the topic lock status of the group designated by the given group number. If group number
@@ -4468,7 +4468,7 @@ Tox_Group_Topic_Lock tox_group_get_topic_lock(const Tox *tox, Tox_Group_Number g
  * @param group_number The group number of the group for which the topic lock has changed.
  * @param topic_lock The new topic lock state.
  */
-typedef void tox_group_topic_lock_cb(Tox *tox, Tox_Group_Number group_number, Tox_Group_Topic_Lock topic_lock, void *user_data);
+typedef void(*tox_group_topic_lock_cb)(Tox *tox, Tox_Group_Number group_number, Tox_Group_Topic_Lock topic_lock, void *user_data);
 
 
 
@@ -4477,7 +4477,7 @@ typedef void tox_group_topic_lock_cb(Tox *tox, Tox_Group_Number group_number, To
  *
  * This event is triggered when the group founder changes the topic lock status.
  */
-void tox_callback_group_topic_lock(Tox *tox, tox_group_topic_lock_cb *callback);
+void tox_callback_group_topic_lock(Tox *tox, tox_group_topic_lock_cb callback);
 
 /**
  * Return the maximum number of peers allowed for the group designated by the given group number.
@@ -4494,7 +4494,7 @@ uint16_t tox_group_get_peer_limit(const Tox *tox, Tox_Group_Number group_number,
  * @param group_number The group number of the group for which the peer limit has changed.
  * @param peer_limit The new peer limit for the group.
  */
-typedef void tox_group_peer_limit_cb(Tox *tox, Tox_Group_Number group_number, uint32_t peer_limit, void *user_data);
+typedef void(*tox_group_peer_limit_cb)(Tox *tox, Tox_Group_Number group_number, uint32_t peer_limit, void *user_data);
 
 
 /**
@@ -4502,7 +4502,7 @@ typedef void tox_group_peer_limit_cb(Tox *tox, Tox_Group_Number group_number, ui
  *
  * This event is triggered when the group founder changes the maximum peer limit.
  */
-void tox_callback_group_peer_limit(Tox *tox, tox_group_peer_limit_cb *callback);
+void tox_callback_group_peer_limit(Tox *tox, tox_group_peer_limit_cb callback);
 
 /**
  * Return the length of the group password. If the group number is invalid, the
@@ -4534,7 +4534,7 @@ bool tox_group_get_password(
  * @param password The new group password.
  * @param length The length of the password.
  */
-typedef void tox_group_password_cb(
+typedef void(*tox_group_password_cb)(
         Tox *tox, Tox_Group_Number group_number,
         const uint8_t password[], size_t length,
         void *user_data);
@@ -4545,7 +4545,7 @@ typedef void tox_group_password_cb(
  *
  * This event is triggered when the group founder changes the group password.
  */
-void tox_callback_group_password(Tox *tox, tox_group_password_cb *callback);
+void tox_callback_group_password(Tox *tox, tox_group_password_cb callback);
 
 
 /*******************************************************************************
@@ -4865,7 +4865,7 @@ bool tox_group_send_custom_private_packet(const Tox *tox, Tox_Group_Number group
  * @param message_id A pseudo message id that clients can use to uniquely identify this group message.
  * @param length The length of the message.
  */
-typedef void tox_group_message_cb(
+typedef void(*tox_group_message_cb)(
         Tox *tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, Tox_Message_Type type,
         const uint8_t message[], size_t length, Tox_Group_Message_Id message_id, void *user_data);
 
@@ -4875,7 +4875,7 @@ typedef void tox_group_message_cb(
  *
  * This event is triggered when the client receives a group message.
  */
-void tox_callback_group_message(Tox *tox, tox_group_message_cb *callback);
+void tox_callback_group_message(Tox *tox, tox_group_message_cb callback);
 
 /**
  * @param group_number The group number of the group the private message is intended for.
@@ -4883,7 +4883,7 @@ void tox_callback_group_message(Tox *tox, tox_group_message_cb *callback);
  * @param message The message data.
  * @param length The length of the message.
  */
-typedef void tox_group_private_message_cb(
+typedef void(*tox_group_private_message_cb)(
         Tox *tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, Tox_Message_Type type,
         const uint8_t message[], size_t length, void *user_data);
 
@@ -4893,7 +4893,7 @@ typedef void tox_group_private_message_cb(
  *
  * This event is triggered when the client receives a private message.
  */
-void tox_callback_group_private_message(Tox *tox, tox_group_private_message_cb *callback);
+void tox_callback_group_private_message(Tox *tox, tox_group_private_message_cb callback);
 
 /**
  * @param group_number The group number of the group the packet is intended for.
@@ -4901,7 +4901,7 @@ void tox_callback_group_private_message(Tox *tox, tox_group_private_message_cb *
  * @param data The packet data.
  * @param length The length of the data.
  */
-typedef void tox_group_custom_packet_cb(
+typedef void(*tox_group_custom_packet_cb)(
         Tox *tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id,
         const uint8_t data[], size_t length, void *user_data);
 
@@ -4911,7 +4911,7 @@ typedef void tox_group_custom_packet_cb(
  *
  * This event is triggered when the client receives a custom packet.
  */
-void tox_callback_group_custom_packet(Tox *tox, tox_group_custom_packet_cb *callback);
+void tox_callback_group_custom_packet(Tox *tox, tox_group_custom_packet_cb callback);
 
 /**
  * @param group_number The group number of the group the packet is intended for.
@@ -4919,7 +4919,7 @@ void tox_callback_group_custom_packet(Tox *tox, tox_group_custom_packet_cb *call
  * @param data The packet data.
  * @param length The length of the data.
  */
-typedef void tox_group_custom_private_packet_cb(
+typedef void(*tox_group_custom_private_packet_cb)(
         Tox *tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id,
         const uint8_t data[], size_t length, void *user_data);
 
@@ -4929,7 +4929,7 @@ typedef void tox_group_custom_private_packet_cb(
  *
  * This event is triggered when the client receives a custom private packet.
  */
-void tox_callback_group_custom_private_packet(Tox *tox, tox_group_custom_private_packet_cb *callback);
+void tox_callback_group_custom_private_packet(Tox *tox, tox_group_custom_private_packet_cb callback);
 
 
 /*******************************************************************************
@@ -5065,7 +5065,7 @@ Tox_Group_Number tox_group_invite_accept(
  * @param invite_data The invite data.
  * @param length The length of invite_data.
  */
-typedef void tox_group_invite_cb(
+typedef void(*tox_group_invite_cb)(
         Tox *tox, Tox_Friend_Number friend_number,
         const uint8_t invite_data[], size_t length,
         const uint8_t group_name[], size_t group_name_length,
@@ -5078,14 +5078,14 @@ typedef void tox_group_invite_cb(
  * This event is triggered when the client receives a group invite from a friend. The client must store
  * invite_data which is used to join the group via tox_group_invite_accept.
  */
-void tox_callback_group_invite(Tox *tox, tox_group_invite_cb *callback);
+void tox_callback_group_invite(Tox *tox, tox_group_invite_cb callback);
 
 /**
  * @param group_number The group number of the group in which a new peer has joined.
  * @param peer_id The permanent ID of the new peer. This id should not be relied on for
  * client behaviour and should be treated as a random value.
  */
-typedef void tox_group_peer_join_cb(Tox *tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, void *user_data);
+typedef void(*tox_group_peer_join_cb)(Tox *tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, void *user_data);
 
 
 /**
@@ -5093,7 +5093,7 @@ typedef void tox_group_peer_join_cb(Tox *tox, Tox_Group_Number group_number, Tox
  *
  * This event is triggered when a peer other than self joins the group.
  */
-void tox_callback_group_peer_join(Tox *tox, tox_group_peer_join_cb *callback);
+void tox_callback_group_peer_join(Tox *tox, tox_group_peer_join_cb callback);
 
 /**
  * Represents peer exit events. These should be used with the `group_peer_exit` event.
@@ -5146,7 +5146,7 @@ const char *tox_group_exit_type_to_string(Tox_Group_Exit_Type value);
  * @param part_message The parting message data.
  * @param part_message_length The length of the parting message.
  */
-typedef void tox_group_peer_exit_cb(
+typedef void(*tox_group_peer_exit_cb)(
         Tox *tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, Tox_Group_Exit_Type exit_type,
         const uint8_t name[], size_t name_length,
         const uint8_t part_message[], size_t part_message_length, void *user_data);
@@ -5157,12 +5157,12 @@ typedef void tox_group_peer_exit_cb(
  *
  * This event is triggered when a peer other than self exits the group.
  */
-void tox_callback_group_peer_exit(Tox *tox, tox_group_peer_exit_cb *callback);
+void tox_callback_group_peer_exit(Tox *tox, tox_group_peer_exit_cb callback);
 
 /**
  * @param group_number The group number of the group that the client has joined.
  */
-typedef void tox_group_self_join_cb(Tox *tox, Tox_Group_Number group_number, void *user_data);
+typedef void(*tox_group_self_join_cb)(Tox *tox, Tox_Group_Number group_number, void *user_data);
 
 
 /**
@@ -5171,7 +5171,7 @@ typedef void tox_group_self_join_cb(Tox *tox, Tox_Group_Number group_number, voi
  * This event is triggered when the client has successfully joined a group. Use this to initialize
  * any group information the client may need.
  */
-void tox_callback_group_self_join(Tox *tox, tox_group_self_join_cb *callback);
+void tox_callback_group_self_join(Tox *tox, tox_group_self_join_cb callback);
 
 /**
  * Represents types of failed group join attempts. These are used in the tox_callback_group_rejected
@@ -5204,7 +5204,7 @@ const char *tox_group_join_fail_to_string(Tox_Group_Join_Fail value);
  * @param group_number The group number of the group for which the join has failed.
  * @param fail_type The type of group rejection.
  */
-typedef void tox_group_join_fail_cb(Tox *tox, Tox_Group_Number group_number, Tox_Group_Join_Fail fail_type, void *user_data);
+typedef void(*tox_group_join_fail_cb)(Tox *tox, Tox_Group_Number group_number, Tox_Group_Join_Fail fail_type, void *user_data);
 
 
 /**
@@ -5212,7 +5212,7 @@ typedef void tox_group_join_fail_cb(Tox *tox, Tox_Group_Number group_number, Tox
  *
  * This event is triggered when the client fails to join a group.
  */
-void tox_callback_group_join_fail(Tox *tox, tox_group_join_fail_cb *callback);
+void tox_callback_group_join_fail(Tox *tox, tox_group_join_fail_cb callback);
 
 
 /*******************************************************************************
@@ -5703,7 +5703,7 @@ const char *tox_group_mod_event_to_string(Tox_Group_Mod_Event value);
  * @param target_peer_id The ID of the peer who is the target of the event.
  * @param mod_type The type of event.
  */
-typedef void tox_group_moderation_cb(
+typedef void(*tox_group_moderation_cb)(
         Tox *tox, Tox_Group_Number group_number, Tox_Group_Peer_Number source_peer_id, Tox_Group_Peer_Number target_peer_id,
         Tox_Group_Mod_Event mod_type, void *user_data);
 
@@ -5718,7 +5718,7 @@ typedef void tox_group_moderation_cb(
  * If either peer id does not designate a valid peer in the group chat, the client should
  * manually update all peer roles.
  */
-void tox_callback_group_moderation(Tox *tox, tox_group_moderation_cb *callback);
+void tox_callback_group_moderation(Tox *tox, tox_group_moderation_cb callback);
 
 /** @} */
 

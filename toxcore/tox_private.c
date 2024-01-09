@@ -54,18 +54,18 @@ void tox_unlock(const Tox *tox)
     }
 }
 
-void tox_callback_friend_lossy_packet_per_pktid(Tox *tox, tox_friend_lossy_packet_cb *callback, uint8_t pktid)
+void tox_callback_friend_lossy_packet_per_pktid(Tox *tox, tox_friend_lossy_packet_cb callback, uint8_t pktid)
 {
-    assert(tox != nullptr);
+    // assert(tox != nullptr);
 
     if (pktid >= PACKET_ID_RANGE_LOSSY_START && pktid <= PACKET_ID_RANGE_LOSSY_END) {
         tox->friend_lossy_packet_callback_per_pktid[pktid] = callback;
     }
 }
 
-void tox_callback_friend_lossless_packet_per_pktid(Tox *tox, tox_friend_lossless_packet_cb *callback, uint8_t pktid)
+void tox_callback_friend_lossless_packet_per_pktid(Tox *tox, tox_friend_lossless_packet_cb callback, uint8_t pktid)
 {
-    assert(tox != nullptr);
+    // assert(tox != nullptr);
 
     if ((pktid >= PACKET_ID_RANGE_LOSSLESS_CUSTOM_START && pktid <= PACKET_ID_RANGE_LOSSLESS_CUSTOM_END)
             || pktid == PACKET_ID_MSI) {
@@ -75,7 +75,7 @@ void tox_callback_friend_lossless_packet_per_pktid(Tox *tox, tox_friend_lossless
 
 void tox_set_av_object(Tox *tox, void *object)
 {
-    assert(tox != nullptr);
+    // assert(tox != nullptr);
     tox_lock(tox);
     tox->toxav_object = object;
     tox_unlock(tox);
@@ -83,23 +83,23 @@ void tox_set_av_object(Tox *tox, void *object)
 
 void *tox_get_av_object(const Tox *tox)
 {
-    assert(tox != nullptr);
+    // assert(tox != nullptr);
     tox_lock(tox);
     void *object = tox->toxav_object;
     tox_unlock(tox);
     return object;
 }
 
-void tox_callback_dht_get_nodes_response(Tox *tox, tox_dht_get_nodes_response_cb *callback)
+void tox_callback_dht_get_nodes_response(Tox *tox, tox_dht_get_nodes_response_cb callback)
 {
-    assert(tox != nullptr);
+    // assert(tox != nullptr);
     tox->dht_get_nodes_response_callback = callback;
 }
 
 bool tox_dht_get_nodes(const Tox *tox, const uint8_t *public_key, const char *ip, uint16_t port,
                        const uint8_t *target_public_key, Tox_Err_Dht_Get_Nodes *error)
 {
-    assert(tox != nullptr);
+    // assert(tox != nullptr);
 
     tox_lock(tox);
 
@@ -175,7 +175,7 @@ uint16_t tox_dht_get_num_closelist_announce_capable(const Tox *tox){
 size_t tox_group_peer_get_ip_address_size(const Tox *tox, uint32_t group_number, uint32_t peer_id,
                                           Tox_Err_Group_Peer_Query *error)
 {
-    assert(tox != nullptr);
+    // assert(tox != nullptr);
 
     tox_lock(tox);
     const GC_Chat *chat = gc_get_group(tox->m->group_handler, group_number);
@@ -201,7 +201,7 @@ size_t tox_group_peer_get_ip_address_size(const Tox *tox, uint32_t group_number,
 bool tox_group_peer_get_ip_address(const Tox *tox, uint32_t group_number, uint32_t peer_id, uint8_t *ip_addr,
                                Tox_Err_Group_Peer_Query *error)
 {
-    assert(tox != nullptr);
+    // assert(tox != nullptr);
 
     tox_lock(tox);
     const GC_Chat *chat = gc_get_group(tox->m->group_handler, group_number);
