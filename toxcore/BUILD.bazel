@@ -423,6 +423,18 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "DHT_bench",
+    size = "small",
+    srcs = ["DHT_bench.cc"],
+    deps = [
+        ":DHT",
+        ":DHT_test_util",
+        ":crypto_core_test_util",
+        "@benchmark//:benchmark_main",
+    ],
+)
+
 cc_fuzz_test(
     name = "DHT_fuzz_test",
     size = "small",
