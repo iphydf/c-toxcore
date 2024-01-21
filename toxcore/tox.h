@@ -753,7 +753,7 @@ void tox_options_set_savedata_type(Tox_Options *options, Tox_Savedata_Type saved
 
 const uint8_t *tox_options_get_savedata_data(const Tox_Options *options);
 
-void tox_options_set_savedata_data(Tox_Options *options, const uint8_t savedata_data[], size_t length);
+void tox_options_set_savedata_data(Tox_Options *options, const uint8_t *savedata_data, size_t length);
 
 size_t tox_options_get_savedata_length(const Tox_Options *options);
 
@@ -940,7 +940,7 @@ size_t tox_get_savedata_size(const Tox *tox);
  *   data. Call tox_get_savedata_size to find the number of bytes required. If this parameter
  *   is NULL, this function has no effect.
  */
-void tox_get_savedata(const Tox *tox, uint8_t savedata[]);
+void tox_get_savedata(const Tox *tox, uint8_t *savedata);
 
 /** @} */
 
@@ -1186,7 +1186,7 @@ const char *tox_err_set_info_to_string(Tox_Err_Set_Info value);
  *
  * @return true on success.
  */
-bool tox_self_set_name(Tox *tox, const uint8_t name[], size_t length, Tox_Err_Set_Info *error);
+bool tox_self_set_name(Tox *tox, const uint8_t *name, size_t length, Tox_Err_Set_Info *error);
 
 /**
  * @brief Return the length of the current nickname as passed to tox_self_set_name.
@@ -1210,7 +1210,7 @@ size_t tox_self_get_name_size(const Tox *tox);
  * @param name A valid memory location large enough to hold the nickname.
  *   If this parameter is NULL, the function has no effect.
  */
-void tox_self_get_name(const Tox *tox, uint8_t name[]);
+void tox_self_get_name(const Tox *tox, uint8_t *name);
 
 /**
  * @brief Set the client's status message.
@@ -1220,7 +1220,7 @@ void tox_self_get_name(const Tox *tox, uint8_t name[]);
  * user status is set back to empty.
  */
 bool tox_self_set_status_message(
-        Tox *tox, const uint8_t status_message[], size_t length, Tox_Err_Set_Info *error);
+        Tox *tox, const uint8_t *status_message, size_t length, Tox_Err_Set_Info *error);
 
 /**
  * @brief Return the length of the current status message as passed to tox_self_set_status_message.
@@ -1244,7 +1244,7 @@ size_t tox_self_get_status_message_size(const Tox *tox);
  * @param status_message A valid memory location large enough to hold the
  *   status message. If this parameter is NULL, the function has no effect.
  */
-void tox_self_get_status_message(const Tox *tox, uint8_t status_message[]);
+void tox_self_get_status_message(const Tox *tox, uint8_t *status_message);
 
 /**
  * @brief Set the client's user status.
@@ -1347,7 +1347,7 @@ const char *tox_err_friend_add_to_string(Tox_Err_Friend_Add value);
  */
 Tox_Friend_Number tox_friend_add(
         Tox *tox, const uint8_t address[TOX_ADDRESS_SIZE],
-        const uint8_t message[], size_t length,
+        const uint8_t *message, size_t length,
         Tox_Err_Friend_Add *error);
 
 /**
@@ -1580,7 +1580,7 @@ size_t tox_friend_get_name_size(
  * @return true on success.
  */
 bool tox_friend_get_name(
-        const Tox *tox, Tox_Friend_Number friend_number, uint8_t name[], Tox_Err_Friend_Query *error);
+        const Tox *tox, Tox_Friend_Number friend_number, uint8_t *name, Tox_Err_Friend_Query *error);
 
 /**
  * @param friend_number The friend number of the friend whose name changed.
@@ -1591,7 +1591,7 @@ bool tox_friend_get_name(
  */
 typedef void tox_friend_name_cb(
         Tox *tox, Tox_Friend_Number friend_number,
-        const uint8_t name[], size_t length, void *user_data);
+        const uint8_t *name, size_t length, void *user_data);
 
 
 /**
@@ -1624,7 +1624,7 @@ size_t tox_friend_get_status_message_size(
  * @param status_message A valid memory region large enough to store the friend's status message.
  */
 bool tox_friend_get_status_message(
-        const Tox *tox, Tox_Friend_Number friend_number, uint8_t status_message[],
+        const Tox *tox, Tox_Friend_Number friend_number, uint8_t *status_message,
         Tox_Err_Friend_Query *error);
 
 /**
@@ -1637,7 +1637,7 @@ bool tox_friend_get_status_message(
  */
 typedef void tox_friend_status_message_cb(
         Tox *tox, Tox_Friend_Number friend_number,
-        const uint8_t message[], size_t length, void *user_data);
+        const uint8_t *message, size_t length, void *user_data);
 
 
 /**
@@ -1861,7 +1861,7 @@ typedef uint32_t Tox_Friend_Message_Id;
  */
 Tox_Friend_Message_Id tox_friend_send_message(
         Tox *tox, Tox_Friend_Number friend_number, Tox_Message_Type type,
-        const uint8_t message[], size_t length, Tox_Err_Friend_Send_Message *error);
+        const uint8_t *message, size_t length, Tox_Err_Friend_Send_Message *error);
 
 /**
  * @param friend_number The friend number of the friend who received the message.
@@ -1896,7 +1896,7 @@ void tox_callback_friend_read_receipt(Tox *tox, tox_friend_read_receipt_cb *call
  */
 typedef void tox_friend_request_cb(
         Tox *tox, const uint8_t public_key[TOX_PUBLIC_KEY_SIZE],
-        const uint8_t message[], size_t length,
+        const uint8_t *message, size_t length,
         void *user_data);
 
 
@@ -1916,7 +1916,7 @@ void tox_callback_friend_request(Tox *tox, tox_friend_request_cb *callback);
  */
 typedef void tox_friend_message_cb(
         Tox *tox, Tox_Friend_Number friend_number, Tox_Message_Type type,
-        const uint8_t message[], size_t length, void *user_data);
+        const uint8_t *message, size_t length, void *user_data);
 
 
 /**
@@ -1956,7 +1956,7 @@ typedef uint32_t Tox_File_Number;
  *
  * @return true if hash was not NULL.
  */
-bool tox_hash(uint8_t hash[TOX_HASH_LENGTH], const uint8_t data[], size_t length);
+bool tox_hash(uint8_t hash[TOX_HASH_LENGTH], const uint8_t *data, size_t length);
 
 /**
  * @brief A list of pre-defined file kinds.
@@ -2317,7 +2317,7 @@ const char *tox_err_file_send_to_string(Tox_Err_File_Send value);
  */
 Tox_File_Number tox_file_send(
         Tox *tox, Tox_Friend_Number friend_number, uint32_t kind, uint64_t file_size,
-        const uint8_t file_id[TOX_FILE_ID_LENGTH], const uint8_t filename[], size_t filename_length,
+        const uint8_t file_id[TOX_FILE_ID_LENGTH], const uint8_t *filename, size_t filename_length,
         Tox_Err_File_Send *error);
 
 typedef enum Tox_Err_File_Send_Chunk {
@@ -2393,7 +2393,7 @@ const char *tox_err_file_send_chunk_to_string(Tox_Err_File_Send_Chunk value);
  */
 bool tox_file_send_chunk(
         Tox *tox, Tox_Friend_Number friend_number, Tox_File_Number file_number, uint64_t position,
-        const uint8_t data[], size_t length, Tox_Err_File_Send_Chunk *error);
+        const uint8_t *data, size_t length, Tox_Err_File_Send_Chunk *error);
 
 /**
  * If the length parameter is 0, the file transfer is finished, and the client's
@@ -2458,7 +2458,7 @@ void tox_callback_file_chunk_request(Tox *tox, tox_file_chunk_request_cb *callba
  */
 typedef void tox_file_recv_cb(
         Tox *tox, Tox_Friend_Number friend_number, Tox_File_Number file_number, uint32_t kind, uint64_t file_size,
-        const uint8_t filename[], size_t filename_length, void *user_data);
+        const uint8_t *filename, size_t filename_length, void *user_data);
 
 
 /**
@@ -2488,7 +2488,7 @@ void tox_callback_file_recv(Tox *tox, tox_file_recv_cb *callback);
  */
 typedef void tox_file_recv_chunk_cb(
         Tox *tox, Tox_Friend_Number friend_number, Tox_File_Number file_number, uint64_t position,
-        const uint8_t data[], size_t length, void *user_data);
+        const uint8_t *data, size_t length, void *user_data);
 
 
 /**
@@ -2543,7 +2543,7 @@ const char *tox_conference_type_to_string(Tox_Conference_Type value);
  */
 typedef void tox_conference_invite_cb(
         Tox *tox, Tox_Friend_Number friend_number, Tox_Conference_Type type,
-        const uint8_t cookie[], size_t length, void *user_data);
+        const uint8_t *cookie, size_t length, void *user_data);
 
 
 /**
@@ -2581,7 +2581,7 @@ void tox_callback_conference_connected(Tox *tox, tox_conference_connected_cb *ca
  */
 typedef void tox_conference_message_cb(
         Tox *tox, Tox_Conference_Number conference_number, Tox_Conference_Peer_Number peer_number,
-        Tox_Message_Type type, const uint8_t message[], size_t length, void *user_data);
+        Tox_Message_Type type, const uint8_t *message, size_t length, void *user_data);
 
 
 /**
@@ -2602,7 +2602,7 @@ void tox_callback_conference_message(Tox *tox, tox_conference_message_cb *callba
  */
 typedef void tox_conference_title_cb(
         Tox *tox, Tox_Conference_Number conference_number, Tox_Conference_Peer_Number peer_number,
-        const uint8_t title[], size_t length, void *user_data);
+        const uint8_t *title, size_t length, void *user_data);
 
 
 /**
@@ -2625,7 +2625,7 @@ void tox_callback_conference_title(Tox *tox, tox_conference_title_cb *callback);
  */
 typedef void tox_conference_peer_name_cb(
         Tox *tox, Tox_Conference_Number conference_number, Tox_Conference_Peer_Number peer_number,
-        const uint8_t name[], size_t length, void *user_data);
+        const uint8_t *name, size_t length, void *user_data);
 
 
 /**
@@ -2767,7 +2767,7 @@ size_t tox_conference_peer_get_name_size(
  */
 bool tox_conference_peer_get_name(
         const Tox *tox, Tox_Conference_Number conference_number, Tox_Conference_Peer_Number peer_number,
-        uint8_t name[], Tox_Err_Conference_Peer_Query *error);
+        uint8_t *name, Tox_Err_Conference_Peer_Query *error);
 
 /**
  * @brief Copy the public key of peer_number who is in conference_number to public_key.
@@ -2820,7 +2820,7 @@ size_t tox_conference_offline_peer_get_name_size(
  */
 bool tox_conference_offline_peer_get_name(
         const Tox *tox, Tox_Conference_Number conference_number, Tox_Conference_Peer_Number offline_peer_number,
-        uint8_t name[], Tox_Err_Conference_Peer_Query *error);
+        uint8_t *name, Tox_Err_Conference_Peer_Query *error);
 
 /**
  * @brief Copy the public key of offline_peer_number who is in conference_number to public_key.
@@ -2964,7 +2964,7 @@ const char *tox_err_conference_join_to_string(Tox_Err_Conference_Join value);
  */
 Tox_Conference_Number tox_conference_join(
         Tox *tox, Tox_Friend_Number friend_number,
-        const uint8_t cookie[], size_t length,
+        const uint8_t *cookie, size_t length,
         Tox_Err_Conference_Join *error);
 
 typedef enum Tox_Err_Conference_Send_Message {
@@ -3020,7 +3020,7 @@ const char *tox_err_conference_send_message_to_string(Tox_Err_Conference_Send_Me
  */
 bool tox_conference_send_message(
         Tox *tox, Tox_Conference_Number conference_number, Tox_Message_Type type,
-        const uint8_t message[], size_t length,
+        const uint8_t *message, size_t length,
         Tox_Err_Conference_Send_Message *error);
 
 typedef enum Tox_Err_Conference_Title {
@@ -3076,7 +3076,7 @@ size_t tox_conference_get_title_size(
  */
 bool tox_conference_get_title(
         const Tox *tox, Tox_Conference_Number conference_number,
-        uint8_t title[],
+        uint8_t *title,
         Tox_Err_Conference_Title *error);
 
 /**
@@ -3088,7 +3088,7 @@ bool tox_conference_get_title(
  */
 bool tox_conference_set_title(
         Tox *tox, Tox_Conference_Number conference_number,
-        const uint8_t title[], size_t length,
+        const uint8_t *title, size_t length,
         Tox_Err_Conference_Title *error);
 
 /**
@@ -3310,7 +3310,7 @@ const char *tox_err_friend_custom_packet_to_string(Tox_Err_Friend_Custom_Packet 
  */
 bool tox_friend_send_lossy_packet(
         Tox *tox, Tox_Friend_Number friend_number,
-        const uint8_t data[], size_t length,
+        const uint8_t *data, size_t length,
         Tox_Err_Friend_Custom_Packet *error);
 
 /**
@@ -3331,7 +3331,7 @@ bool tox_friend_send_lossy_packet(
  */
 bool tox_friend_send_lossless_packet(
         Tox *tox, Tox_Friend_Number friend_number,
-        const uint8_t data[], size_t length,
+        const uint8_t *data, size_t length,
         Tox_Err_Friend_Custom_Packet *error);
 
 /**
@@ -3341,7 +3341,7 @@ bool tox_friend_send_lossless_packet(
  */
 typedef void tox_friend_lossy_packet_cb(
         Tox *tox, Tox_Friend_Number friend_number,
-        const uint8_t data[], size_t length,
+        const uint8_t *data, size_t length,
         void *user_data);
 
 
@@ -3359,7 +3359,7 @@ void tox_callback_friend_lossy_packet(Tox *tox, tox_friend_lossy_packet_cb *call
  */
 typedef void tox_friend_lossless_packet_cb(
         Tox *tox, Tox_Friend_Number friend_number,
-        const uint8_t data[], size_t length,
+        const uint8_t *data, size_t length,
         void *user_data);
 
 
@@ -3690,8 +3690,8 @@ const char *tox_err_group_new_to_string(Tox_Err_Group_New value);
  */
 Tox_Group_Number tox_group_new(
         Tox *tox, Tox_Group_Privacy_State privacy_state,
-        const uint8_t group_name[], size_t group_name_length,
-        const uint8_t name[], size_t name_length, Tox_Err_Group_New *error);
+        const uint8_t *group_name, size_t group_name_length,
+        const uint8_t *name, size_t name_length, Tox_Err_Group_New *error);
 
 typedef enum Tox_Err_Group_Join {
 
@@ -3755,8 +3755,8 @@ const char *tox_err_group_join_to_string(Tox_Err_Group_Join value);
  */
 Tox_Group_Number tox_group_join(
         Tox *tox, const uint8_t chat_id[TOX_GROUP_CHAT_ID_SIZE],
-        const uint8_t name[], size_t name_length,
-        const uint8_t password[], size_t password_length,
+        const uint8_t *name, size_t name_length,
+        const uint8_t *password, size_t password_length,
         Tox_Err_Group_Join *error);
 
 typedef enum Tox_Err_Group_Is_Connected {
@@ -3890,7 +3890,7 @@ const char *tox_err_group_leave_to_string(Tox_Err_Group_Leave value);
  */
 bool tox_group_leave(
         Tox *tox, Tox_Group_Number group_number,
-        const uint8_t part_message[], size_t length,
+        const uint8_t *part_message, size_t length,
         Tox_Err_Group_Leave *error);
 
 
@@ -3970,7 +3970,7 @@ const char *tox_err_group_self_name_set_to_string(Tox_Err_Group_Self_Name_Set va
  */
 bool tox_group_self_set_name(
         Tox *tox, Tox_Group_Number group_number,
-        const uint8_t name[], size_t length,
+        const uint8_t *name, size_t length,
         Tox_Err_Group_Self_Name_Set *error);
 
 /**
@@ -3999,7 +3999,7 @@ size_t tox_group_self_get_name_size(const Tox *tox, Tox_Group_Number group_numbe
  */
 bool tox_group_self_get_name(
         const Tox *tox, Tox_Group_Number group_number,
-        uint8_t name[], Tox_Err_Group_Self_Query *error);
+        uint8_t *name, Tox_Err_Group_Self_Query *error);
 
 /**
  * Error codes for self status setting.
@@ -4133,7 +4133,7 @@ size_t tox_group_peer_get_name_size(const Tox *tox, Tox_Group_Number group_numbe
  */
 bool tox_group_peer_get_name(
         const Tox *tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id,
-        uint8_t name[], Tox_Err_Group_Peer_Query *error);
+        uint8_t *name, Tox_Err_Group_Peer_Query *error);
 
 /**
  * Return the peer's user status (away/busy/...). If the ID or group number is
@@ -4201,7 +4201,7 @@ bool tox_group_peer_get_public_key(
  */
 typedef void tox_group_peer_name_cb(
         Tox *tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id,
-        const uint8_t name[], size_t length, void *user_data);
+        const uint8_t *name, size_t length, void *user_data);
 
 
 /**
@@ -4311,7 +4311,7 @@ const char *tox_err_group_topic_set_to_string(Tox_Err_Group_Topic_Set value);
  */
 bool tox_group_set_topic(
         Tox *tox, Tox_Group_Number group_number,
-        const uint8_t topic[], size_t length,
+        const uint8_t *topic, size_t length,
         Tox_Err_Group_Topic_Set *error);
 
 /**
@@ -4338,7 +4338,7 @@ size_t tox_group_get_topic_size(const Tox *tox, Tox_Group_Number group_number, T
  */
 bool tox_group_get_topic(
         const Tox *tox, Tox_Group_Number group_number,
-        uint8_t topic[], Tox_Err_Group_State_Queries *error);
+        uint8_t *topic, Tox_Err_Group_State_Queries *error);
 
 /**
  * @param group_number The group number of the group the topic change is intended for.
@@ -4349,7 +4349,7 @@ bool tox_group_get_topic(
  */
 typedef void tox_group_topic_cb(
         Tox *tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id,
-        const uint8_t topic[], size_t length,
+        const uint8_t *topic, size_t length,
         void *user_data);
 
 
@@ -4378,7 +4378,7 @@ size_t tox_group_get_name_size(const Tox *tox, Tox_Group_Number group_number, To
  */
 bool tox_group_get_name(
         const Tox *tox, Tox_Group_Number group_number,
-        uint8_t name[], Tox_Err_Group_State_Queries *error);
+        uint8_t *name, Tox_Err_Group_State_Queries *error);
 
 /**
  * Write the Chat ID designated by the given group number to a byte array.
@@ -4526,7 +4526,7 @@ size_t tox_group_get_password_size(const Tox *tox, Tox_Group_Number group_number
  * @return true on success.
  */
 bool tox_group_get_password(
-        const Tox *tox, Tox_Group_Number group_number, uint8_t password[],
+        const Tox *tox, Tox_Group_Number group_number, uint8_t *password,
         Tox_Err_Group_State_Queries *error);
 
 /**
@@ -4536,7 +4536,7 @@ bool tox_group_get_password(
  */
 typedef void tox_group_password_cb(
         Tox *tox, Tox_Group_Number group_number,
-        const uint8_t password[], size_t length,
+        const uint8_t *password, size_t length,
         void *user_data);
 
 
@@ -4624,7 +4624,7 @@ const char *tox_err_group_send_message_to_string(Tox_Err_Group_Send_Message valu
  */
 Tox_Group_Message_Id tox_group_send_message(
         const Tox *tox, Tox_Group_Number group_number, Tox_Message_Type type,
-        const uint8_t message[], size_t length,
+        const uint8_t *message, size_t length,
         Tox_Err_Group_Send_Message *error);
 
 typedef enum Tox_Err_Group_Send_Private_Message {
@@ -4699,7 +4699,7 @@ const char *tox_err_group_send_private_message_to_string(Tox_Err_Group_Send_Priv
  */
 bool tox_group_send_private_message(
         const Tox *tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, Tox_Message_Type type,
-        const uint8_t message[], size_t length,
+        const uint8_t *message, size_t length,
         Tox_Err_Group_Send_Private_Message *error);
 
 typedef enum Tox_Err_Group_Send_Custom_Packet {
@@ -4773,7 +4773,7 @@ const char *tox_err_group_send_custom_packet_to_string(Tox_Err_Group_Send_Custom
  */
 bool tox_group_send_custom_packet(
         const Tox *tox, Tox_Group_Number group_number, bool lossless,
-        const uint8_t data[], size_t length,
+        const uint8_t *data, size_t length,
         Tox_Err_Group_Send_Custom_Packet *error);
 
 
@@ -4851,7 +4851,7 @@ const char *tox_err_group_send_custom_private_packet_to_string(Tox_Err_Group_Sen
  * @return true on success.
  */
 bool tox_group_send_custom_private_packet(const Tox *tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, bool lossless,
-        const uint8_t data[], size_t length,
+        const uint8_t *data, size_t length,
         Tox_Err_Group_Send_Custom_Private_Packet *error);
 
 
@@ -4873,7 +4873,7 @@ bool tox_group_send_custom_private_packet(const Tox *tox, Tox_Group_Number group
  */
 typedef void tox_group_message_cb(
         Tox *tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, Tox_Message_Type type,
-        const uint8_t message[], size_t length, Tox_Group_Message_Id message_id, void *user_data);
+        const uint8_t *message, size_t length, Tox_Group_Message_Id message_id, void *user_data);
 
 
 /**
@@ -4891,7 +4891,7 @@ void tox_callback_group_message(Tox *tox, tox_group_message_cb *callback);
  */
 typedef void tox_group_private_message_cb(
         Tox *tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, Tox_Message_Type type,
-        const uint8_t message[], size_t length, void *user_data);
+        const uint8_t *message, size_t length, void *user_data);
 
 
 /**
@@ -4909,7 +4909,7 @@ void tox_callback_group_private_message(Tox *tox, tox_group_private_message_cb *
  */
 typedef void tox_group_custom_packet_cb(
         Tox *tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id,
-        const uint8_t data[], size_t length, void *user_data);
+        const uint8_t *data, size_t length, void *user_data);
 
 
 /**
@@ -4927,7 +4927,7 @@ void tox_callback_group_custom_packet(Tox *tox, tox_group_custom_packet_cb *call
  */
 typedef void tox_group_custom_private_packet_cb(
         Tox *tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id,
-        const uint8_t data[], size_t length, void *user_data);
+        const uint8_t *data, size_t length, void *user_data);
 
 
 /**
@@ -5061,9 +5061,9 @@ const char *tox_err_group_invite_accept_to_string(Tox_Err_Group_Invite_Accept va
  */
 Tox_Group_Number tox_group_invite_accept(
         Tox *tox, Tox_Friend_Number friend_number,
-        const uint8_t invite_data[], size_t length,
-        const uint8_t name[], size_t name_length,
-        const uint8_t password[], size_t password_length,
+        const uint8_t *invite_data, size_t length,
+        const uint8_t *name, size_t name_length,
+        const uint8_t *password, size_t password_length,
         Tox_Err_Group_Invite_Accept *error);
 
 /**
@@ -5073,8 +5073,8 @@ Tox_Group_Number tox_group_invite_accept(
  */
 typedef void tox_group_invite_cb(
         Tox *tox, Tox_Friend_Number friend_number,
-        const uint8_t invite_data[], size_t length,
-        const uint8_t group_name[], size_t group_name_length,
+        const uint8_t *invite_data, size_t length,
+        const uint8_t *group_name, size_t group_name_length,
         void *user_data);
 
 
@@ -5154,8 +5154,8 @@ const char *tox_group_exit_type_to_string(Tox_Group_Exit_Type value);
  */
 typedef void tox_group_peer_exit_cb(
         Tox *tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, Tox_Group_Exit_Type exit_type,
-        const uint8_t name[], size_t name_length,
-        const uint8_t part_message[], size_t part_message_length, void *user_data);
+        const uint8_t *name, size_t name_length,
+        const uint8_t *part_message, size_t part_message_length, void *user_data);
 
 
 /**
@@ -5285,7 +5285,7 @@ const char *tox_err_group_founder_set_password_to_string(Tox_Err_Group_Founder_S
  */
 bool tox_group_founder_set_password(
         Tox *tox, Tox_Group_Number group_number,
-        const uint8_t password[], size_t length,
+        const uint8_t *password, size_t length,
         Tox_Err_Group_Founder_Set_Password *error);
 
 typedef enum Tox_Err_Group_Founder_Set_Topic_Lock {

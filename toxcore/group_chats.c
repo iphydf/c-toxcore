@@ -648,7 +648,7 @@ static bool gc_get_enc_pk_from_sig_pk(const GC_Chat *chat, uint8_t *public_key, 
 
         assert(gconn != nullptr);
 
-        const uint8_t *full_pk = gconn->addr.public_key;
+        const uint8_t *full_pk = &gconn->addr.public_key[0];
 
         if (memcmp(public_sig_key, get_sig_pk(full_pk), SIG_PUBLIC_KEY_SIZE) == 0) {
             memcpy(public_key, get_enc_key(full_pk), ENC_PUBLIC_KEY_SIZE);
@@ -5875,7 +5875,7 @@ static int handle_gc_handshake_request(GC_Chat *chat, const IP_Port *ipp, const 
 
     if (nodes_count > 0) {
         const int add_tcp_result = add_tcp_relay_connection(chat->tcp_conn, gconn->tcp_connection_num,
-                                   &node->ip_port, node->public_key);
+                                   &node[0].ip_port, node[0].public_key);
 
         if (add_tcp_result < 0 && is_new_peer && ipp == nullptr) {
             LOGGER_WARNING(chat->log, "Broken tcp relay for new peer");

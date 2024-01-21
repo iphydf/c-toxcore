@@ -255,8 +255,7 @@ static void proxy_socks5_generate_connection_request(TCP_Client_Connection *tcp_
         length += sizeof(IP6);
     }
 
-    memcpy(tcp_conn->con.last_packet + length, &tcp_conn->ip_port.port, sizeof(uint16_t));
-    length += sizeof(uint16_t);
+    length += net_pack_u16(tcp_conn->con.last_packet + length, tcp_conn->ip_port.port);
 
     tcp_conn->con.last_packet_length = length;
     tcp_conn->con.last_packet_sent = 0;
@@ -480,7 +479,7 @@ static int tcp_send_ping_request(const Logger *logger, TCP_Client_Connection *co
 
     uint8_t packet[1 + sizeof(uint64_t)];
     packet[0] = TCP_PACKET_PING;
-    memcpy(packet + 1, &con->ping_request_id, sizeof(uint64_t));
+    net_pack_u64(packet + 1, con->ping_request_id);
     const int ret = write_packet_tcp_secure_connection(logger, &con->con, packet, sizeof(packet), true);
 
     if (ret == 1) {
@@ -503,7 +502,7 @@ static int tcp_send_ping_response(const Logger *logger, TCP_Client_Connection *c
 
     uint8_t packet[1 + sizeof(uint64_t)];
     packet[0] = TCP_PACKET_PONG;
-    memcpy(packet + 1, &con->ping_response_id, sizeof(uint64_t));
+    net_pack_u64(packet + 1, con->ping_response_id);
     const int ret = write_packet_tcp_secure_connection(logger, &con->con, packet, sizeof(packet), true);
 
     if (ret == 1) {
@@ -763,7 +762,7 @@ static int handle_tcp_client_ping(const Logger *logger, TCP_Client_Connection *c
     }
 
     uint64_t ping_id;
-    memcpy(&ping_id, data + 1, sizeof(uint64_t));
+    net_unpack_u64(data + 1, &ping_id);
     conn->ping_response_id = ping_id;
     tcp_send_ping_response(logger, conn);
     return 0;
@@ -777,7 +776,7 @@ static int handle_tcp_client_pong(TCP_Client_Connection *conn, const uint8_t *da
     }
 
     uint64_t ping_id;
-    memcpy(&ping_id, data + 1, sizeof(uint64_t));
+    net_unpack_u64(data + 1, &ping_id);
 
     if (ping_id != 0) {
         if (ping_id == conn->ping_id) {

@@ -1859,7 +1859,7 @@ static uint8_t do_ping_and_sendnode_requests(DHT *dht, uint64_t *lastgetnode, co
 
                 if (mono_time_is_timeout(dht->mono_time, assoc->last_pinged, PING_INTERVAL)) {
                     const IP_Port *target = &assoc->ip_port;
-                    const uint8_t *target_key = client->public_key;
+                    const uint8_t *target_key = &client->public_key[0];
                     dht_getnodes(dht, target, target_key, public_key);
                     assoc->last_pinged = temp_time;
                 }
@@ -1894,7 +1894,7 @@ static uint8_t do_ping_and_sendnode_requests(DHT *dht, uint64_t *lastgetnode, co
         }
 
         const IP_Port *target = &assoc_list[rand_node]->ip_port;
-        const uint8_t *target_key = client_list[rand_node]->public_key;
+        const uint8_t *target_key = &client_list[rand_node]->public_key[0];
         dht_getnodes(dht, target, target_key, public_key);
 
         *lastgetnode = temp_time;

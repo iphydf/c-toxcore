@@ -64,7 +64,10 @@
 
 #if !defined(__cplusplus) || __cplusplus < 201103L
 #define nullptr NULL
-#ifndef static_assert
+#endif // !__cplusplus
+
+#if !defined(__cplusplus) || __cplusplus < 201103L
+#if !defined(static_assert)
 #ifdef __GNUC__
 // We'll just assume gcc and clang support C11 _Static_assert.
 #define static_assert _Static_assert
@@ -75,6 +78,10 @@
 #endif // !__GNUC__
 #endif // !static_assert
 #endif // !__cplusplus
+
+#if defined(DISABLE_STATIC_ASSERT)
+#define _Static_assert(cond, msg)
+#endif // DISABLE_STATIC_ASSERT
 
 #ifdef __GNUC__
 #define GNU_PRINTF(f, a) __attribute__((__format__(__printf__, f, a)))

@@ -153,8 +153,8 @@ int write_packet_tcp_secure_connection(const Logger *logger, TCP_Connection *con
 
     VLA(uint8_t, packet, sizeof(uint16_t) + length + CRYPTO_MAC_SIZE);
 
-    uint16_t c_length = net_htons(length + CRYPTO_MAC_SIZE);
-    memcpy(packet, &c_length, sizeof(uint16_t));
+    const uint16_t c_length = length + CRYPTO_MAC_SIZE;
+    net_pack_u16(packet, c_length);
     int len = encrypt_data_symmetric(con->shared_key, con->sent_nonce, data, length, packet + sizeof(uint16_t));
 
     if ((unsigned int)len != (SIZEOF_VLA(packet) - sizeof(uint16_t))) {

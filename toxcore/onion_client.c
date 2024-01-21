@@ -1285,7 +1285,7 @@ int send_onion_data(Onion_Client *onion_c, int friend_num, const uint8_t *data, 
     unsigned int good_nodes[MAX_ONION_CLIENTS];
     unsigned int num_good = 0;
     unsigned int num_nodes = 0;
-    const Onion_Node *node_list = onion_c->friends_list[friend_num].clients_list;
+    const Onion_Node *node_list = &onion_c->friends_list[friend_num].clients_list[0];
 
     for (unsigned int i = 0; i < MAX_ONION_CLIENTS; ++i) {
         if (onion_node_timed_out(&node_list[i], onion_c->mono_time)) {

@@ -41,7 +41,7 @@ struct Mono_Time {
     uint64_t cur_time;
     uint64_t base_time;
 
-#ifndef ESP_PLATFORM
+#if !defined(ESP_PLATFORM) && !defined(STATIC_ANALYSIS)
     /* protect `time` from concurrent access */
     pthread_rwlock_t *time_update_lock;
 #endif
@@ -118,7 +118,7 @@ Mono_Time *mono_time_new(const Memory *mem, mono_time_current_time_cb *current_t
         return nullptr;
     }
 
-#ifndef ESP_PLATFORM
+#if !defined(ESP_PLATFORM) && !defined(STATIC_ANALYSIS)
     pthread_rwlock_t *rwlock = (pthread_rwlock_t *)mem_alloc(mem, sizeof(pthread_rwlock_t));
 
     if (rwlock == nullptr) {
@@ -157,7 +157,7 @@ void mono_time_free(const Memory *mem, Mono_Time *mono_time)
     if (mono_time == nullptr) {
         return;
     }
-#ifndef ESP_PLATFORM
+#if !defined(ESP_PLATFORM) && !defined(STATIC_ANALYSIS)
     pthread_rwlock_destroy(mono_time->time_update_lock);
     mem_delete(mem, mono_time->time_update_lock);
 #endif
@@ -169,23 +169,23 @@ void mono_time_update(Mono_Time *mono_time)
     const uint64_t cur_time =
         mono_time->base_time + mono_time->current_time_callback(mono_time->user_data);
 
-#ifndef ESP_PLATFORM
+#if !defined(ESP_PLATFORM) && !defined(STATIC_ANALYSIS)
     pthread_rwlock_wrlock(mono_time->time_update_lock);
 #endif
     mono_time->cur_time = cur_time;
-#ifndef ESP_PLATFORM
+#if !defined(ESP_PLATFORM) && !defined(STATIC_ANALYSIS)
     pthread_rwlock_unlock(mono_time->time_update_lock);
 #endif
 }
 
 uint64_t mono_time_get_ms(const Mono_Time *mono_time)
 {
-#if !defined(ESP_PLATFORM) && !defined(FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION)
+#if !defined(ESP_PLATFORM) && !defined(STATIC_ANALYSIS) && !defined(FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION)
     // Fuzzing is only single thread for now, no locking needed */
     pthread_rwlock_rdlock(mono_time->time_update_lock);
 #endif
     const uint64_t cur_time = mono_time->cur_time;
-#if !defined(ESP_PLATFORM) && !defined(FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION)
+#if !defined(ESP_PLATFORM) && !defined(STATIC_ANALYSIS) && !defined(FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION)
     pthread_rwlock_unlock(mono_time->time_update_lock);
 #endif
     return cur_time;

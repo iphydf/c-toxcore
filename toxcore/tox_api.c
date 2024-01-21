@@ -3,6 +3,7 @@
  */
 #include "tox.h"
 
+#include <assert.h>
 #include <stdlib.h>
 
 #include "ccompat.h"
@@ -141,6 +142,7 @@ uint32_t tox_dht_node_public_key_size(void)
 #define ACCESSORS(type, name) \
 type tox_options_get_##name(const struct Tox_Options *options) \
 { \
+    assert(options != nullptr); \
     return options->name; \
 } \
 void tox_options_set_##name(struct Tox_Options *options, type name) \

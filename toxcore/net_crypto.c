@@ -129,11 +129,7 @@ typedef struct Crypto_Connection {
     uint32_t dht_pk_callback_number;
 } Crypto_Connection;
 
-static Crypto_Connection empty_crypto_connection(void)
-{
-    const Crypto_Connection empty = {{0}};
-    return empty;
-}
+static const Crypto_Connection empty_crypto_connection = {{0}};
 
 struct Net_Crypto {
     const Logger *log;
@@ -1141,8 +1137,8 @@ static int send_data_packet_helper(Net_Crypto *c, int crypt_connection_id, uint3
     buffer_start = net_htonl(buffer_start);
     const uint16_t padding_length = (MAX_CRYPTO_DATA_SIZE - length) % CRYPTO_MAX_PADDING;
     VLA(uint8_t, packet, sizeof(uint32_t) + sizeof(uint32_t) + padding_length + length);
-    memcpy(packet, &buffer_start, sizeof(uint32_t));
-    memcpy(packet + sizeof(uint32_t), &num, sizeof(uint32_t));
+    net_pack_u32(packet, buffer_start);
+    net_pack_u32(packet + sizeof(uint32_t), num);
     memset(packet + (sizeof(uint32_t) * 2), PACKET_ID_PADDING, padding_length);
     memcpy(packet + (sizeof(uint32_t) * 2) + padding_length, data, length);
 
@@ -1571,8 +1567,8 @@ static int handle_data_packet_core(Net_Crypto *c, int crypt_connection_id, const
 
     uint32_t buffer_start;
     uint32_t num;
-    memcpy(&buffer_start, data, sizeof(uint32_t));
-    memcpy(&num, data + sizeof(uint32_t), sizeof(uint32_t));
+    net_unpack_u32(data, &buffer_start);
+    net_unpack_u32(data + sizeof(uint32_t), &num);
     buffer_start = net_ntohl(buffer_start);
     num = net_ntohl(num);
 
@@ -1867,7 +1863,7 @@ static int create_crypto_connection(Net_Crypto *c)
         if (realloc_cryptoconnection(c, c->crypto_connections_length + 1) == 0) {
             id = c->crypto_connections_length;
             ++c->crypto_connections_length;
-            c->crypto_connections[id] = empty_crypto_connection();
+            c->crypto_connections[id] = empty_crypto_connection;
         }
     }
 

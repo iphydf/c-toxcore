@@ -2042,7 +2042,14 @@ char *net_new_strerror(int error)
     return str;
 }
 #else
-#if defined(_GNU_SOURCE) && defined(__GLIBC__)
+#if defined(STATIC_ANALYSIS)
+non_null()
+static const char *net_strerror_r(int error, char *tmp, size_t tmp_size)
+{
+    // Return a constant string so strlen() terminates.
+    return "network error";
+}
+#elif defined(_GNU_SOURCE) && defined(__GLIBC__)
 non_null()
 static const char *net_strerror_r(int error, char *tmp, size_t tmp_size)
 {
