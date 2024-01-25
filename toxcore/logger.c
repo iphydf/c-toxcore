@@ -87,6 +87,7 @@ void logger_callback_log(Logger *log, logger_cb *function, void *context, void *
 void logger_write(const Logger *log, Logger_Level level, const char *file, int line, const char *func,
                   const char *format, ...)
 {
+#ifndef __COMPCERT__
     if (log == nullptr) {
         log = &logger_stderr;
     }
@@ -115,6 +116,7 @@ void logger_write(const Logger *log, Logger_Level level, const char *file, int l
     va_end(args);
 
     log->callback(log->context, level, file, line, func, msg, log->userdata);
+#endif
 }
 
 void logger_abort(void)

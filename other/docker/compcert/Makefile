@@ -1,11 +1,11 @@
-SOURCES := $(wildcard auto_tests/auto_test_support.c \
+SOURCES := auto_tests/auto_test_support.c \
 		   auto_tests/send_message_test.c \
 		   testing/misc_tools.c \
-		   toxav/*.c \
+		   third_party/cmp/cmp.c \
+		   $(wildcard toxav/*.c \
 		   toxcore/*.c \
 		   toxcore/*/*.c \
-		   toxencryptsave/*.c \
-		   third_party/cmp/*.c)
+		   toxencryptsave/*.c)
 
 OBJECTS := $(SOURCES:.c=.o)
 
