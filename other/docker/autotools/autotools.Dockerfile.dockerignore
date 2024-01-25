@@ -1,0 +1,15 @@
+**/*
+!.github/scripts/autotools-linux
+!m4/*
+!README.md
+!configure.ac
+!*.pc.in
+!*.spec.in
+!**/Makefile.am
+!**/Makefile.inc
+!docs/updates/*
+!other/DHTnodes
+!other/astyle/*
+!other/bootstrap_daemon/bash-completion/completions/tox-bootstrapd
+!other/bootstrap_daemon/tox-bootstrapd.*
+!other/tox.png

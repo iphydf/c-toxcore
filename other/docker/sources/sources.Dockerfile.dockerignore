@@ -1,0 +1,17 @@
+# Ignore everything ...
+**/*
+# ... except sources
+!**/*.[ch]
+!**/*.cc
+!**/*.hh
+!auto_tests/data/*
+!other/proxy/*.mod
+!other/proxy/*.sum
+!other/proxy/*.go
+# ... and CMake build files (used by most builds).
+!**/CMakeLists.txt
+!.github/scripts/flags*.sh
+!cmake/*.cmake
+!other/pkgconfig/*
+!other/rpm/*
+!so.version
