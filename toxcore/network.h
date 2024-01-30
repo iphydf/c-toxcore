@@ -511,7 +511,14 @@ int32_t net_getipport(const Network *_Nonnull ns, const Memory *_Nonnull mem, co
 
 /** Deallocates memory allocated by net_getipport */
 void net_freeipport(const Memory *_Nonnull mem, IP_Port *_Nullable ip_ports);
-bool bin_pack_ip_port(Bin_Pack *_Nonnull bp, const Logger *_Nonnull logger, const IP_Port *_Nonnull ip_port);
+
+/** @brief Packs an IP_Port structure.
+ *
+ * @param pad if true, the packed size will always be SIZE_IPPORT, otherwise
+ *   it will be SIZE_IP4 or SIZE_IP6 depending on the address family.
+ * @retval true on success.
+ */
+bool bin_pack_ip_port(Bin_Pack *_Nonnull bp, const Logger *_Nonnull logger, const IP_Port *_Nonnull ip_port, bool pad);
 
 /** @brief Pack an IP_Port structure into data of max size length.
  *

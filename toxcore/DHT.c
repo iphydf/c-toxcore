@@ -400,7 +400,7 @@ int dht_create_packet(const Memory *mem, const Random *rng,
 static bool bin_pack_node_handler(const void *_Nonnull arr, uint32_t index, const Logger *_Nonnull logger, Bin_Pack *_Nonnull bp)
 {
     const Node_format *nodes = (const Node_format *)arr;
-    return bin_pack_ip_port(bp, logger, &nodes[index].ip_port)
+    return bin_pack_ip_port(bp, logger, &nodes[index].ip_port, true)
            && bin_pack_bin_b(bp, nodes[index].public_key, CRYPTO_PUBLIC_KEY_SIZE);
 }
 

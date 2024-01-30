@@ -490,6 +490,7 @@ cc_test(
     deps = [
         ":network",
         ":network_test_util",
+        ":os_memory",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
