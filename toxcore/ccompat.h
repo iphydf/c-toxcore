@@ -73,6 +73,11 @@
 #endif /* !static_assert */
 #endif /* !__cplusplus */
 
+#ifdef DISABLE_STATIC_ASSERT
+#undef static_assert
+#define static_assert(cond, msg) extern int static_assert_ignored
+#endif
+
 //!TOKSTYLE+
 
 #endif /* C_TOXCORE_TOXCORE_CCOMPAT_H */
