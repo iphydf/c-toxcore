@@ -1,3 +1,8 @@
 #!/bin/sh
 
-chibicc -c broken.c 2>&1 | grep "error"
+ulimit -c 0
+
+/work/dyibicc/out/ld/dyibicc -c main.c
+if [ "$?" != 139 ]; then
+  exit 1
+fi

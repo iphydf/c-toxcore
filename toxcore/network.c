@@ -1522,7 +1522,11 @@ void ip_init(IP *ip, bool ipv6enabled)
     }
 
     ip_reset(ip);
-    ip->family = ipv6enabled ? net_family_ipv6() : net_family_ipv4();
+    if (ipv6enabled) {
+        ip->family = net_family_ipv6();
+    } else {
+        ip->family = net_family_ipv4();
+    }
 }
 
 /** checks if ip is valid */

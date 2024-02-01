@@ -51,10 +51,8 @@ static void logger_stderr_handler(void *context, Logger_Level level, const char 
                                   const char *message, void *userdata)
 {
 #ifndef NDEBUG
-    // GL stands for "global logger".
-    fprintf(stderr, "[GL] %s %s:%d(%s): %s\n", logger_level_name(level), file, line, func, message);
-    fprintf(stderr, "Default stderr logger triggered; aborting program\n");
-    abort();
+    const uint8_t id = (uint8_t)(uintptr_t)context;
+    fprintf(stderr, "[%02x] %s %s:%d(%s): %s\n", id, logger_level_name(level), file, line, func, message);
 #endif /* NDEBUG */
 }
 
@@ -91,6 +89,10 @@ void logger_write(const Logger *log, Logger_Level level, const char *file, int l
     if (log == nullptr) {
         log = &logger_stderr;
     }
+
+#ifdef LOGGER_TO_STDERR
+    log = &logger_stderr;
+#endif
 
     if (log->callback == nullptr) {
         return;
