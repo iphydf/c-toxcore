@@ -1,0 +1,4 @@
+#!/bin/sh
+
+#docker build -t toxchat/c-toxcore:clang-format other/docker/clang-format
+docker run --name toxcore-clang-format --rm -it -v "$PWD:/work" toxchat/c-toxcore:clang-format
