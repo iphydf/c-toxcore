@@ -323,6 +323,8 @@ set(toxcore_SOURCES
   toxcore/ping.h
   toxcore/shared_key_cache.c
   toxcore/shared_key_cache.h
+  toxcore/sort.c
+  toxcore/sort.h
   toxcore/state.c
   toxcore/state.h
   toxcore/TCP_client.c
