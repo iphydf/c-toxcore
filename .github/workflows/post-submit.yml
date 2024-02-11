@@ -32,11 +32,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build toxchat/c-toxcore:sources
-        uses: docker/build-push-action@v5
-        with:
-          file: other/docker/sources/sources.Dockerfile
-          tags: toxchat/c-toxcore:sources
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
