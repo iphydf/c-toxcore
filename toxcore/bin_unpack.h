@@ -64,7 +64,7 @@ non_null() bool bin_unpack_array(Bin_Unpack *bu, uint32_t *size);
  * @retval false if the packed array size is not exactly the required size.
  */
 non_null(1) nullable(3)
-bool bin_unpack_array_fixed(Bin_Unpack *bu, uint32_t required_size, uint32_t *actual_size);
+bool bin_unpack_array_fixed(Bin_Unpack *bu, uint32_t required_size, _Opt uint32_t *actual_size);
 
 /** @brief Unpack a MessagePack bool. */
 non_null() bool bin_unpack_bool(Bin_Unpack *bu, bool *val);
@@ -86,7 +86,7 @@ non_null() bool bin_unpack_nil(Bin_Unpack *bu);
  * remaining to be unpacked as the bin claims to need, so it's not possible to cause an arbitrarily
  * large allocation unless the input array was already that large.
  */
-non_null() bool bin_unpack_bin(Bin_Unpack *bu, uint8_t **data_ptr, uint32_t *data_length_ptr);
+non_null() bool bin_unpack_bin(Bin_Unpack *bu, uint8_t *_Out _Owner *data_ptr, uint32_t *data_length_ptr);
 /** @brief Unpack a variable size MessagePack bin into a fixed size byte array.
  *
  * Stores unpacked data into `data` with its length stored in `data_length_ptr`. This function does
@@ -104,7 +104,7 @@ non_null() bool bin_unpack_bin_fixed(Bin_Unpack *bu, uint8_t *data, uint32_t dat
  *
  * A call to this function must be followed by exactly `size` bytes packed by functions below.
  */
-non_null() bool bin_unpack_bin_size(Bin_Unpack *bu, uint32_t *size);
+non_null() bool bin_unpack_bin_size(Bin_Unpack *bu, _Out uint32_t *size);
 
 /** @brief Read a `uint8_t` directly from the unpacker, consuming 1 byte. */
 non_null() bool bin_unpack_u08_b(Bin_Unpack *bu, uint8_t *val);
