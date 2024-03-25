@@ -13,11 +13,11 @@
 #include <stdint.h>
 
 #include "Messenger.h"
-#include "attributes.h"
 #include "crypto_core.h"
 #include "mem.h"
 #include "mono_time.h"
 #include "state.h"
+#include "attributes.h"
 
 typedef enum Groupchat_Type {
     GROUPCHAT_TYPE_TEXT,

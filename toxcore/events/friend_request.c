@@ -16,6 +16,7 @@
 #include "../tox_event.h"
 #include "../tox_events.h"
 #include "../tox_private.h"
+#include "../tox_system_impl.h"
 
 /*****************************************************
  *

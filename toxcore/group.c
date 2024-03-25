@@ -702,7 +702,7 @@ static bool delete_frozen(const Memory *mem, Group_c *g, uint32_t frozen_index)
  * @return peer index if peer is in the conference.
  * @retval -1 otherwise, and on error.
  */
-non_null(1) nullable(4)
+non_null(1, 5) nullable(4)
 static int note_peer_active(Group_Chats *g_c, uint32_t groupnumber, uint16_t peer_number, void *userdata)
 {
     Group_c *g = get_group_c(g_c, groupnumber);
