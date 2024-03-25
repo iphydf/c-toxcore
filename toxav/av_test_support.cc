@@ -5,9 +5,11 @@
 #include <cstring>
 
 #include "../toxcore/os_memory.h"
+#include "../toxcore/tox_time_impl.h"
 
 // Mock Time
 uint64_t mock_time_cb(void *ud) { return static_cast<MockTime *>(ud)->t; }
+static constexpr Tox_Time_Funcs time_funcs = { mock_time_cb };
 
 // RTP Mock
 int RtpMock::send_packet(void *user_data, const uint8_t *data, uint16_t length)
@@ -159,7 +161,8 @@ void AvTest::SetUp()
     const Memory *mem = os_memory();
     log = logger_new(mem);
     tm.t = 1000;
-    mono_time = mono_time_new(mem, mock_time_cb, &tm);
+    tox_time = new Tox_Time{&time_funcs, &tm, mem};
+    mono_time = mono_time_new(mem, tox_time);
     mono_time_update(mono_time);
 }
 
@@ -167,5 +170,6 @@ void AvTest::TearDown()
 {
     const Memory *mem = os_memory();
     mono_time_free(mem, mono_time);
+    delete tox_time;
     logger_kill(log);
 }

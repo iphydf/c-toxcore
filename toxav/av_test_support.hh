@@ -76,6 +76,8 @@ struct VideoTestData {
 };
 
 // Common Test Fixture
+struct Tox_Time;
+
 class AvTest : public ::testing::Test {
 protected:
     void SetUp() override;
@@ -83,6 +85,7 @@ protected:
 
     Logger *log = nullptr;
     Mono_Time *mono_time = nullptr;
+    Tox_Time *tox_time = nullptr;
     MockTime tm;
 };
 

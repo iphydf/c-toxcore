@@ -10,6 +10,7 @@
 
 #include "attributes.h"
 #include "mem.h"
+#include "tox_time.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,9 +47,8 @@ extern "C" {
  */
 typedef struct Mono_Time Mono_Time;
 
-typedef uint64_t mono_time_current_time_cb(void *_Nullable user_data);
+Mono_Time *_Nullable mono_time_new(const Memory *_Nonnull mem, const Tox_Time *_Nullable tm);
 
-Mono_Time *_Nullable mono_time_new(const Memory *_Nonnull mem, mono_time_current_time_cb *_Nullable current_time_callback, void *_Nullable user_data);
 void mono_time_free(const Memory *_Nonnull mem, Mono_Time *_Nullable mono_time);
 /**
  * Update mono_time; subsequent calls to mono_time_get or mono_time_is_timeout
@@ -86,8 +86,7 @@ uint64_t current_time_monotonic(const Mono_Time *_Nonnull mono_time);
  * The caller is obligated to ensure that `current_time_monotonic()` continues
  * to increase monotonically.
  */
-void mono_time_set_current_time_callback(Mono_Time *_Nonnull mono_time,
-        mono_time_current_time_cb *_Nullable current_time_callback, void *_Nullable user_data);
+void mono_time_set_current_time_callback(Mono_Time *_Nonnull mono_time, const Tox_Time *_Nullable tm);
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

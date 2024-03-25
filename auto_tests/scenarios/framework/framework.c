@@ -8,8 +8,9 @@
 #include <stdarg.h>
 
 #include "../../../testing/misc_tools.h"
-#include "../../../toxcore/tox_struct.h"
+#include "../../../toxcore/tox_impl.h"
 #include "../../../toxcore/network.h"
+#include "../../../toxcore/tox_time_impl.h"
 
 #define MAX_NODES 128
 
@@ -27,6 +28,7 @@ struct ToxNode {
     Tox *tox;
     Tox_Options *options;
     Tox_Dispatch *dispatch;
+    Tox_Time *custom_timer;
     uint32_t index;
     char *alias;
 
@@ -118,6 +120,11 @@ static uint64_t get_scenario_clock(void *user_data)
     return time;
 }
 
+static const Tox_Time_Funcs scenario_time_funcs = {
+    .monotonic_callback = get_scenario_clock,
+};
+
+
 void tox_node_log(ToxNode *node, const char *format, ...)
 {
     ck_assert(node != nullptr);
@@ -176,6 +183,7 @@ void tox_scenario_free(ToxScenario *s)
         tox_dispatch_free(node->dispatch);
         tox_kill(node->tox);
         tox_options_free(node->options);
+        free(node->custom_timer);
         free(node->alias);
         free(node->mirrored_ctx);
         free(node->mirrored_ctx_public);
@@ -564,7 +572,12 @@ ToxNode *tox_scenario_add_node_ex(ToxScenario *s, const char *alias, tox_node_sc
 
     node->dispatch = tox_dispatch_new(nullptr);
     tox_events_init(node->tox);
-    mono_time_set_current_time_callback(node->tox->mono_time, get_scenario_clock, s);
+
+    node->custom_timer = (Tox_Time *)calloc(1, sizeof(Tox_Time));
+    ck_assert(node->custom_timer != nullptr);
+    node->custom_timer->funcs = &scenario_time_funcs;
+    node->custom_timer->user_data = s;
+    mono_time_set_current_time_callback(node->tox->mono_time, node->custom_timer);
 
     // Initial mirror population
     node->mirror.connection_status = tox_self_get_connection_status(node->tox);
@@ -770,7 +783,7 @@ void tox_node_reload(ToxNode *node)
     ck_assert_msg(new_tox != nullptr, "tox_new said OK but returned NULL");
     Tox_Dispatch *new_dispatch = tox_dispatch_new(nullptr);
     tox_events_init(new_tox);
-    mono_time_set_current_time_callback(new_tox->mono_time, get_scenario_clock, s);
+    mono_time_set_current_time_callback(new_tox->mono_time, node->custom_timer);
 
     pthread_mutex_lock(&s->mutex);
     node->tox = new_tox;

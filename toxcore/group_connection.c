@@ -154,8 +154,8 @@ static bool add_to_send_array(const Logger *_Nonnull log, const Memory *_Nonnull
     return true;
 }
 
-int gcc_send_lossless_packet(const GC_Chat *chat, GC_Connection *gconn, const uint8_t *data, uint16_t length,
-                             uint8_t packet_type)
+int gcc_send_lossless_packet(const GC_Chat *chat, GC_Connection *gconn, const uint8_t *data,
+                             uint16_t length, uint8_t packet_type)
 {
     const uint64_t message_id = gconn->send_message_id;
 
@@ -179,8 +179,8 @@ int gcc_send_lossless_packet(const GC_Chat *chat, GC_Connection *gconn, const ui
     return 0;
 }
 
-bool gcc_send_lossless_packet_fragments(const GC_Chat *chat, GC_Connection *gconn, const uint8_t *data,
-                                        uint16_t length, uint8_t packet_type)
+bool gcc_send_lossless_packet_fragments(const GC_Chat *chat, GC_Connection *gconn,
+                                        const uint8_t *data, uint16_t length, uint8_t packet_type)
 {
     if (length <= MAX_GC_PACKET_CHUNK_SIZE || data == nullptr) {
         LOGGER_FATAL(chat->log, "invalid length or null data pointer");
@@ -232,8 +232,8 @@ bool gcc_send_lossless_packet_fragments(const GC_Chat *chat, GC_Connection *gcon
 
         assert(entry->packet_type == GP_FRAGMENT);
 
-        gcc_encrypt_and_send_lossless_packet(chat, gconn, entry->data, entry->data_length,
-                                             entry->message_id, entry->packet_type);
+        gcc_encrypt_and_send_lossless_packet(
+            chat, gconn, entry->data, entry->data_length, entry->message_id, entry->packet_type);
     }
 
     return true;
@@ -374,7 +374,8 @@ static uint16_t reassemble_packet(const Logger *_Nonnull log, const Memory *_Non
         packet_length = diff;
 
         if (packet_length > MAX_GC_PACKET_SIZE) {
-            LOGGER_ERROR(log, "Payload of size %u exceeded max packet size", packet_length);  // should never happen
+            LOGGER_ERROR(log, "Payload of size %u exceeded max packet size",
+                         packet_length);  // should never happen
             return 0;
         }
 
@@ -482,7 +483,7 @@ int gcc_handle_received_message(const Logger *log, const Memory *mem, const Mono
         return 0;
     }
 
-    if (packet_type == GP_FRAGMENT) { // we handle packet fragments as a special case
+    if (packet_type == GP_FRAGMENT) {  // we handle packet fragments as a special case
         return 3;
     }
 
@@ -512,8 +513,8 @@ static bool process_recv_array_entry(const GC_Session *_Nonnull c, GC_Chat *_Non
     uint8_t sender_pk[ENC_PUBLIC_KEY_SIZE];
     memcpy(sender_pk, get_enc_key(&gconn->addr.public_key), ENC_PUBLIC_KEY_SIZE);
 
-    const bool ret = handle_gc_lossless_helper(c, chat, peer_number, array_entry->data, array_entry->data_length,
-                     array_entry->packet_type, userdata);
+    const bool ret = handle_gc_lossless_helper(c, chat, peer_number, array_entry->data,
+                     array_entry->data_length, array_entry->packet_type, userdata);
 
     /* peer number can change from peer add operations in packet handlers */
     peer_number = get_peer_number_of_enc_pk(chat, sender_pk, false);
@@ -537,8 +538,8 @@ static bool process_recv_array_entry(const GC_Session *_Nonnull c, GC_Chat *_Non
     return true;
 }
 
-void gcc_check_recv_array(const GC_Session *c, GC_Chat *chat, GC_Connection *gconn, uint32_t peer_number,
-                          void *userdata)
+void gcc_check_recv_array(
+    const GC_Session *c, GC_Chat *chat, GC_Connection *gconn, uint32_t peer_number, void *userdata)
 {
     if (gconn->last_chunk_id != 0) {  // dont check array if we have an unfinished fragment sequence
         return;
@@ -592,7 +593,8 @@ void gcc_resend_packets(const GC_Chat *chat, GC_Connection *gconn)
     }
 }
 
-bool gcc_send_packet(const GC_Chat *chat, GC_Connection *gconn, const uint8_t *packet, uint16_t length)
+bool gcc_send_packet(
+    const GC_Chat *chat, GC_Connection *gconn, const uint8_t *packet, uint16_t length)
 {
     if (packet == nullptr || length == 0) {
         return false;
@@ -602,13 +604,13 @@ bool gcc_send_packet(const GC_Chat *chat, GC_Connection *gconn, const uint8_t *p
 
     if (gcc_direct_conn_is_possible(chat, gconn)) {
         if (gcc_conn_is_direct(chat->mono_time, gconn)) {
-            return (uint16_t) sendpacket(chat->net, &gconn->addr.ip_port, packet, length) == length;
+            return (uint16_t)sendpacket(chat->net, &gconn->addr.ip_port, packet, length) == length;
         }
 
         if (gcc_conn_should_try_direct(chat->mono_time, gconn)) {
             gconn->last_sent_direct_try_time = mono_time_get(chat->mono_time);
 
-            if ((uint16_t) sendpacket(chat->net, &gconn->addr.ip_port, packet, length) == length) {
+            if ((uint16_t)sendpacket(chat->net, &gconn->addr.ip_port, packet, length) == length) {
                 direct_send_attempt = true;
             }
         }
@@ -621,8 +623,8 @@ bool gcc_send_packet(const GC_Chat *chat, GC_Connection *gconn, const uint8_t *p
     return ret == 0 || direct_send_attempt;
 }
 
-int gcc_encrypt_and_send_lossless_packet(const GC_Chat *chat, GC_Connection *gconn, const uint8_t *data,
-        uint16_t length, uint64_t message_id, uint8_t packet_type)
+int gcc_encrypt_and_send_lossless_packet(const GC_Chat *chat, GC_Connection *gconn,
+        const uint8_t *data, uint16_t length, uint64_t message_id, uint8_t packet_type)
 {
     const uint16_t packet_size = gc_get_wrapped_packet_size(length, NET_PACKET_GC_LOSSLESS);
     uint8_t *packet = (uint8_t *)mem_balloc(chat->mem, packet_size);
@@ -670,7 +672,8 @@ bool gcc_conn_should_try_direct(const Mono_Time *mono_time, const GC_Connection 
 
 bool gcc_direct_conn_is_possible(const GC_Chat *chat, const GC_Connection *gconn)
 {
-    return !net_family_is_unspec(gconn->addr.ip_port.ip.family) && !net_family_is_unspec(net_family(chat->net));
+    return !net_family_is_unspec(gconn->addr.ip_port.ip.family)
+           && !net_family_is_unspec(net_family(chat->net));
 }
 
 void gcc_mark_for_deletion(GC_Connection *gconn, TCP_Connections *tcp_conn, Group_Exit_Type type,
@@ -691,7 +694,7 @@ void gcc_mark_for_deletion(GC_Connection *gconn, TCP_Connections *tcp_conn, Grou
         kill_tcp_connection_to(tcp_conn, gconn->tcp_connection_num);
     }
 
-    if (length > 0 && length <= MAX_GC_PART_MESSAGE_SIZE  && part_message != nullptr) {
+    if (length > 0 && length <= MAX_GC_PART_MESSAGE_SIZE && part_message != nullptr) {
         memcpy(gconn->exit_info.part_message, part_message, length);
         gconn->exit_info.length = length;
     }

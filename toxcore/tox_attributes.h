@@ -22,8 +22,10 @@
 
 #ifdef SPARSE
 #define tox_bitwise __attribute__((bitwise))
+#define tox_force __attribute__((force))
 #else
 #define tox_bitwise
+#define tox_force
 #endif
 
 //!TOKSTYLE+

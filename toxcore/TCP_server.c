@@ -30,6 +30,7 @@
 #include "net_profile.h"
 #include "network.h"
 #include "onion.h"
+#include "tox_network.h"
 
 #ifdef TCP_SERVER_USE_EPOLL
 #define TCP_SOCKET_LISTENING 0

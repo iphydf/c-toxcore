@@ -16,7 +16,12 @@
 #include <utility>
 #include <vector>
 
-#include "../../toxcore/tox_private.h"
+#include "../../toxcore/tox_log_level.h"
+#include "../../toxcore/tox_memory.h"
+#include "../../toxcore/tox_network.h"
+#include "../../toxcore/tox_random.h"
+#include "../../toxcore/tox_system.h"
+#include "../../toxcore/tox_time.h"
 
 struct Fuzz_Data {
     static constexpr bool FUZZ_DEBUG = false;
@@ -188,8 +193,9 @@ void fuzz_select_target(const uint8_t *data, std::size_t size)
 }
 
 struct Tox_Memory;
-struct Network;
+struct Tox_Network;
 struct Tox_Random;
+struct Tox_Time;
 
 struct System {
     /** @brief Deterministic system clock for this instance.
@@ -206,11 +212,13 @@ struct System {
 
     std::unique_ptr<Tox_System> sys;
     std::unique_ptr<Tox_Memory> mem;
-    std::unique_ptr<Network> ns;
+    std::unique_ptr<Tox_Network> ns;
     std::unique_ptr<Tox_Random> rng;
+    std::unique_ptr<Tox_Time> tm;
 
     System(std::unique_ptr<Tox_System> sys, std::unique_ptr<Tox_Memory> mem,
-        std::unique_ptr<Network> ns, std::unique_ptr<Tox_Random> rng);
+        std::unique_ptr<Tox_Network> ns, std::unique_ptr<Tox_Random> rng,
+        std::unique_ptr<Tox_Time> tm);
     System(System &&);
 
     // Not inline because sizeof of the above 2 structs is not known everywhere.
@@ -385,23 +393,5 @@ private:
  * protodump program.
  */
 extern const bool FUZZ_DEBUG;
-
-inline constexpr char tox_log_level_name(Tox_Log_Level level)
-{
-    switch (level) {
-    case TOX_LOG_LEVEL_TRACE:
-        return 'T';
-    case TOX_LOG_LEVEL_DEBUG:
-        return 'D';
-    case TOX_LOG_LEVEL_INFO:
-        return 'I';
-    case TOX_LOG_LEVEL_WARNING:
-        return 'W';
-    case TOX_LOG_LEVEL_ERROR:
-        return 'E';
-    }
-
-    return '?';
-}
 
 #endif  // C_TOXCORE_TESTING_FUZZING_FUZZ_SUPPORT_H

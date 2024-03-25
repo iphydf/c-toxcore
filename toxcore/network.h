@@ -18,102 +18,13 @@
 #include "logger.h"
 #include "mem.h"
 #include "net_profile.h"
+#include "tox_network.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef bitwise int Socket_Value;
-typedef struct Socket {
-    Socket_Value value;
-} Socket;
-
-#define SIZE_IP4 4
-#define SIZE_IP6 16
-#define SIZE_IP (1 + SIZE_IP6)
-#define SIZE_PORT 2
-#define SIZE_IPPORT (SIZE_IP + SIZE_PORT)
-
-typedef struct Family {
-    uint8_t value;
-} Family;
-
-typedef union IP4 {
-    uint32_t uint32;
-    uint16_t uint16[2];
-    uint8_t uint8[4];
-} IP4;
-
-typedef union IP6 {
-    uint8_t uint8[16];
-    uint16_t uint16[8];
-    uint32_t uint32[4];
-    uint64_t uint64[2];
-} IP6;
-
-typedef union IP_Union {
-    IP4 v4;
-    IP6 v6;
-} IP_Union;
-
-typedef struct IP {
-    Family family;
-    IP_Union ip;
-} IP;
-
-typedef struct IP_Port {
-    IP ip;
-    uint16_t port;
-} IP_Port;
-
-int net_socket_to_native(Socket sock);
-Socket net_socket_from_native(int sock);
-
-typedef int net_close_cb(void *_Nullable obj, Socket sock);
-typedef Socket net_accept_cb(void *_Nullable obj, Socket sock);
-typedef int net_bind_cb(void *_Nullable obj, Socket sock, const IP_Port *_Nonnull addr);
-typedef int net_listen_cb(void *_Nullable obj, Socket sock, int backlog);
-typedef int net_connect_cb(void *_Nullable obj, Socket sock, const IP_Port *_Nonnull addr);
-typedef int net_recvbuf_cb(void *_Nullable obj, Socket sock);
-typedef int net_recv_cb(void *_Nullable obj, Socket sock, uint8_t *_Nonnull buf, size_t len);
-typedef int net_recvfrom_cb(void *_Nullable obj, Socket sock, uint8_t *_Nonnull buf, size_t len, IP_Port *_Nonnull addr);
-typedef int net_send_cb(void *_Nullable obj, Socket sock, const uint8_t *_Nonnull buf, size_t len);
-typedef int net_sendto_cb(void *_Nullable obj, Socket sock, const uint8_t *_Nonnull buf, size_t len, const IP_Port *_Nonnull addr);
-typedef Socket net_socket_cb(void *_Nullable obj, int domain, int type, int proto);
-typedef int net_socket_nonblock_cb(void *_Nullable obj, Socket sock, bool nonblock);
-typedef int net_getsockopt_cb(void *_Nullable obj, Socket sock, int level, int optname, void *_Nonnull optval, size_t *_Nonnull optlen);
-typedef int net_setsockopt_cb(void *_Nullable obj, Socket sock, int level, int optname, const void *_Nonnull optval, size_t optlen);
-typedef int net_getaddrinfo_cb(void *_Nullable obj, const Memory *_Nonnull mem, const char *_Nonnull address, int family, int protocol, IP_Port *_Nullable *_Nonnull addrs);
-typedef int net_freeaddrinfo_cb(void *_Nullable obj, const Memory *_Nonnull mem, IP_Port *_Nullable addrs);
-
-/** @brief Functions wrapping POSIX network functions.
- *
- * Refer to POSIX man pages for documentation of what these functions are
- * expected to do when providing alternative Network implementations.
- */
-typedef struct Network_Funcs {
-    net_close_cb *_Nullable close;
-    net_accept_cb *_Nullable accept;
-    net_bind_cb *_Nullable bind;
-    net_listen_cb *_Nullable listen;
-    net_connect_cb *_Nullable connect;
-    net_recvbuf_cb *_Nullable recvbuf;
-    net_recv_cb *_Nullable recv;
-    net_recvfrom_cb *_Nullable recvfrom;
-    net_send_cb *_Nullable send;
-    net_sendto_cb *_Nullable sendto;
-    net_socket_cb *_Nullable socket;
-    net_socket_nonblock_cb *_Nullable socket_nonblock;
-    net_getsockopt_cb *_Nullable getsockopt;
-    net_setsockopt_cb *_Nullable setsockopt;
-    net_getaddrinfo_cb *_Nullable getaddrinfo;
-    net_freeaddrinfo_cb *_Nullable freeaddrinfo;
-} Network_Funcs;
-
-typedef struct Network {
-    const Network_Funcs *_Nullable funcs;
-    void *_Nullable obj;
-} Network;
+typedef Tox_Network Network;
 
 const Network *_Nullable os_network(void);
 
@@ -530,40 +441,6 @@ int unpack_ip_port(IP_Port *_Nonnull ip_port, const uint8_t *_Nonnull data, uint
  * @return true on success, false on failure.
  */
 bool bind_to_port(const Network *_Nonnull ns, Socket sock, Family family, uint16_t port);
-
-/** @brief Get the last networking error code.
- *
- * Similar to Unix's errno, but cross-platform, as not all platforms use errno
- * to indicate networking errors.
- *
- * Note that different platforms may return different codes for the same error,
- * so you likely shouldn't be checking the value returned by this function
- * unless you know what you are doing, you likely just want to use it in
- * combination with `net_strerror()` to print the error.
- *
- * return platform-dependent network error code, if any.
- */
-int net_error(void);
-
-#define NET_STRERROR_SIZE 256
-
-/** @brief Contains a null terminated formatted error message.
- *
- * This struct should not contain more than at most the 2 fields.
- */
-typedef struct Net_Strerror {
-    char     data[NET_STRERROR_SIZE];
-    uint16_t size;
-} Net_Strerror;
-
-/** @brief Get a text explanation for the error code from `net_error()`.
- *
- * @param error The error code to get a string for.
- * @param buf The struct to store the error message in (usually on stack).
- *
- * @return pointer to a NULL-terminated string describing the error code.
- */
-char *_Nonnull net_strerror(int error, Net_Strerror *_Nonnull buf);
 
 /** @brief Initialize networking.
  * Bind to ip and port.

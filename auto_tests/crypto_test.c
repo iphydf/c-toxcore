@@ -3,6 +3,8 @@
 #include <string.h>
 
 #include "../toxcore/crypto_core.h"
+#include "../toxcore/os_memory.h"
+#include "../toxcore/os_random.h"
 #include "../toxcore/net_crypto.h"
 #include "../toxcore/os_memory.h"
 #include "../toxcore/os_random.h"
@@ -251,6 +253,7 @@ static void test_large_data_symmetric(void)
     ck_assert(mem != nullptr);
     const Random *rng = os_random();
     ck_assert(rng != nullptr);
+
     uint8_t k[CRYPTO_SYMMETRIC_KEY_SIZE];
 
     uint8_t n[CRYPTO_NONCE_SIZE];

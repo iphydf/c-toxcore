@@ -9,6 +9,7 @@
 #include "../toxcore/logger.h"
 #include "../toxcore/mono_time.h"
 #include "../toxcore/os_memory.h"
+#include "../toxcore/tox_time_impl.h"
 #include "av_test_support.hh"
 #include "rtp.h"
 #include "video.h"
@@ -22,7 +23,8 @@ public:
         const Memory *mem = os_memory();
         log = logger_new(mem);
         tm.t = 1000;
-        mono_time = mono_time_new(mem, mock_time_cb, &tm);
+        tox_time = new Tox_Time{&time_funcs, &tm, mem};
+        mono_time = mono_time_new(mem, tox_time);
         vc = vc_new(log, mono_time, 123, nullptr, nullptr);
 
         width = static_cast<uint16_t>(state.range(0));
@@ -53,6 +55,9 @@ public:
         if (mono_time) {
             mono_time_free(mem, mono_time);
         }
+        if (tox_time) {
+            delete tox_time;
+        }
         if (log) {
             logger_kill(log);
         }
@@ -60,7 +65,9 @@ public:
 
     Logger *log = nullptr;
     Mono_Time *mono_time = nullptr;
+    Tox_Time *tox_time = nullptr;
     MockTime tm;
+    static constexpr Tox_Time_Funcs time_funcs = { mock_time_cb };
     VCSession *vc = nullptr;
     RtpMock rtp_mock;
     uint16_t width = 0, height = 0;

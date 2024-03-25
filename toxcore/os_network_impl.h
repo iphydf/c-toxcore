@@ -1,0 +1,41 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later
+ * Copyright © 2022-2025 The TokTok team.
+ */
+
+#ifndef C_TOXCORE_TOXCORE_OS_NETWORK_IMPL_H
+#define C_TOXCORE_TOXCORE_OS_NETWORK_IMPL_H
+
+#include "tox_attributes.h"
+#include "tox_memory.h"
+#include "tox_network.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct Network_Addr Network_Addr;
+
+Network_Addr *net_addr_new(const void *_Nullable data, size_t size, const Tox_Memory *_Nonnull mem);
+void net_addr_free(Network_Addr *_Nullable addr, const Tox_Memory *_Nonnull mem);
+
+void net_addr_set(Network_Addr *_Nonnull addr, const void *_Nonnull data, size_t size);
+
+void *net_addr_mut_addr(Network_Addr *_Nonnull addr);
+const void *net_addr_get_addr(const Network_Addr *_Nonnull addr);
+
+void net_addr_set_size(Network_Addr *_Nonnull addr, size_t size);
+size_t net_addr_get_size(const Network_Addr *_Nonnull addr);
+
+bool net_addr_is_ipv4(const Network_Addr *_Nonnull addr);
+bool net_addr_is_ipv6(const Network_Addr *_Nonnull addr);
+
+uint16_t net_addr_get_port(const Network_Addr *_Nonnull addr);
+int net_addr_get_family(const Network_Addr *_Nonnull addr);
+
+const Network_Addr *net_addrs_get_addr(const Network_Addr *_Nonnull addrs, uint32_t index);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#endif /* C_TOXCORE_TOXCORE_OS_NETWORK_IMPL_H */

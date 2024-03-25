@@ -22,14 +22,15 @@
 #include "../toxcore/net_crypto.h"
 #include "../toxcore/network.h"
 #include "../toxcore/tox.h"
+#include "../toxcore/tox_impl.h" // IWYU pragma: keep
 #include "../toxcore/tox_private.h"
-#include "../toxcore/tox_struct.h"  // IWYU pragma: keep
 #include "../toxcore/util.h"
 
 #define VIDEO_SEND_X_KEYFRAMES_FIRST 7 // force the first n frames to be keyframes!
 
 // iteration interval that is used when no call is active
 #define IDLE_ITERATION_INTERVAL_MS 1000
+
 
 typedef struct ToxAVCall ToxAVCall;
 
@@ -362,7 +363,7 @@ ToxAV *toxav_new(Tox *tox, Toxav_Err_New *error)
     tox_callback_friend_lossy_packet_per_pktid(av->tox, handle_bwc_packet, BWC_PACKET_ID);
     tox_callback_friend_lossless_packet_per_pktid(av->tox, handle_msi_packet, PACKET_ID_MSI);
 
-    av->toxav_mono_time = mono_time_new(tox->sys.mem, nullptr, nullptr);
+    av->toxav_mono_time = mono_time_new(tox->sys.mem, nullptr);
 
     if (av->msi == nullptr) {
         pthread_mutex_destroy(av->mutex);

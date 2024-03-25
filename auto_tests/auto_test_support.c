@@ -3,13 +3,13 @@
 
 #include "check_compat.h"
 #include "../testing/misc_tools.h"
-#include "../toxcore/Messenger.h"
 #include "../toxcore/mono_time.h"
 #include "../toxcore/tox_dispatch.h"
 #include "../toxcore/tox_events.h"
-#include "../toxcore/tox_struct.h"
+#include "../toxcore/tox_impl.h"
 #include "../toxcore/net_crypto.h"
 #include "../toxcore/DHT.h"
+#include "../toxcore/tox_time_impl.h"
 
 #include "auto_test_support.h"
 
@@ -105,30 +105,6 @@ void bootstrap_tox_live_network(Tox *tox, bool enable_tcp)
     }
 }
 
-typedef void autotox_test_cb(AutoTox *autotoxes);
-
-static const char *tox_log_level_name(Tox_Log_Level level)
-{
-    switch (level) {
-        case TOX_LOG_LEVEL_TRACE:
-            return "TRACE";
-
-        case TOX_LOG_LEVEL_DEBUG:
-            return "DEBUG";
-
-        case TOX_LOG_LEVEL_INFO:
-            return "INFO";
-
-        case TOX_LOG_LEVEL_WARNING:
-            return "WARNING";
-
-        case TOX_LOG_LEVEL_ERROR:
-            return "ERROR";
-    }
-
-    return "<unknown>";
-}
-
 void print_debug_log(Tox *m, Tox_Log_Level level, const char *file, uint32_t line, const char *func,
                      const char *message, void *user_data)
 {
@@ -137,7 +113,7 @@ void print_debug_log(Tox *m, Tox_Log_Level level, const char *file, uint32_t lin
     }
 
     const uint32_t index = user_data ? *(uint32_t *)user_data : 0;
-    fprintf(stderr, "[#%u] %s %s:%u\t%s:\t%s\n", index, tox_log_level_name(level), file, line, func, message);
+    fprintf(stderr, "[#%u] %s %s:%u\t%s:\t%s\n", index, tox_log_level_to_string(level), file, line, func, message);
 
     if (level == TOX_LOG_LEVEL_ERROR && ABORT_ON_LOG_ERROR) {
         fputs("Aborting test program\n", stderr);

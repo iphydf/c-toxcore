@@ -6,10 +6,13 @@
 #include <cstring>
 #include <vector>
 
+#include "../toxcore/crypto_core.h"
 #include "../toxcore/logger.h"
 #include "../toxcore/mono_time.h"
 #include "../toxcore/net_crypto.h"
 #include "../toxcore/os_memory.h"
+#include "../toxcore/os_random.h"
+#include "../toxcore/tox_time_impl.h"
 
 namespace {
 
@@ -82,7 +85,8 @@ protected:
     {
         const Memory *mem = os_memory();
         log = logger_new(mem);
-        mono_time = mono_time_new(mem, nullptr, nullptr);
+        tm = tox_time_new(&time_funcs, nullptr, mem);
+        mono_time = mono_time_new(mem, tm);
         mono_time_update(mono_time);
     }
 
@@ -90,11 +94,16 @@ protected:
     {
         const Memory *mem = os_memory();
         mono_time_free(mem, mono_time);
+        tox_time_free(tm);
         logger_kill(log);
     }
 
     Logger *log;
     Mono_Time *mono_time;
+    Tox_Time *tm;
+
+    static uint64_t time_cb(void *) { return 0; }
+    static constexpr Tox_Time_Funcs time_funcs = { time_cb };
 };
 
 TEST_F(RtpPublicTest, BasicAudioSendReceive)
@@ -267,7 +276,9 @@ TEST_F(RtpPublicTest, WorkBufferEvictionAndKeyframePreservation)
     } tm = {1000};
 
     auto time_cb = [](void *ud) -> uint64_t { return static_cast<TimeMock *>(ud)->t; };
-    mono_time_set_current_time_callback(mono_time, time_cb, &tm);
+    Tox_Time_Funcs time_funcs = { time_cb };
+    Tox_Time *tt = tox_time_new(&time_funcs, &tm, os_memory());
+    mono_time_set_current_time_callback(mono_time, tt);
     mono_time_update(mono_time);
 
     // USED_RTP_WORKBUFFER_COUNT is 3.
@@ -469,7 +480,9 @@ TEST_F(RtpPublicTest, VideoJitterBufferEdgeCases)
         uint64_t t;
     } tm = {1000};
     auto time_cb = [](void *ud) -> uint64_t { return static_cast<TimeMock *>(ud)->t; };
-    mono_time_set_current_time_callback(mono_time, time_cb, &tm);
+    Tox_Time_Funcs time_funcs = { time_cb };
+    Tox_Time *tt = tox_time_new(&time_funcs, &tm, os_memory());
+    mono_time_set_current_time_callback(mono_time, tt);
     mono_time_update(mono_time);
 
     // 1. Packet too old for work buffer

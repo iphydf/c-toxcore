@@ -36,6 +36,7 @@
 #include "../toxcore/ccompat.h"
 #include "../toxcore/mono_time.h"
 #include "../toxcore/os_memory.h"
+#include "../toxcore/os_network.h"
 #include "../toxcore/os_random.h"
 #include "misc_tools.h"
 
@@ -95,7 +96,7 @@ int main(int argc, char *argv[])
     }
 
     const Memory *mem = os_memory();
-    Mono_Time *const mono_time = mono_time_new(mem, nullptr, nullptr);
+    Mono_Time *const mono_time = mono_time_new(mem, nullptr);
 
     if (mono_time == nullptr) {
         fputs("Failed to allocate monotonic timer datastructure\n", stderr);

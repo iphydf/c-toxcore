@@ -196,6 +196,11 @@ bool crypto_sha256_eq(const uint8_t cksum1[_Nonnull CRYPTO_SHA256_SIZE], const u
 typedef Tox_Random Random;
 
 /**
+ * @brief Shorter internal name for the RNG type.
+ */
+typedef Tox_Random Random;
+
+/**
  * @brief Return a random 8 bit integer.
  */
 uint8_t random_u08(const Random *_Nonnull rng);

@@ -21,7 +21,7 @@ public:
     {
         const Memory *mem = os_memory();
         log = logger_new(mem);
-        mono_time = mono_time_new(mem, nullptr, nullptr);
+        mono_time = mono_time_new(mem, nullptr);
 
         mock.store_last_packet_only = true;
 
