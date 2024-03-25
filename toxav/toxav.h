@@ -63,14 +63,9 @@
 extern "C" {
 #endif
 
-/**
- * External Tox type.
- */
-
 #ifndef TOX_DEFINED
-#define TOX_DEFINED
 typedef struct Tox Tox;
-#endif /* !TOX_DEFINED */
+#endif /* TOX_DEFINED */
 
 #ifndef TOX_CONFERENCE_NUMBER_DEFINED
 #define TOX_CONFERENCE_NUMBER_DEFINED
@@ -87,9 +82,7 @@ typedef uint32_t Tox_Friend_Number;
 typedef uint32_t Tox_Conference_Peer_Number;
 #endif /* !TOX_CONFERENCE_PEER_NUMBER_DEFINED */
 
-
 #ifndef TOXAV_DEFINED
-#define TOXAV_DEFINED
 /**
  * @brief The ToxAV instance type.
  *

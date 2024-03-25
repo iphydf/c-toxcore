@@ -7,6 +7,7 @@
 #include "../toxcore/logger.h"
 #include "../toxcore/mono_time.h"
 #include "../toxcore/os_memory.h"
+#include "../toxcore/tox_time_impl.h"
 
 namespace {
 
@@ -32,12 +33,18 @@ void fuzz_rtp_receive(Fuzz_Data &input)
     std::unique_ptr<Logger, LoggerDeleter> log(logger_new(mem));
 
     auto time_cb = [](void *) -> uint64_t { return 0; };
+    static constexpr Tox_Time_Funcs time_funcs = {
+        /* .monotonic_callback = */ time_cb,
+    };
+    // Leaked for fuzzing simplicity, or could manage it.
+    Tox_Time *tm = new Tox_Time{&time_funcs, nullptr, mem};
+
     struct MonoTimeDeleter {
         const Memory *m;
         void operator()(Mono_Time *t) { mono_time_free(m, t); }
     };
     std::unique_ptr<Mono_Time, MonoTimeDeleter> mono_time(
-        mono_time_new(mem, time_cb, nullptr), MonoTimeDeleter{mem});
+        mono_time_new(mem, tm), MonoTimeDeleter{mem});
 
     MockSessionData sd;
 

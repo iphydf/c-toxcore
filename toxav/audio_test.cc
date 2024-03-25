@@ -9,6 +9,7 @@
 #include "../toxcore/mono_time.h"
 #include "../toxcore/network.h"
 #include "../toxcore/os_memory.h"
+#include "../toxcore/tox_time_impl.h"
 #include "rtp.h"
 
 namespace {
@@ -66,7 +67,9 @@ protected:
         const Memory *mem = os_memory();
         log = logger_new(mem);
         tm.t = 1000;
-        mono_time = mono_time_new(mem, audio_mock_time_cb, &tm);
+        // Leaked for test simplicity.
+        Tox_Time *tt = new Tox_Time{&time_funcs, &tm, mem};
+        mono_time = mono_time_new(mem, tt);
         mono_time_update(mono_time);
     }
 
@@ -80,6 +83,7 @@ protected:
     Logger *log;
     Mono_Time *mono_time;
     AudioTimeMock tm;
+    static constexpr Tox_Time_Funcs time_funcs = { audio_mock_time_cb };
 };
 
 TEST_F(AudioTest, BasicNewKill)

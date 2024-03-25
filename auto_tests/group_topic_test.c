@@ -10,6 +10,7 @@
 #include "auto_test_support.h"
 #include "check_compat.h"
 
+#include "../toxcore/group_chats.h"
 #include "../toxcore/os_random.h"
 #include "../toxcore/tox.h"
 

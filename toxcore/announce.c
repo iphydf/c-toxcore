@@ -530,7 +530,8 @@ static int create_reply_plain(Announcements *_Nonnull announce,
 static int create_reply(Announcements *_Nonnull announce, const IP_Port *_Nonnull source,
                         const uint8_t *_Nullable sendback, uint16_t sendback_length,
                         const uint8_t *_Nonnull data, uint16_t length,
-                        uint8_t *_Nonnull reply, uint16_t reply_max_length)
+                        uint8_t *_Nonnull reply, uint16_t reply_max_length,
+                        const Memory *_Nonnull mem)
 {
     const int plain_len = (int)length - (1 + CRYPTO_PUBLIC_KEY_SIZE + CRYPTO_NONCE_SIZE + CRYPTO_MAC_SIZE);
     if (plain_len < (int)sizeof(uint64_t)) {
@@ -587,7 +588,8 @@ static void forwarded_request_callback(void *_Nonnull object, const IP_Port *_No
 
     const int len = create_reply(announce, forwarder,
                                  sendback, sendback_length,
-                                 data, length, reply, sizeof(reply));
+                                 data, length, reply, sizeof(reply),
+                                 announce->mem);
 
     if (len == -1) {
         return;
@@ -602,8 +604,8 @@ static int handle_dht_announce_request(
     Announcements *announce = (Announcements *)object;
     uint8_t reply[MAX_FORWARD_DATA_SIZE];
 
-    const int len
-        = create_reply(announce, source, nullptr, 0, packet, length, reply, sizeof(reply));
+    const int len = create_reply(
+                        announce, source, nullptr, 0, packet, length, reply, sizeof(reply), announce->mem);
 
     if (len == -1) {
         return -1;
@@ -637,7 +639,7 @@ Announcements *new_announcements(const Logger *log, const Memory *mem, const Ran
     new_hmac_key(announce->rng, announce->hmac_key);
     announce->shared_keys = shared_key_cache_new(log, mono_time, mem, announce->secret_key, KEYS_TIMEOUT, MAX_KEYS_PER_SLOT);
     if (announce->shared_keys == nullptr) {
-        mem_delete(announce->mem, announce);
+        mem_delete(mem, announce);
         return nullptr;
     }
 

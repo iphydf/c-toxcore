@@ -2,6 +2,7 @@
 
 #include "../toxcore/network.h"
 #include "../toxcore/os_memory.h"
+#include "../toxcore/os_network.h"
 #include "check_compat.h"
 
 #ifndef USE_IPV6

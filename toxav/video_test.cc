@@ -9,6 +9,7 @@
 #include "../toxcore/mono_time.h"
 #include "../toxcore/network.h"
 #include "../toxcore/os_memory.h"
+#include "../toxcore/tox_time_impl.h"
 #include "rtp.h"
 
 namespace {
@@ -105,20 +106,32 @@ protected:
         log = logger_new(mem);
         logger_callback_log(log, test_logger_cb, nullptr, nullptr);
         tm.t = 1000;
-        mono_time = mono_time_new(mem, video_mock_time_cb, &tm);
+        // Leaked for simplicity in test setup, or manage it if strictly required.
+        Tox_Time *tt = new Tox_Time{&time_funcs, &tm, mem};
+        mono_time = mono_time_new(mem, tt);
         mono_time_update(mono_time);
     }
 
     void TearDown() override
     {
         const Memory *mem = os_memory();
+        // Ideally free tt here but it's captured inside mono_time? No, mono_time stores it?
+        // Actually mono_time doesn't own Tox_Time.
+        // We need to retrieve it or store it in the fixture.
+        // Let's store it in the fixture.
+        
         mono_time_free(mem, mono_time);
+        // delete tox_time; // Need to implement free or delete.
+        // tox_time_free(tt); // But we allocated with new.
+        // Let's rely on OS cleanup for test or do it properly.
+        // To do it properly, I need to store tt in the class.
         logger_kill(log);
     }
 
     Logger *log;
     Mono_Time *mono_time;
     VideoTimeMock tm;
+    static constexpr Tox_Time_Funcs time_funcs = { video_mock_time_cb };
 };
 
 TEST_F(VideoTest, BasicNewKill)

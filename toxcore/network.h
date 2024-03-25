@@ -18,71 +18,12 @@
 #include "logger.h"
 #include "mem.h"
 #include "net_profile.h"
+#include "tox_network.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @brief Wrapper for sockaddr_storage and size.
- */
-typedef struct Network_Addr Network_Addr;
-
-typedef bitwise int Socket_Value;
-typedef struct Socket {
-    Socket_Value value;
-} Socket;
-
-int net_socket_to_native(Socket sock);
-Socket net_socket_from_native(int sock);
-
-typedef int net_close_cb(void *_Nullable obj, Socket sock);
-typedef Socket net_accept_cb(void *_Nullable obj, Socket sock);
-typedef int net_bind_cb(void *_Nullable obj, Socket sock, const Network_Addr *_Nonnull addr);
-typedef int net_listen_cb(void *_Nullable obj, Socket sock, int backlog);
-typedef int net_connect_cb(void *_Nullable obj, Socket sock, const Network_Addr *_Nonnull addr);
-typedef int net_recvbuf_cb(void *_Nullable obj, Socket sock);
-typedef int net_recv_cb(void *_Nullable obj, Socket sock, uint8_t *_Nonnull buf, size_t len);
-typedef int net_recvfrom_cb(void *_Nullable obj, Socket sock, uint8_t *_Nonnull buf, size_t len, Network_Addr *_Nonnull addr);
-typedef int net_send_cb(void *_Nullable obj, Socket sock, const uint8_t *_Nonnull buf, size_t len);
-typedef int net_sendto_cb(void *_Nullable obj, Socket sock, const uint8_t *_Nonnull buf, size_t len, const Network_Addr *_Nonnull addr);
-typedef Socket net_socket_cb(void *_Nullable obj, int domain, int type, int proto);
-typedef int net_socket_nonblock_cb(void *_Nullable obj, Socket sock, bool nonblock);
-typedef int net_getsockopt_cb(void *_Nullable obj, Socket sock, int level, int optname, void *_Nonnull optval, size_t *_Nonnull optlen);
-typedef int net_setsockopt_cb(void *_Nullable obj, Socket sock, int level, int optname, const void *_Nonnull optval, size_t optlen);
-typedef int net_getaddrinfo_cb(void *_Nullable obj, const Memory *_Nonnull mem, const char *_Nonnull address, int family, int protocol, Network_Addr *_Nullable *_Nonnull addrs);
-typedef int net_freeaddrinfo_cb(void *_Nullable obj, const Memory *_Nonnull mem, Network_Addr *_Nullable addrs);
-
-/** @brief Functions wrapping POSIX network functions.
- *
- * Refer to POSIX man pages for documentation of what these functions are
- * expected to do when providing alternative Network implementations.
- */
-typedef struct Network_Funcs {
-    net_close_cb *_Nullable close;
-    net_accept_cb *_Nullable accept;
-    net_bind_cb *_Nullable bind;
-    net_listen_cb *_Nullable listen;
-    net_connect_cb *_Nullable connect;
-    net_recvbuf_cb *_Nullable recvbuf;
-    net_recv_cb *_Nullable recv;
-    net_recvfrom_cb *_Nullable recvfrom;
-    net_send_cb *_Nullable send;
-    net_sendto_cb *_Nullable sendto;
-    net_socket_cb *_Nullable socket;
-    net_socket_nonblock_cb *_Nullable socket_nonblock;
-    net_getsockopt_cb *_Nullable getsockopt;
-    net_setsockopt_cb *_Nullable setsockopt;
-    net_getaddrinfo_cb *_Nullable getaddrinfo;
-    net_freeaddrinfo_cb *_Nullable freeaddrinfo;
-} Network_Funcs;
-
-typedef struct Network {
-    const Network_Funcs *_Nullable funcs;
-    void *_Nullable obj;
-} Network;
-
-const Network *_Nullable os_network(void);
 
 typedef struct Family {
     uint8_t value;
@@ -221,6 +162,8 @@ typedef struct IP_Port {
     IP ip;
     uint16_t port;
 } IP_Port;
+
+typedef Tox_Network Network;
 
 Socket net_socket(const Network *_Nonnull ns, Family domain, int type, int protocol);
 
@@ -534,7 +477,7 @@ int unpack_ip_port(IP_Port *_Nonnull ip_port, const uint8_t *_Nonnull data, uint
 /**
  * @return true on success, false on failure.
  */
-bool bind_to_port(const Network *_Nonnull ns, Socket sock, Family family, uint16_t port);
+bool bind_to_port(const Network *_Nonnull ns, const Memory *_Nonnull mem, Socket sock, Family family, uint16_t port);
 
 /** @brief Get the last networking error code.
  *

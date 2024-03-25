@@ -22,8 +22,8 @@
 #include "../toxcore/net_crypto.h"
 #include "../toxcore/network.h"
 #include "../toxcore/tox.h"
+#include "../toxcore/tox_impl.h" // IWYU pragma: keep
 #include "../toxcore/tox_private.h"
-#include "../toxcore/tox_struct.h"  // IWYU pragma: keep
 #include "../toxcore/util.h"
 
 #define VIDEO_SEND_X_KEYFRAMES_FIRST 7 // force the first n frames to be keyframes!
@@ -31,11 +31,8 @@
 // iteration interval that is used when no call is active
 #define IDLE_ITERATION_INTERVAL_MS 1000
 
-typedef struct ToxAVCall ToxAVCall;
 
-static ToxAVCall *call_get(ToxAV *av, uint32_t friend_number);
-static RTPSession *rtp_session_get(ToxAVCall *call, int payload_type);
-static BWController *bwc_controller_get(const ToxAVCall *call);
+typedef struct ToxAVCall ToxAVCall;
 
 struct ToxAVCall {
     ToxAV *av;
@@ -119,6 +116,10 @@ struct ToxAV {
 
     Mono_Time *toxav_mono_time; // ToxAV's own mono_time instance
 };
+
+static ToxAVCall *call_get(ToxAV *av, uint32_t friend_number);
+static RTPSession *rtp_session_get(ToxAVCall *call, int payload_type);
+static BWController *bwc_controller_get(const ToxAVCall *call);
 
 static void callback_bwc(BWController *bwc, Tox_Friend_Number friend_number, float loss, void *user_data);
 
@@ -353,7 +354,7 @@ ToxAV *toxav_new(Tox *tox, Toxav_Err_New *error)
     tox_callback_friend_lossy_packet_per_pktid(av->tox, handle_bwc_packet, BWC_PACKET_ID);
     tox_callback_friend_lossless_packet_per_pktid(av->tox, handle_msi_packet, PACKET_ID_MSI);
 
-    av->toxav_mono_time = mono_time_new(tox->sys.mem, nullptr, nullptr);
+    av->toxav_mono_time = mono_time_new(tox->sys.mem, nullptr);
 
     if (av->msi == nullptr) {
         pthread_mutex_destroy(av->mutex);

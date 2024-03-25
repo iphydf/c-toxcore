@@ -14,7 +14,8 @@
 #include "../toxcore/crypto_core.h"
 #include "../toxcore/logger.h"
 #include "../toxcore/tox.h"
-#include "../toxcore/tox_struct.h"
+#include "../toxcore/tox_impl.h"
+#include "../toxcore/tox_time_impl.h"
 #include "../toxcore/util.h"
 #include "auto_test_support.h"
 #include "check_compat.h"
@@ -57,6 +58,10 @@ static uint64_t get_state_clock_callback_basic(void *user_data)
     return clock;
 }
 
+static const Tox_Time_Funcs test_time_funcs = {
+    .monotonic_callback = get_state_clock_callback_basic
+};
+
 static void increment_clock(Time_Data *time_data, uint64_t count)
 {
     pthread_mutex_lock(&time_data->lock);
@@ -67,7 +72,13 @@ static void increment_clock(Time_Data *time_data, uint64_t count)
 static void set_current_time_callback(Tox *tox, Time_Data *time_data)
 {
     Mono_Time *mono_time = tox->mono_time;
-    mono_time_set_current_time_callback(mono_time, get_state_clock_callback_basic, time_data);
+    // We intentionally leak this Tox_Time object as it lives for the test duration
+    Tox_Time *tm = (Tox_Time *)calloc(1, sizeof(Tox_Time));
+    tm->funcs = &test_time_funcs;
+    tm->user_data = time_data;
+    // tm->mem is unused by mono_time_set_current_time_callback logic for now
+    
+    mono_time_set_current_time_callback(mono_time, tm);
 }
 
 static void clear_call_control(CallControl *cc)
