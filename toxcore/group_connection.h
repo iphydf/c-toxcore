@@ -39,7 +39,7 @@ void gcc_mark_for_deletion(GC_Connection *gconn, TCP_Connections *tcp_conn, Grou
 non_null(1, 2, 3, 4) nullable(5)
 int gcc_handle_received_message(const Logger *log, const Memory *mem, const Mono_Time *mono_time, GC_Connection *gconn,
                                 const uint8_t *data, uint16_t length, uint8_t packet_type, uint64_t message_id,
-                                bool direct_conn);
+                                bool direct_conn, const Memory *mem);
 
 /** @brief Handles a packet fragment.
  *

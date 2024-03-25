@@ -2736,7 +2736,7 @@ static bool send_gc_peer_exchange(const GC_Chat *chat, GC_Connection *gconn)
  * Return -5 if supplied group password is invalid.
  * Return -6 if we fail to add the peer to the peer list.
  * Return -7 if peer's role cannot be validated.
- * Return -8 if malloc fails.
+ * Return -8 if memory allocation fails.
  */
 non_null(1, 2, 4) nullable(6)
 static int handle_gc_peer_info_response(const GC_Session *c, GC_Chat *chat, uint32_t peer_number,
@@ -5534,7 +5534,7 @@ static int unwrap_group_handshake_packet(const Logger *log, const Memory *mem, c
  *
  * Return length of encrypted packet on success.
  * Return -1 if packet size is invalid.
- * Return -2 on malloc failure.
+ * Return -2 on memory allocation failure.
  * Return -3 if encryption fails.
  */
 non_null()
@@ -6825,7 +6825,7 @@ int peer_add(GC_Chat *chat, const IP_Port *ipp, const uint8_t *public_key)
     GC_Peer *tmp_group = (GC_Peer *)mem_vrealloc(chat->mem, chat->group, chat->numpeers + 1, sizeof(GC_Peer));
 
     if (tmp_group == nullptr) {
-        LOGGER_ERROR(chat->log, "Failed to allocate memory for group realloc");
+        LOGGER_ERROR(chat->log, "Failed to allocate memory for group mem_vrealloc");
 
         if (tcp_connection_num != -1) {
             kill_tcp_connection_to(chat->tcp_conn, tcp_connection_num);
