@@ -16,8 +16,10 @@
 #include "mem.h"
 #include "tox.h"
 #include "tox_event.h"
+#include "tox_impl.h"
 #include "tox_private.h"
-#include "tox_struct.h"
+#include "tox_system.h"
+#include "tox_system_impl.h"
 
 /*****************************************************
  *
