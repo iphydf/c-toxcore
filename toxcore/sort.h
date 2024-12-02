@@ -20,12 +20,28 @@ typedef bool sort_less_cb(const void *object, const void *a, const void *b);
 typedef const void *sort_get_cb(const void *arr, uint32_t index);
 /** @brief Set element in array at index to new value (perform copy). */
 typedef void sort_set_cb(void *arr, uint32_t index, const void *val);
+/** @brief Copy elements from one array to another.
+ *
+ * Used to copy elements from the input array to the temporary array. This is
+ * used to avoid `memcpy` and to avoid treating elements as byte arrays.
+ *
+ * @param dst Destination array.
+ * @param src Source array.
+ * @param size Number of elements of type T to copy.
+ */
+typedef void sort_copy_cb(void *dst, const void *src, uint32_t size);
 /** @brief Get a sub-array at an index of a given size (mutable pointer).
  *
  * Used to index in the temporary array allocated by `sort_alloc_cb` and get
- * a sub-array for working memory.
+ * a sub-array for working memory. Also used to index in the input array for
+ * writing the sorted elements.
  */
-typedef void *sort_subarr_cb(void *arr, uint32_t index, uint32_t size);
+typedef void *sort_subarr_cb(void *arr, uint32_t index);
+/** @brief Get a sub-array at an index of a given size (const pointer).
+ *
+ * Same as above, but only for reading.
+ */
+typedef const void *sort_csubarr_cb(const void *arr, uint32_t index);
 /** @brief Allocate a new array of the element type.
  *
  * @param size The array size in elements of type T (not byte size). This value
@@ -49,7 +65,9 @@ typedef struct Sort_Funcs {
     sort_less_cb *less_callback;
     sort_get_cb *get_callback;
     sort_set_cb *set_callback;
+    sort_copy_cb *copy_callback;
     sort_subarr_cb *subarr_callback;
+    sort_csubarr_cb *csubarr_callback;
     sort_alloc_cb *alloc_callback;
     sort_delete_cb *delete_callback;
 } Sort_Funcs;
@@ -78,6 +96,9 @@ typedef struct Sort_Funcs {
  * @param arr_size Number of elements in @p arr (count, not byte size).
  * @param[in] object Comparator object.
  * @param[in] funcs Callback struct for elements of type T.
+ *
+ * @retval false if allocation fails (`alloc_callback` above returned `nullptr`).
+ * @retval true if sorting succeeded.
  */
 non_null()
 bool merge_sort(void *arr, uint32_t arr_size, const void *object, const Sort_Funcs *funcs);

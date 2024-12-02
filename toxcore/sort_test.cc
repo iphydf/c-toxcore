@@ -13,17 +13,49 @@
 
 namespace {
 
-TEST(MergeSort, BehavesLikeStdSort)
+TEST(MergeSort, WithCopyBehavesLikeStdSort)
 {
     std::mt19937 rng;
     // INT_MAX-1 so later we have room to add 1 larger element if needed.
     std::uniform_int_distribution<int> dist{
         std::numeric_limits<int>::min(), std::numeric_limits<int>::max() - 1};
 
-    constexpr auto int_funcs = sort_funcs<int>();
+    constexpr auto int_funcs = sort_funcs<int>(true);
 
     // Test with int arrays.
-    for (uint32_t i = 1; i < 1000; ++i) {
+    for (uint32_t i = 1; i < 500; ++i) {
+        std::vector<int> vec(i);
+        std::generate(std::begin(vec), std::end(vec), [&]() { return dist(rng); });
+
+        auto sorted = vec;
+        std::sort(sorted.begin(), sorted.end(), std::less<int>());
+
+        // If vec was accidentally sorted, add another larger element that almost definitely makes
+        // it not sorted.
+        if (vec == sorted) {
+            int const largest = *std::prev(sorted.end()) + 1;
+            sorted.push_back(largest);
+            vec.insert(vec.begin(), largest);
+        }
+        ASSERT_NE(vec, sorted);
+
+        // Just pass some arbitrary "self" to make sure the callbacks pass it through.
+        ASSERT_TRUE(merge_sort(vec.data(), vec.size(), &i, &int_funcs));
+        ASSERT_EQ(vec, sorted);
+    }
+}
+
+TEST(MergeSort, WithoutCopyBehavesLikeStdSort)
+{
+    std::mt19937 rng;
+    // INT_MAX-1 so later we have room to add 1 larger element if needed.
+    std::uniform_int_distribution<int> dist{
+        std::numeric_limits<int>::min(), std::numeric_limits<int>::max() - 1};
+
+    constexpr auto int_funcs = sort_funcs<int>(false);
+
+    // Test with int arrays.
+    for (uint32_t i = 1; i < 500; ++i) {
         std::vector<int> vec(i);
         std::generate(std::begin(vec), std::end(vec), [&]() { return dist(rng); });
 
@@ -51,7 +83,7 @@ TEST(MergeSort, WorksWithNonTrivialTypes)
     std::uniform_int_distribution<int> dist{
         std::numeric_limits<int>::min(), std::numeric_limits<int>::max()};
 
-    constexpr auto string_funcs = sort_funcs<std::string>();
+    constexpr auto string_funcs = sort_funcs<std::string>(true);
 
     // Test with std::string arrays.
     for (uint32_t i = 1; i < 500; ++i) {

@@ -55,11 +55,11 @@ std::vector<Some_Type> random_vec(benchmark::State &state)
     return vec;
 }
 
-void BM_merge_sort(benchmark::State &state)
+void BM_merge_sort_with_copy(benchmark::State &state)
 {
     auto vec = random_vec(state);
 
-    constexpr auto int_funcs = sort_funcs<Some_Type>();
+    constexpr auto int_funcs = sort_funcs<Some_Type>(true);
 
     for (auto _ : state) {
         auto unsorted = vec;
@@ -67,7 +67,21 @@ void BM_merge_sort(benchmark::State &state)
     }
 }
 
-BENCHMARK(BM_merge_sort)->RangeMultiplier(2)->Range(8, 8 << 8);
+BENCHMARK(BM_merge_sort_with_copy)->RangeMultiplier(2)->Range(8, 8 << 8);
+
+void BM_merge_sort_without_copy(benchmark::State &state)
+{
+    auto vec = random_vec(state);
+
+    constexpr auto int_funcs = sort_funcs<Some_Type>(false);
+
+    for (auto _ : state) {
+        auto unsorted = vec;
+        merge_sort(unsorted.data(), unsorted.size(), &state, &int_funcs);
+    }
+}
+
+BENCHMARK(BM_merge_sort_without_copy)->RangeMultiplier(2)->Range(8, 8 << 8);
 
 void BM_qsort(benchmark::State &state)
 {

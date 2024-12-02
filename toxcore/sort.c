@@ -34,18 +34,22 @@ static void merge_sort_merge_back(
         ++k;
     }
 
-    /* Copy the remaining elements of `l_arr[]`, if there are any. */
-    while (li < l_arr_size) {
-        funcs->set_callback(arr, k, funcs->get_callback(l_arr, li));
-        ++li;
-        ++k;
-    }
+    /* Copy the remaining elements, if there are any. */
+    if (funcs->copy_callback != nullptr) {
+        funcs->copy_callback(funcs->subarr_callback(arr, k), funcs->csubarr_callback(l_arr, li), l_arr_size - li);
+        funcs->copy_callback(funcs->subarr_callback(arr, k), funcs->csubarr_callback(r_arr, ri), r_arr_size - ri);
+    } else {
+        while (li < l_arr_size) {
+            funcs->set_callback(arr, k, funcs->get_callback(l_arr, li));
+            ++li;
+            ++k;
+        }
 
-    /* Copy the remaining elements of `r_arr[]`, if there are any. */
-    while (ri < r_arr_size) {
-        funcs->set_callback(arr, k, funcs->get_callback(r_arr, ri));
-        ++ri;
-        ++k;
+        while (ri < r_arr_size) {
+            funcs->set_callback(arr, k, funcs->get_callback(r_arr, ri));
+            ++ri;
+            ++k;
+        }
     }
 }
 
@@ -59,15 +63,20 @@ static void merge_sort_merge(
     const uint32_t r_arr_size = right_end - mid;
 
     /* Temporary arrays, using the tmp buffer created in `merge_sort` below. */
-    void *l_arr = funcs->subarr_callback(tmp, 0, l_arr_size);
-    void *r_arr = funcs->subarr_callback(tmp, l_arr_size, r_arr_size);
+    void *l_arr = funcs->subarr_callback(tmp, 0);
+    void *r_arr = funcs->subarr_callback(tmp, l_arr_size);
 
     /* Copy data to temp arrays `l_arr[]` and `r_arr[]`. */
-    for (uint32_t i = 0; i < l_arr_size; ++i) {
-        funcs->set_callback(l_arr, i, funcs->get_callback(arr, left_start + i));
-    }
-    for (uint32_t i = 0; i < r_arr_size; ++i) {
-        funcs->set_callback(r_arr, i, funcs->get_callback(arr, mid + 1 + i));
+    if (funcs->copy_callback != nullptr) {
+        funcs->copy_callback(l_arr, funcs->csubarr_callback(arr, left_start), l_arr_size);
+        funcs->copy_callback(r_arr, funcs->csubarr_callback(arr, mid + 1), r_arr_size);
+    } else {
+        for (uint32_t i = 0; i < l_arr_size; ++i) {
+            funcs->set_callback(l_arr, i, funcs->get_callback(arr, left_start + i));
+        }
+        for (uint32_t i = 0; i < r_arr_size; ++i) {
+            funcs->set_callback(r_arr, i, funcs->get_callback(arr, mid + 1 + i));
+        }
     }
 
     /* Merge the temp arrays back into `arr[left_start..right_end]`. */
