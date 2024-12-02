@@ -31,9 +31,16 @@ typedef void *sort_subarr_cb(void *arr, uint32_t index, uint32_t size);
  * @param size The array size in elements of type T (not byte size). This value
  *   is always exactly the input array size as passed to `merge_sort`.
  */
-typedef void *sort_alloc_cb(const void *object, uint32_t size);
+typedef void *sort_alloc_vec_cb(const void *object, uint32_t size);
 /** @brief Free the element type array. */
-typedef void sort_delete_cb(const void *object, void *arr, uint32_t size);
+typedef void sort_delete_vec_cb(const void *object, void *arr, uint32_t size);
+/** @brief Allocate a temporary array of `int` for sorting.
+ *
+ * @param size The array size in elements of type `int`.
+ */
+typedef int *sort_alloc_cb(const void *object, uint32_t size);
+/** @brief Free the temporary array of `int`. */
+typedef void sort_delete_cb(const void *object, int *arr, uint32_t size);
 
 /** @brief Virtual function table for getting/setting elements in an array and
  * comparing them.
@@ -50,6 +57,8 @@ typedef struct Sort_Funcs {
     sort_get_cb *get_callback;
     sort_set_cb *set_callback;
     sort_subarr_cb *subarr_callback;
+    sort_alloc_vec_cb *alloc_vec_callback;
+    sort_delete_vec_cb *delete_vec_callback;
     sort_alloc_cb *alloc_callback;
     sort_delete_cb *delete_callback;
 } Sort_Funcs;
@@ -81,6 +90,9 @@ typedef struct Sort_Funcs {
  */
 non_null()
 bool merge_sort(void *arr, uint32_t arr_size, const void *object, const Sort_Funcs *funcs);
+
+non_null()
+bool quick_sort(void *arr, uint32_t arr_size, const void *object, const Sort_Funcs *funcs);
 
 #ifdef __cplusplus
 } /* extern "C" */

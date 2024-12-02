@@ -9,6 +9,14 @@
 #include "util.h"
 
 non_null()
+static void swap_elements(void *arr, uint32_t i, uint32_t j, const Sort_Funcs *funcs)
+{
+    const void *tmp = funcs->get_callback(arr, i);
+    funcs->set_callback(arr, i, funcs->get_callback(arr, j));
+    funcs->set_callback(arr, j, tmp);
+}
+
+non_null()
 static void merge_sort_merge_back(
     void *arr,
     const void *l_arr, uint32_t l_arr_size,
@@ -76,7 +84,7 @@ static void merge_sort_merge(
 
 bool merge_sort(void *arr, uint32_t arr_size, const void *object, const Sort_Funcs *funcs)
 {
-    void *tmp = funcs->alloc_callback(object, arr_size);
+    void *tmp = funcs->alloc_vec_callback(object, arr_size);
 
     if (tmp == nullptr) {
         return false;
@@ -98,6 +106,66 @@ bool merge_sort(void *arr, uint32_t arr_size, const void *object, const Sort_Fun
         }
     }
 
-    funcs->delete_callback(object, tmp, arr_size);
+    funcs->delete_vec_callback(object, tmp, arr_size);
+    return true;
+}
+
+non_null()
+static int quick_sort_partition(void *arr, int l, int h, const void *object, const Sort_Funcs *funcs)
+{
+    const void *x = funcs->get_callback(arr, h);
+    int i = l - 1;
+
+    for (int j = l; j <= h - 1; j++) {
+        const void *aj = funcs->get_callback(arr, j);
+        if (!funcs->less_callback(object, x, aj)) {
+            i++;
+            swap_elements(arr, i, j, funcs);
+        }
+    }
+
+    swap_elements(arr, i + 1, h, funcs);
+    return i + 1;
+}
+
+// https://www.geeksforgeeks.org/iterative-quick-sort/
+bool quick_sort(void *arr, uint32_t arr_size, const void *object, const Sort_Funcs *funcs)
+{
+    // Create an auxiliary stack
+    int *stack = funcs->alloc_callback(object, arr_size);
+
+    // initialize top of stack
+    int top = -1;
+
+    // push initial values of l and h to stack
+    stack[++top] = 0;
+    stack[++top] = arr_size - 1;
+
+    // Keep popping from stack while is not empty
+    while (top >= 0) {
+        // Pop h and l
+        const int h = stack[top--];
+        const int l = stack[top--];
+
+        // Set pivot element at its correct position
+        // in sorted array
+        const int p = quick_sort_partition(arr, l, h, object, funcs);
+
+        // If there are elements on left side of pivot,
+        // then push left side to stack
+        if (p - 1 > l) {
+            stack[++top] = l;
+            stack[++top] = p - 1;
+        }
+
+        // If there are elements on right side of pivot,
+        // then push right side to stack
+        if (p + 1 < h) {
+            stack[++top] = p + 1;
+            stack[++top] = h;
+        }
+    }
+
+    funcs->delete_callback(object, stack, arr_size);
     return true;
 }

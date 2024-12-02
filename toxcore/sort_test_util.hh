@@ -35,6 +35,8 @@ constexpr Sort_Funcs sort_funcs()
             T *vec = static_cast<T *>(arr);
             delete[] vec;
         },
+        [](const void *object, uint32_t size) -> int * { return new int[size]; },
+        [](const void *object, int *arr, uint32_t size) { delete[] arr; },
     };
 }
 

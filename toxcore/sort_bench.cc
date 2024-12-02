@@ -37,9 +37,9 @@ int cmp_uint_array(const std::array<T, N> &a, const std::array<T, N> &b)
 
 bool operator<(const Some_Type &a, const Some_Type &b) { return a.compare_value < b.compare_value; }
 
-std::vector<Some_Type> random_vec(benchmark::State &state)
+std::pair<std::vector<Some_Type>, std::mt19937> random_vec(benchmark::State &state)
 {
-    std::mt19937 rng;
+    std::mt19937 rng{std::random_device{}()};
     // INT_MAX-1 so later we have room to add 1 larger element if needed.
     std::uniform_int_distribution<uint32_t> dist{
         std::numeric_limits<uint32_t>::min(), std::numeric_limits<uint32_t>::max() - 1};
@@ -52,12 +52,30 @@ std::vector<Some_Type> random_vec(benchmark::State &state)
         return Some_Type{nullptr, compare_value, "hello there"};
     });
 
+    return {vec, rng};
+}
+
+std::vector<Some_Type> mostly_sorted_vec(benchmark::State &state)
+{
+    auto [vec, rng] = random_vec(state);
+
+    // Sort the vector.
+    std::sort(vec.begin(), vec.begin() + vec.size());
+
+    // Randomly swap 5% of the elements.
+    std::uniform_int_distribution<size_t> dist{0, vec.size() - 1};
+    for (size_t i = 0; i < vec.size() / 20; ++i) {
+        const size_t a = dist(rng);
+        const size_t b = dist(rng);
+        std::swap(vec[a], vec[b]);
+    }
+
     return vec;
 }
 
 void BM_merge_sort(benchmark::State &state)
 {
-    auto vec = random_vec(state);
+    const auto vec = random_vec(state).first;
 
     constexpr auto int_funcs = sort_funcs<Some_Type>();
 
@@ -69,9 +87,51 @@ void BM_merge_sort(benchmark::State &state)
 
 BENCHMARK(BM_merge_sort)->RangeMultiplier(2)->Range(8, 8 << 8);
 
+void BM_merge_sort_mostly_sorted(benchmark::State &state)
+{
+    const auto vec = mostly_sorted_vec(state);
+
+    constexpr auto int_funcs = sort_funcs<Some_Type>();
+
+    for (auto _ : state) {
+        auto unsorted = vec;
+        merge_sort(unsorted.data(), unsorted.size(), &state, &int_funcs);
+    }
+}
+
+BENCHMARK(BM_merge_sort_mostly_sorted)->RangeMultiplier(2)->Range(8, 8 << 8);
+
+void BM_quick_sort(benchmark::State &state)
+{
+    const auto vec = random_vec(state).first;
+
+    constexpr auto int_funcs = sort_funcs<Some_Type>();
+
+    for (auto _ : state) {
+        auto unsorted = vec;
+        quick_sort(unsorted.data(), unsorted.size(), &state, &int_funcs);
+    }
+}
+
+BENCHMARK(BM_quick_sort)->RangeMultiplier(2)->Range(8, 8 << 8);
+
+void BM_quick_sort_mostly_sorted(benchmark::State &state)
+{
+    const auto vec = mostly_sorted_vec(state);
+
+    constexpr auto int_funcs = sort_funcs<Some_Type>();
+
+    for (auto _ : state) {
+        auto unsorted = vec;
+        quick_sort(unsorted.data(), unsorted.size(), &state, &int_funcs);
+    }
+}
+
+BENCHMARK(BM_quick_sort_mostly_sorted)->RangeMultiplier(2)->Range(8, 8 << 8);
+
 void BM_qsort(benchmark::State &state)
 {
-    auto vec = random_vec(state);
+    const auto vec = random_vec(state).first;
 
     for (auto _ : state) {
         auto unsorted = vec;
@@ -86,9 +146,26 @@ void BM_qsort(benchmark::State &state)
 
 BENCHMARK(BM_qsort)->RangeMultiplier(2)->Range(8, 8 << 8);
 
+void BM_qsort_mostly_sorted(benchmark::State &state)
+{
+    const auto vec = mostly_sorted_vec(state);
+
+    for (auto _ : state) {
+        auto unsorted = vec;
+        qsort(unsorted.data(), unsorted.size(), sizeof(unsorted[0]),
+            [](const void *va, const void *vb) {
+                const auto *a = static_cast<const Some_Type *>(va);
+                const auto *b = static_cast<const Some_Type *>(vb);
+                return cmp_uint_array(a->compare_value, b->compare_value);
+            });
+    }
+}
+
+BENCHMARK(BM_qsort_mostly_sorted)->RangeMultiplier(2)->Range(8, 8 << 8);
+
 void BM_std_sort(benchmark::State &state)
 {
-    auto vec = random_vec(state);
+    const auto vec = random_vec(state).first;
 
     for (auto _ : state) {
         auto unsorted = vec;
@@ -99,6 +176,20 @@ void BM_std_sort(benchmark::State &state)
 }
 
 BENCHMARK(BM_std_sort)->RangeMultiplier(2)->Range(8, 8 << 8);
+
+void BM_std_sort_mostly_sorted(benchmark::State &state)
+{
+    const auto vec = mostly_sorted_vec(state);
+
+    for (auto _ : state) {
+        auto unsorted = vec;
+        std::sort(unsorted.begin(), unsorted.end(), [](const Some_Type &a, const Some_Type &b) {
+            return a.compare_value < b.compare_value;
+        });
+    }
+}
+
+BENCHMARK(BM_std_sort_mostly_sorted)->RangeMultiplier(2)->Range(8, 8 << 8);
 
 }
 
