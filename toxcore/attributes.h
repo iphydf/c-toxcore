@@ -18,6 +18,14 @@
 #define GNU_PRINTF(f, a)
 #endif
 
+#ifdef __cplusplus
+#define MAYBE_UNUSED [[maybe_unused]]
+#elif defined(__GNUC__)
+#define MAYBE_UNUSED __attribute__((__used__))
+#else
+#define MAYBE_UNUSED
+#endif
+
 #ifndef __clang__
 #define _Nonnull
 #define _Nullable
