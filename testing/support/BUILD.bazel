@@ -40,10 +40,6 @@ cc_library(
         "public/tox_network.hh",
         "public/tox_runner.hh",
     ],
-    copts = select({
-        "//tools/config:windows": ["/wd4200"],  # Zero-sized array in struct/union
-        "//conditions:default": [],
-    }),
     visibility = ["//visibility:public"],
     deps = [
         "//c-toxcore/toxcore:attributes",
