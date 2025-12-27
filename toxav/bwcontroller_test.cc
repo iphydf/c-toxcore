@@ -16,7 +16,7 @@ struct BwcTimeMock {
     uint64_t t;
 };
 
-uint64_t mock_time_cb(void *ud) { return static_cast<BwcTimeMock *>(ud)->t; }
+uint64_t bwc_mock_time_cb(void *ud) { return static_cast<BwcTimeMock *>(ud)->t; }
 
 struct MockBwcData {
     std::vector<std::vector<uint8_t>> sent_packets;
@@ -51,7 +51,7 @@ protected:
         const Memory *mem = os_memory();
         log = logger_new(mem);
         tm.t = 1000;
-        mono_time = mono_time_new(mem, mock_time_cb, &tm);
+        mono_time = mono_time_new(mem, bwc_mock_time_cb, &tm);
         mono_time_update(mono_time);
     }
 

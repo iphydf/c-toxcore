@@ -57,6 +57,9 @@ struct ToxAVCall {
     /** Required for monitoring changes in states */
     uint8_t previous_self_capabilities;
 
+    toxav_audio_receive_frame_cb *acb;
+    void *acb_user_data;
+
     pthread_mutex_t toxav_call_mutex[1];
 
     struct ToxAVCall *prev;
@@ -184,6 +187,18 @@ static void handle_bwc_packet(Tox *tox, uint32_t friend_number, const uint8_t *d
     }
 
     bwc_handle_packet(bwc, data, length);
+}
+
+static void handle_audio_frame(uint32_t friend_number, const int16_t *pcm, size_t sample_count, uint8_t channels,
+                               uint32_t sampling_rate, void *user_data)
+{
+    ToxAVCall *call = (ToxAVCall *)user_data;
+    toxav_audio_receive_frame_cb *acb = call->acb;
+    void *acb_user_data = call->acb_user_data;
+
+    if (acb != nullptr) {
+        acb(call->av, friend_number, pcm, sample_count, channels, sampling_rate, acb_user_data);
+    }
 }
 
 static int callback_invite(void *object, MSICall *call);
@@ -457,7 +472,7 @@ static void iterate_common(ToxAV *av, bool audio)
 
             if ((i->msi_call->self_capabilities & MSI_CAP_R_AUDIO) != 0 &&
                     (i->msi_call->peer_capabilities & MSI_CAP_S_AUDIO) != 0) {
-                frame_time = min_s32(i->audio->lp_frame_duration, frame_time);
+                frame_time = min_s32(ac_get_lp_frame_duration(i->audio), frame_time);
             }
         } else {
             vc_iterate(i->video);
@@ -1006,11 +1021,10 @@ bool toxav_audio_send_frame(ToxAV *av, Tox_Friend_Number friend_number, const in
 
         sampling_rate = net_htonl(sampling_rate);
         memcpy(dest, &sampling_rate, sizeof(sampling_rate));
-        const int vrc = opus_encode(call->audio->encoder, pcm, sample_count,
-                                    dest + sizeof(sampling_rate), dest_size - sizeof(sampling_rate));
+        const int vrc = ac_encode(call->audio, pcm, sample_count,
+                                  dest + sizeof(sampling_rate), dest_size - sizeof(sampling_rate));
 
         if (vrc < 0) {
-            LOGGER_WARNING(av->log, "Failed to encode frame %s", opus_strerror(vrc));
             pthread_mutex_unlock(call->mutex_audio);
             rc = TOXAV_ERR_SEND_FRAME_INVALID;
             goto RETURN;
@@ -1184,6 +1198,16 @@ void toxav_callback_audio_receive_frame(ToxAV *av, toxav_audio_receive_frame_cb 
     pthread_mutex_lock(av->mutex);
     av->acb = callback;
     av->acb_user_data = user_data;
+
+    if (av->calls != nullptr) {
+        for (ToxAVCall *i = av->calls[av->calls_head]; i != nullptr; i = i->next) {
+            pthread_mutex_lock(i->toxav_call_mutex);
+            i->acb = callback;
+            i->acb_user_data = user_data;
+            pthread_mutex_unlock(i->toxav_call_mutex);
+        }
+    }
+
     pthread_mutex_unlock(av->mutex);
 }
 
@@ -1564,7 +1588,9 @@ static bool call_prepare_transmission(ToxAVCall *call)
     call->bwc = bwc_new(av->log, call->friend_number, callback_bwc, call, rtp_send_packet, call, av->toxav_mono_time);
 
     { /* Prepare audio */
-        call->audio = ac_new(av->toxav_mono_time, av->log, av, call->friend_number, av->acb, av->acb_user_data);
+        call->acb = av->acb;
+        call->acb_user_data = av->acb_user_data;
+        call->audio = ac_new(av->toxav_mono_time, av->log, call->friend_number, handle_audio_frame, call);
 
         if (call->audio == nullptr) {
             LOGGER_ERROR(av->log, "Failed to create audio codec session");
