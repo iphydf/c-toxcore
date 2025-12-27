@@ -163,6 +163,29 @@ static void handle_rtp_packet(Tox *tox, Tox_Friend_Number friend_number, const u
     rtp_receive_packet(session, data, length);
 }
 
+static void handle_bwc_packet(Tox *tox, uint32_t friend_number, const uint8_t *data, size_t length, void *user_data)
+{
+    ToxAV *toxav = (ToxAV *)tox_get_av_object(tox);
+
+    if (toxav == nullptr) {
+        return;
+    }
+
+    const ToxAVCall *call = call_get(toxav, friend_number);
+
+    if (call == nullptr) {
+        return;
+    }
+
+    BWController *bwc = bwc_controller_get(call);
+
+    if (bwc == nullptr) {
+        return;
+    }
+
+    bwc_handle_packet(bwc, data, length);
+}
+
 static int callback_invite(void *object, MSICall *call);
 static int callback_start(void *object, MSICall *call);
 static int callback_end(void *object, MSICall *call);
@@ -264,7 +287,7 @@ ToxAV *toxav_new(Tox *tox, Toxav_Err_New *error)
 
     tox_callback_friend_lossy_packet_per_pktid(av->tox, handle_rtp_packet, RTP_TYPE_AUDIO);
     tox_callback_friend_lossy_packet_per_pktid(av->tox, handle_rtp_packet, RTP_TYPE_VIDEO);
-    bwc_allow_receiving(av->tox);
+    tox_callback_friend_lossy_packet_per_pktid(av->tox, handle_bwc_packet, BWC_PACKET_ID);
 
     av->toxav_mono_time = mono_time_new(tox->sys.mem, nullptr, nullptr);
 
@@ -319,7 +342,7 @@ void toxav_kill(ToxAV *av)
 
     tox_callback_friend_lossy_packet_per_pktid(av->tox, nullptr, RTP_TYPE_AUDIO);
     tox_callback_friend_lossy_packet_per_pktid(av->tox, nullptr, RTP_TYPE_VIDEO);
-    bwc_stop_receiving(av->tox);
+    tox_callback_friend_lossy_packet_per_pktid(av->tox, nullptr, BWC_PACKET_ID);
 
     /* To avoid possible deadlocks */
     while (av->msi != nullptr && msi_kill(av->log, av->tox, av->msi) != 0) {
@@ -1538,7 +1561,7 @@ static bool call_prepare_transmission(ToxAVCall *call)
     }
 
     /* Prepare bwc */
-    call->bwc = bwc_new(av->log, av->tox, call->friend_number, callback_bwc, call, av->toxav_mono_time);
+    call->bwc = bwc_new(av->log, call->friend_number, callback_bwc, call, rtp_send_packet, call, av->toxav_mono_time);
 
     { /* Prepare audio */
         call->audio = ac_new(av->toxav_mono_time, av->log, av, call->friend_number, av->acb, av->acb_user_data);
