@@ -13,6 +13,11 @@
 
 #include "../toxcore/logger.h"
 
+#ifndef TOX_DEFINED
+#define TOX_DEFINED
+typedef struct Tox Tox;
+#endif /* !TOX_DEFINED */
+
 /**
  * Error codes.
  */

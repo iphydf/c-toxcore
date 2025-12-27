@@ -132,6 +132,36 @@ cc_test(
 )
 
 cc_library(
+    name = "video",
+    srcs = ["video.c"],
+    hdrs = ["video.h"],
+    deps = [
+        ":ring_buffer",
+        ":rtp",
+        "//c-toxcore/toxcore:ccompat",
+        "//c-toxcore/toxcore:logger",
+        "//c-toxcore/toxcore:mono_time",
+        "//c-toxcore/toxcore:util",
+        "@libvpx",
+    ],
+)
+
+cc_test(
+    name = "video_test",
+    timeout = "moderate",
+    srcs = ["video_test.cc"],
+    deps = [
+        ":rtp",
+        ":video",
+        "//c-toxcore/toxcore:logger",
+        "//c-toxcore/toxcore:mono_time",
+        "//c-toxcore/toxcore:os_memory",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "toxav",
     srcs = glob(
         [
@@ -146,6 +176,8 @@ cc_library(
             "bwcontroller.h",
             "audio.c",
             "audio.h",
+            "video.c",
+            "video.h",
         ],
     ),
     hdrs = ["toxav.h"],
@@ -154,6 +186,7 @@ cc_library(
         ":audio",
         ":bwcontroller",
         ":rtp",
+        ":video",
         "//c-toxcore/toxcore:Messenger",
         "//c-toxcore/toxcore:ccompat",
         "//c-toxcore/toxcore:group",
@@ -164,7 +197,6 @@ cc_library(
         "//c-toxcore/toxcore:tox",
         "//c-toxcore/toxcore:util",
         "@libsodium",
-        "@libvpx",
         "@opus",
     ],
 )

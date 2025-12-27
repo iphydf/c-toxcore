@@ -57,7 +57,7 @@ typedef struct RTPSession RTPSession;
 
 /* RTPMessage accessors */
 const uint8_t *rtp_message_data(const RTPMessage *msg);
-uint16_t rtp_message_len(const RTPMessage *msg);
+uint32_t rtp_message_len(const RTPMessage *msg);
 uint8_t rtp_message_pt(const RTPMessage *msg);
 uint16_t rtp_message_sequnum(const RTPMessage *msg);
 uint64_t rtp_message_flags(const RTPMessage *msg);

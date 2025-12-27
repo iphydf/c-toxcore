@@ -9,6 +9,11 @@
 #include "msi.h"
 #include "rtp.h"
 
+#ifndef TOXAV_DEFINED
+#define TOXAV_DEFINED
+typedef struct ToxAV ToxAV;
+#endif /* TOXAV_DEFINED */
+
 #ifndef TOXAV_CALL_DEFINED
 #define TOXAV_CALL_DEFINED
 typedef struct ToxAVCall ToxAVCall;

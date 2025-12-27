@@ -201,6 +201,20 @@ static void handle_audio_frame(uint32_t friend_number, const int16_t *pcm, size_
     }
 }
 
+static void handle_video_frame(uint32_t friend_number, uint16_t width, uint16_t height,
+                               const uint8_t *y, const uint8_t *u, const uint8_t *v,
+                               int32_t ystride, int32_t ustride, int32_t vstride,
+                               void *user_data)
+{
+    ToxAVCall *call = (ToxAVCall *)user_data;
+    toxav_video_receive_frame_cb *vcb = call->av->vcb;
+    void *vcb_user_data = call->av->vcb_user_data;
+
+    if (vcb != nullptr) {
+        vcb(call->av, friend_number, width, height, y, u, v, ystride, ustride, vstride, vcb_user_data);
+    }
+}
+
 static int callback_invite(void *object, MSICall *call);
 static int callback_start(void *object, MSICall *call);
 static int callback_end(void *object, MSICall *call);
@@ -479,9 +493,9 @@ static void iterate_common(ToxAV *av, bool audio)
 
             if ((i->msi_call->self_capabilities & MSI_CAP_R_VIDEO) != 0 &&
                     (i->msi_call->peer_capabilities & MSI_CAP_S_VIDEO) != 0) {
-                pthread_mutex_lock(i->video->queue_mutex);
-                frame_time = min_s32(i->video->lcfd, frame_time);
-                pthread_mutex_unlock(i->video->queue_mutex);
+                pthread_mutex_lock(vc_get_queue_mutex(i->video));
+                frame_time = min_s32(vc_get_lcfd(i->video), frame_time);
+                pthread_mutex_unlock(vc_get_queue_mutex(i->video));
             }
         }
 
@@ -1049,26 +1063,16 @@ RETURN:
 
 static Toxav_Err_Send_Frame send_frames(const ToxAV *av, ToxAVCall *call)
 {
-    vpx_codec_iter_t iter = nullptr;
+    uint8_t *data;
+    uint32_t size;
+    bool is_keyframe;
 
-    for (const vpx_codec_cx_pkt_t *pkt = vpx_codec_get_cx_data(call->video->encoder, &iter);
-            pkt != nullptr;
-            pkt = vpx_codec_get_cx_data(call->video->encoder, &iter)) {
-        if (pkt->kind != VPX_CODEC_CX_FRAME_PKT) {
-            continue;
-        }
-
-        const bool is_keyframe = (pkt->data.frame.flags & VPX_FRAME_IS_KEY) != 0;
-
-        // https://www.webmproject.org/docs/webm-sdk/structvpx__codec__cx__pkt.html
-        // pkt->data.frame.sz -> size_t
-        const uint32_t frame_length_in_bytes = pkt->data.frame.sz;
-
+    while (vc_get_cx_data(call->video, &data, &size, &is_keyframe)) {
         const int res = rtp_send_data(
                             av->log,
                             call->video_rtp,
-                            (const uint8_t *)pkt->data.frame.buf,
-                            frame_length_in_bytes,
+                            data,
+                            size,
                             is_keyframe);
 
         if (res < 0) {
@@ -1087,7 +1091,7 @@ bool toxav_video_send_frame(ToxAV *av, Tox_Friend_Number friend_number, uint16_t
     Toxav_Err_Send_Frame rc = TOXAV_ERR_SEND_FRAME_OK;
     ToxAVCall *call;
 
-    int vpx_encode_flags = 0;
+    int video_encode_flags = 0;
 
     if (!tox_friend_exists(av->tox, friend_number)) {
         rc = TOXAV_ERR_SEND_FRAME_FRIEND_NOT_FOUND;
@@ -1133,52 +1137,25 @@ bool toxav_video_send_frame(ToxAV *av, Tox_Friend_Number friend_number, uint16_t
     // we start with I-frames (full frames) and then switch to normal mode later
     if (rtp_session_get_ssrc(call->video_rtp) < VIDEO_SEND_X_KEYFRAMES_FIRST) {
         // Key frame flag for first frames
-        vpx_encode_flags = VPX_EFLAG_FORCE_KF;
+        video_encode_flags = VC_EFLAG_FORCE_KF;
         LOGGER_DEBUG(av->log, "I_FRAME_FLAG:%u only-i-frame mode", rtp_session_get_ssrc(call->video_rtp));
 
         rtp_session_set_ssrc(call->video_rtp, rtp_session_get_ssrc(call->video_rtp) + 1);
     } else if (rtp_session_get_ssrc(call->video_rtp) == VIDEO_SEND_X_KEYFRAMES_FIRST) {
         // normal keyframe placement
-        vpx_encode_flags = 0;
+        video_encode_flags = VC_EFLAG_NONE;
         LOGGER_DEBUG(av->log, "I_FRAME_FLAG:%u normal mode", rtp_session_get_ssrc(call->video_rtp));
 
         rtp_session_set_ssrc(call->video_rtp, rtp_session_get_ssrc(call->video_rtp) + 1);
     }
 
-    {   /* Encode */
-        vpx_image_t img;
-        img.w = 0;
-        img.h = 0;
-        img.d_w = 0;
-        img.d_h = 0;
-        if (vpx_img_alloc(&img, VPX_IMG_FMT_I420, width, height, 0) == nullptr) {
-            pthread_mutex_unlock(call->mutex_video);
-            LOGGER_ERROR(av->log, "Could not allocate image for frame");
-            rc = TOXAV_ERR_SEND_FRAME_INVALID;
-            goto RETURN;
-        }
-
-        /* I420 "It comprises an NxM Y plane followed by (N/2)x(M/2) V and U planes."
-         * http://fourcc.org/yuv.php#IYUV
-         */
-        memcpy(img.planes[VPX_PLANE_Y], y, width * height);
-        memcpy(img.planes[VPX_PLANE_U], u, (width / 2) * (height / 2));
-        memcpy(img.planes[VPX_PLANE_V], v, (width / 2) * (height / 2));
-
-        const vpx_codec_err_t vrc = vpx_codec_encode(call->video->encoder, &img,
-                                    call->video->frame_counter, 1, vpx_encode_flags, VPX_DL_REALTIME);
-
-        vpx_img_free(&img);
-
-        if (vrc != VPX_CODEC_OK) {
-            pthread_mutex_unlock(call->mutex_video);
-            LOGGER_ERROR(av->log, "Could not encode video frame: %s", vpx_codec_err_to_string(vrc));
-            rc = TOXAV_ERR_SEND_FRAME_INVALID;
-            goto RETURN;
-        }
+    if (vc_encode(call->video, width, height, y, u, v, video_encode_flags) != 0) {
+        pthread_mutex_unlock(call->mutex_video);
+        rc = TOXAV_ERR_SEND_FRAME_INVALID;
+        goto RETURN;
     }
 
-    ++call->video->frame_counter;
+    vc_increment_frame_counter(call->video);
 
     rc = send_frames(av, call);
 
@@ -1608,7 +1585,7 @@ static bool call_prepare_transmission(ToxAVCall *call)
         }
     }
     { /* Prepare video */
-        call->video = vc_new(av->log, av->toxav_mono_time, av, call->friend_number, av->vcb, av->vcb_user_data);
+        call->video = vc_new(av->log, av->toxav_mono_time, call->friend_number, handle_video_frame, call);
 
         if (call->video == nullptr) {
             LOGGER_ERROR(av->log, "Failed to create video codec session");
