@@ -38,14 +38,14 @@ struct AudioTestData {
     }
 };
 
-struct RtpMock {
+struct AudioRtpMock {
     RTPSession *recv_session = nullptr;
     std::vector<std::vector<uint8_t>> captured_packets;
     bool auto_forward = true;
 
     static int send_packet(void *user_data, const uint8_t *data, uint16_t length)
     {
-        auto *self = static_cast<RtpMock *>(user_data);
+        auto *self = static_cast<AudioRtpMock *>(user_data);
         self->captured_packets.push_back(std::vector<uint8_t>(data, data + length));
         if (self->auto_forward && self->recv_session) {
             rtp_receive_packet(self->recv_session, data, length);
@@ -96,11 +96,11 @@ TEST_F(AudioTest, EncodeDecodeLoop)
     ACSession *ac = ac_new(mono_time, log, 123, AudioTestData::receive_frame, &data);
     ASSERT_NE(ac, nullptr);
 
-    RtpMock rtp_mock;
-    RTPSession *send_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, RtpMock::send_packet, &rtp_mock,
-        nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
-    RTPSession *recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, RtpMock::send_packet, &rtp_mock,
-        nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
+    AudioRtpMock rtp_mock;
+    RTPSession *send_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
+    RTPSession *recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
     rtp_mock.recv_session = recv_rtp;
 
     uint32_t sampling_rate = 48000;
@@ -184,12 +184,12 @@ TEST_F(AudioTest, QueueInvalidMessage)
     ACSession *ac = ac_new(mono_time, log, 123, AudioTestData::receive_frame, &data);
     ASSERT_NE(ac, nullptr);
 
-    RtpMock rtp_mock;
+    AudioRtpMock rtp_mock;
     // Create a video RTP session but try to queue to audio session
-    RTPSession *video_rtp = rtp_new(log, RTP_TYPE_VIDEO, mono_time, RtpMock::send_packet, &rtp_mock,
-        nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
-    RTPSession *audio_recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, RtpMock::send_packet,
-        &rtp_mock, nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
+    RTPSession *video_rtp = rtp_new(log, RTP_TYPE_VIDEO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
+    RTPSession *audio_recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
     rtp_mock.recv_session = audio_recv_rtp;
 
     std::vector<uint8_t> dummy_video(100, 0);
@@ -212,12 +212,12 @@ TEST_F(AudioTest, JitterBufferDuplicate)
     ACSession *ac = ac_new(mono_time, log, 123, AudioTestData::receive_frame, &data);
     ASSERT_NE(ac, nullptr);
 
-    RtpMock rtp_mock;
+    AudioRtpMock rtp_mock;
     rtp_mock.auto_forward = false;
-    RTPSession *send_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, RtpMock::send_packet, &rtp_mock,
-        nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
-    RTPSession *recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, RtpMock::send_packet, &rtp_mock,
-        nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
+    RTPSession *send_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
+    RTPSession *recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
     rtp_mock.recv_session = recv_rtp;
 
     uint8_t dummy_data[100] = {0};
@@ -253,12 +253,12 @@ TEST_F(AudioTest, JitterBufferOutOfOrder)
     ACSession *ac = ac_new(mono_time, log, 123, AudioTestData::receive_frame, &data);
     ASSERT_NE(ac, nullptr);
 
-    RtpMock rtp_mock;
+    AudioRtpMock rtp_mock;
     rtp_mock.auto_forward = false;
-    RTPSession *send_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, RtpMock::send_packet, &rtp_mock,
-        nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
-    RTPSession *recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, RtpMock::send_packet, &rtp_mock,
-        nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
+    RTPSession *send_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
+    RTPSession *recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
     rtp_mock.recv_session = recv_rtp;
 
     uint8_t dummy_data[100] = {0};
@@ -300,12 +300,12 @@ TEST_F(AudioTest, PacketLossConcealment)
     ACSession *ac = ac_new(mono_time, log, 123, AudioTestData::receive_frame, &data);
     ASSERT_NE(ac, nullptr);
 
-    RtpMock rtp_mock;
+    AudioRtpMock rtp_mock;
     rtp_mock.auto_forward = false;
-    RTPSession *send_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, RtpMock::send_packet, &rtp_mock,
-        nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
-    RTPSession *recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, RtpMock::send_packet, &rtp_mock,
-        nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
+    RTPSession *send_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
+    RTPSession *recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
     rtp_mock.recv_session = recv_rtp;
 
     uint8_t dummy_data[100] = {0};
@@ -346,12 +346,12 @@ TEST_F(AudioTest, JitterBufferReset)
     ACSession *ac = ac_new(mono_time, log, 123, AudioTestData::receive_frame, &data);
     ASSERT_NE(ac, nullptr);
 
-    RtpMock rtp_mock;
+    AudioRtpMock rtp_mock;
     rtp_mock.auto_forward = false;
-    RTPSession *send_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, RtpMock::send_packet, &rtp_mock,
-        nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
-    RTPSession *recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, RtpMock::send_packet, &rtp_mock,
-        nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
+    RTPSession *send_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
+    RTPSession *recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
     rtp_mock.recv_session = recv_rtp;
 
     uint8_t dummy_data[100] = {0};
@@ -391,12 +391,12 @@ TEST_F(AudioTest, DecoderReconfigureCooldown)
     ACSession *ac = ac_new(mono_time, log, 123, AudioTestData::receive_frame, &data);
     ASSERT_NE(ac, nullptr);
 
-    RtpMock rtp_mock;
+    AudioRtpMock rtp_mock;
     rtp_mock.auto_forward = false;
-    RTPSession *send_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, RtpMock::send_packet, &rtp_mock,
-        nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
-    RTPSession *recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, RtpMock::send_packet, &rtp_mock,
-        nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
+    RTPSession *send_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
+    RTPSession *recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
     rtp_mock.recv_session = recv_rtp;
 
     uint8_t dummy_data[100] = {0};
@@ -452,12 +452,12 @@ TEST_F(AudioTest, QueueDummyMessage)
     ACSession *ac = ac_new(mono_time, log, 123, AudioTestData::receive_frame, &data);
     ASSERT_NE(ac, nullptr);
 
-    RtpMock rtp_mock;
+    AudioRtpMock rtp_mock;
     // RTP_TYPE_AUDIO + 2 is the dummy type
-    RTPSession *dummy_rtp = rtp_new(log, RTP_TYPE_AUDIO + 2, mono_time, RtpMock::send_packet,
-        &rtp_mock, nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
-    RTPSession *audio_recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, RtpMock::send_packet,
-        &rtp_mock, nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
+    RTPSession *dummy_rtp = rtp_new(log, RTP_TYPE_AUDIO + 2, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
+    RTPSession *audio_recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
     rtp_mock.recv_session = audio_recv_rtp;
 
     std::vector<uint8_t> dummy_payload(100, 0);
@@ -480,12 +480,12 @@ TEST_F(AudioTest, LatePacketReset)
     ACSession *ac = ac_new(mono_time, log, 123, AudioTestData::receive_frame, &data);
     ASSERT_NE(ac, nullptr);
 
-    RtpMock rtp_mock;
+    AudioRtpMock rtp_mock;
     rtp_mock.auto_forward = false;
-    RTPSession *send_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, RtpMock::send_packet, &rtp_mock,
-        nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
-    RTPSession *recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, RtpMock::send_packet, &rtp_mock,
-        nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
+    RTPSession *send_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
+    RTPSession *recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
     rtp_mock.recv_session = recv_rtp;
 
     uint8_t dummy_data[100] = {0};
@@ -531,12 +531,12 @@ TEST_F(AudioTest, InvalidSamplingRate)
     ACSession *ac = ac_new(mono_time, log, 123, AudioTestData::receive_frame, &data);
     ASSERT_NE(ac, nullptr);
 
-    RtpMock rtp_mock;
+    AudioRtpMock rtp_mock;
     rtp_mock.auto_forward = false;
-    RTPSession *send_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, RtpMock::send_packet, &rtp_mock,
-        nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
-    RTPSession *recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, RtpMock::send_packet, &rtp_mock,
-        nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
+    RTPSession *send_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
+    RTPSession *recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
     rtp_mock.recv_session = recv_rtp;
 
     // 1. Send a packet with an absurdly large sampling rate.
@@ -578,12 +578,12 @@ TEST_F(AudioTest, ShortPacket)
     ACSession *ac = ac_new(mono_time, log, 123, AudioTestData::receive_frame, &data);
     ASSERT_NE(ac, nullptr);
 
-    RtpMock rtp_mock;
+    AudioRtpMock rtp_mock;
     rtp_mock.auto_forward = false;
-    RTPSession *send_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, RtpMock::send_packet, &rtp_mock,
-        nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
-    RTPSession *recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, RtpMock::send_packet, &rtp_mock,
-        nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
+    RTPSession *send_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
+    RTPSession *recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
     rtp_mock.recv_session = recv_rtp;
 
     // 1. Send a packet that is too short (only sampling rate, no Opus data).
@@ -610,12 +610,12 @@ TEST_F(AudioTest, JitterBufferWrapAround)
     ACSession *ac = ac_new(mono_time, log, 123, AudioTestData::receive_frame, &data);
     ASSERT_NE(ac, nullptr);
 
-    RtpMock rtp_mock;
+    AudioRtpMock rtp_mock;
     rtp_mock.auto_forward = false;
-    RTPSession *send_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, RtpMock::send_packet, &rtp_mock,
-        nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
-    RTPSession *recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, RtpMock::send_packet, &rtp_mock,
-        nullptr, nullptr, nullptr, ac, RtpMock::audio_cb);
+    RTPSession *send_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
+    RTPSession *recv_rtp = rtp_new(log, RTP_TYPE_AUDIO, mono_time, AudioRtpMock::send_packet,
+        &rtp_mock, nullptr, nullptr, nullptr, ac, AudioRtpMock::audio_cb);
     rtp_mock.recv_session = recv_rtp;
 
     uint8_t dummy_data[100] = {0};

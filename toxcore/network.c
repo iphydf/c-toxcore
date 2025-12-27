@@ -919,7 +919,7 @@ int net_send_packet(const Networking_Core *net, const IP_Port *ip_port, Packet p
 /**
  * Function to send packet(data) of length length to ip_port.
  *
- * @deprecated Use send_packet instead.
+ * @deprecated Use net_send_packet instead.
  */
 int sendpacket(const Networking_Core *net, const IP_Port *ip_port, const uint8_t *data, uint16_t length)
 {

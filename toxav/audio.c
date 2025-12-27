@@ -194,7 +194,7 @@ void ac_iterate(ACSession *ac)
             }
         } else {
             const uint8_t *msg_data = rtp_message_data(msg);
-            const uint16_t msg_length = rtp_message_len(msg);
+            const uint32_t msg_length = rtp_message_len(msg);
 
             if (msg_length <= 4) {
                 LOGGER_WARNING(ac->log, "Packet too short: %u", msg_length);

@@ -20,6 +20,7 @@ struct MockSessionData {
     std::vector<std::vector<uint8_t>> sent_packets;
     std::vector<std::vector<uint8_t>> received_frames;
     std::vector<uint16_t> received_frame_lengths;
+    std::vector<uint32_t> received_32bit_lengths;
     std::vector<uint32_t> received_full_lengths;
     std::vector<uint16_t> received_sequnums;
     std::vector<uint8_t> received_pts;
@@ -47,14 +48,15 @@ static int mock_m_cb(const Mono_Time * /*mono_time*/, void *cs, RTPMessage *msg)
     sd->received_flags.push_back(rtp_message_flags(msg));
 
     const uint8_t *data = rtp_message_data(msg);
-    uint16_t len = rtp_message_len(msg);
+    uint32_t len = rtp_message_len(msg);
     uint32_t full_len = rtp_message_data_length_full(msg);
 
     // If full_len is not set (old protocol), use len
     uint32_t actual_len = (full_len > 0) ? full_len : len;
 
     sd->received_frames.emplace_back(data, data + actual_len);
-    sd->received_frame_lengths.push_back(len);
+    sd->received_frame_lengths.push_back(static_cast<uint16_t>(len));
+    sd->received_32bit_lengths.push_back(len);
     sd->received_full_lengths.push_back(full_len);
     sd->received_sequnums.push_back(rtp_message_sequnum(msg));
 
@@ -557,6 +559,41 @@ TEST_F(RtpPublicTest, OldProtocolCorruption)
     rtp_receive_packet(session, corrupted_part.data(), corrupted_part.size());
     // It should return early without pushing the message.
     EXPECT_EQ(sd.received_frames.size(), 0);
+
+    rtp_kill(log, session);
+}
+
+TEST_F(RtpPublicTest, HugeVideoFrameInternalLength)
+{
+    MockSessionData sd;
+    RTPSession *session = rtp_new(log, RTP_TYPE_VIDEO, mono_time, mock_send_packet, &sd, nullptr,
+        nullptr, nullptr, &sd, mock_m_cb);
+
+    // Frame larger than 64KB (uint16_t max)
+    const uint32_t huge_frame_size = 65540;
+    std::vector<uint8_t> data(huge_frame_size);
+    for (uint32_t i = 0; i < huge_frame_size; ++i) {
+        data[i] = static_cast<uint8_t>(i & 0xFF);
+    }
+
+    rtp_send_data(log, session, data.data(), huge_frame_size, false);
+
+    // Should be fragmented into many packets
+    ASSERT_GT(sd.sent_packets.size(), 1);
+
+    // Receive all packets
+    for (const auto &pkt : sd.sent_packets) {
+        rtp_receive_packet(session, pkt.data(), pkt.size());
+    }
+
+    ASSERT_EQ(sd.received_frames.size(), 1);
+    // This verifies that the internal 32-bit length is working correctly.
+    // We cast huge_frame_size to 16-bit to show what it would have been if it truncated.
+    EXPECT_NE(static_cast<uint16_t>(sd.received_32bit_lengths[0]), huge_frame_size);
+    EXPECT_EQ(sd.received_32bit_lengths[0], huge_frame_size);
+    EXPECT_EQ(sd.received_full_lengths[0], huge_frame_size);
+    EXPECT_EQ(sd.received_frames[0].size(), huge_frame_size);
+    EXPECT_EQ(sd.received_frames[0], data);
 
     rtp_kill(log, session);
 }

@@ -71,7 +71,7 @@ struct RTPMessage {
      * record the number of bytes received so far in a multi-part message. The
      * multi-part message in the old code is stored in `RTPSession::mp`.
      */
-    uint16_t len;
+    uint32_t len;
 
     struct RTPHeader header;
     uint8_t data[];
@@ -136,7 +136,7 @@ const uint8_t *rtp_message_data(const RTPMessage *msg)
     return msg->data;
 }
 
-uint16_t rtp_message_len(const RTPMessage *msg)
+uint32_t rtp_message_len(const RTPMessage *msg)
 {
     return msg->len;
 }
@@ -363,7 +363,8 @@ static struct RTPMessage *process_frame(const Logger *log, struct RTPWorkBufferL
     struct RTPWorkBuffer *const slot = &wkbl->work_buffer[slot_id];
 
     // Move ownership of the frame out of the slot into m_new.
-    struct RTPMessage *const m_new = slot->buf;
+    struct RTPMessage *msg = slot->buf;
+    msg->len = msg->header.data_length_full;
     slot->buf = nullptr;
 
     assert(wkbl->next_free_entry >= 1 && wkbl->next_free_entry <= USED_RTP_WORKBUFFER_COUNT);
@@ -385,7 +386,7 @@ static struct RTPMessage *process_frame(const Logger *log, struct RTPWorkBufferL
     wkbl->work_buffer[wkbl->next_free_entry] = empty;
 
     // Move ownership of the frame to the caller.
-    return m_new;
+    return msg;
 }
 
 /**
