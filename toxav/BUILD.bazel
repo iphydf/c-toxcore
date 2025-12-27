@@ -162,29 +162,43 @@ cc_test(
 )
 
 cc_library(
+    name = "msi",
+    srcs = ["msi.c"],
+    hdrs = ["msi.h"],
+    visibility = ["//c-toxcore:__subpackages__"],
+    deps = [
+        "//c-toxcore/toxcore:ccompat",
+        "//c-toxcore/toxcore:logger",
+        "//c-toxcore/toxcore:util",
+    ],
+)
+
+cc_test(
+    name = "msi_test",
+    size = "small",
+    srcs = ["msi_test.cc"],
+    deps = [
+        ":msi",
+        "//c-toxcore/toxcore:os_memory",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "toxav",
-    srcs = glob(
-        [
-            "*.c",
-            "*.h",
-        ],
-        exclude = [
-            "toxav.h",
-            "rtp.c",
-            "rtp.h",
-            "bwcontroller.c",
-            "bwcontroller.h",
-            "audio.c",
-            "audio.h",
-            "video.c",
-            "video.h",
-        ],
-    ),
+    srcs = [
+        "groupav.c",
+        "groupav.h",
+        "toxav.c",
+        "toxav_old.c",
+    ],
     hdrs = ["toxav.h"],
     visibility = ["//c-toxcore:__subpackages__"],
     deps = [
         ":audio",
         ":bwcontroller",
+        ":msi",
         ":rtp",
         ":video",
         "//c-toxcore/toxcore:Messenger",
