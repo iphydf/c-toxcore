@@ -598,4 +598,356 @@ TEST_F(RtpPublicTest, HugeVideoFrameInternalLength)
     rtp_kill(log, session);
 }
 
+TEST_F(RtpPublicTest, HeapBufferOverflowRaw)
+{
+    MockSessionData sd;
+    RTPSession *session = rtp_new(log, RTP_TYPE_VIDEO, mono_time, mock_send_packet, &sd, nullptr,
+        nullptr, nullptr, &sd, mock_m_cb);
+
+    // Manually construct a malicious packet.
+    // 1 byte ID + 80 bytes Header + 200 bytes Payload
+    const size_t header_size = 80;
+    const size_t payload_size = 200;
+    const size_t total_size = 1 + header_size + payload_size;
+    std::vector<uint8_t> pkt(total_size, 0);
+
+    // 0: Packet ID
+    pkt[0] = RTP_TYPE_VIDEO;
+
+    // 1: VE=2 (10xxxxxx) -> 0x80
+    pkt[1] = 0x80;
+
+    // 2: PT = RTP_TYPE_VIDEO % 128 (193 % 128 = 65 -> 0x41)
+    // MA=0
+    pkt[2] = 0x41;
+
+    // 13-20: Flags (64-bit)
+    // We need RTP_LARGE_FRAME (1<<0) and RTP_KEY_FRAME (1<<1) -> 0x03
+    // Stored in Big Endian. Last byte is 0x03.
+    pkt[20] = 0x03;
+
+    // 25-28: Data Length Full (32-bit Big Endian)
+    // We set this to 50 (0x32) to trick the allocator.
+    pkt[28] = 50;
+
+    // 81...: Payload
+    // Fill with 0x41 ('A')
+    std::fill(pkt.begin() + 81, pkt.end(), 0x41);
+
+    // Inject the malicious packet
+    rtp_receive_packet(session, pkt.data(), pkt.size());
+
+    rtp_kill(log, session);
+}
+
+TEST_F(RtpPublicTest, HeapBufferOverflow)
+{
+    MockSessionData sd;
+    RTPSession *session = rtp_new(log, RTP_TYPE_VIDEO, mono_time, mock_send_packet, &sd, nullptr,
+        nullptr, nullptr, &sd, mock_m_cb);
+
+    // Common parameters
+    uint16_t sequnum = 100;
+    uint32_t timestamp = 12345;
+    uint32_t ssrc = 0x11223344;
+
+    // --- Packet 1: Small allocation ---
+    // data_length_full = 10
+    // offset_full = 0
+    // payload_len = 5
+    {
+        uint8_t packet[100];
+        std::memset(packet, 0, sizeof(packet));
+        packet[0] = RTP_TYPE_VIDEO;  // Tox Packet ID
+
+        // RTP Header
+        uint8_t *h = &packet[1];
+        // Byte 0: VE=2 (0x80)
+        h[0] = 0x80;
+        // Byte 1: PT=0x41
+        h[1] = 0x41;  // 65
+        // Bytes 2-3: Sequnum
+        h[2] = (sequnum >> 8) & 0xFF;
+        h[3] = sequnum & 0xFF;
+        // Bytes 4-7: Timestamp
+        h[4] = (timestamp >> 24) & 0xFF;
+        h[5] = (timestamp >> 16) & 0xFF;
+        h[6] = (timestamp >> 8) & 0xFF;
+        h[7] = timestamp & 0xFF;
+        // Bytes 8-11: SSRC
+        h[8] = (ssrc >> 24) & 0xFF;
+        h[9] = (ssrc >> 16) & 0xFF;
+        h[10] = (ssrc >> 8) & 0xFF;
+        h[11] = ssrc & 0xFF;
+        // Bytes 12-19: Flags (RTP_LARGE_FRAME = 1)
+        h[19] = 1;
+
+        // Bytes 20-23: Offset Full (0)
+        // 0
+
+        // Bytes 24-27: Data Length Full (10)
+        h[27] = 10;
+
+        // Bytes 28-31: Received Length Full (0)
+
+        // Offset Lower (at 76)
+        h[76] = 0;
+        h[77] = 0;
+        // Data Length Lower (at 78) -> 10
+        h[78] = 0;
+        h[79] = 10;
+
+        // Payload starts at 1 + RTP_HEADER_SIZE (80) = 81
+        // We set payload length to 5.
+        // Total packet size = 81 + 5 = 86
+
+        rtp_receive_packet(session, packet, 81 + 5);
+    }
+
+    // --- Packet 2: Exploit ---
+    // Same sequnum/timestamp -> same slot
+    // data_length_full = 1000 (Larger!)
+    // offset_full = 10
+    // payload_len = 100
+    //
+    // Logic check:
+    //   data_length_full (1000) - offset_full (10) < payload_len (100) -> 990 < 100 -> False.
+    //   Check passes.
+    //
+    // Memcpy to buf->data + 10. Buf was allocated with size 10. Writing 100
+    // bytes to offset 10 -> Overflow.
+    {
+        uint8_t packet[200];
+        std::memset(packet, 0, sizeof(packet));
+        packet[0] = RTP_TYPE_VIDEO;
+
+        uint8_t *h = &packet[1];
+        h[0] = 0x80;
+        h[1] = 0x41;
+        h[2] = (sequnum >> 8) & 0xFF;
+        h[3] = sequnum & 0xFF;
+        h[4] = (timestamp >> 24) & 0xFF;
+        h[5] = (timestamp >> 16) & 0xFF;
+        h[6] = (timestamp >> 8) & 0xFF;
+        h[7] = timestamp & 0xFF;
+        h[8] = (ssrc >> 24) & 0xFF;
+        h[9] = (ssrc >> 16) & 0xFF;
+        h[10] = (ssrc >> 8) & 0xFF;
+        h[11] = ssrc & 0xFF;
+        h[19] = 1;  // Large frame
+
+        // Offset Full = 10
+        h[23] = 10;
+
+        // Data Length Full = 1000
+        h[26] = (1000 >> 8) & 0xFF;
+        h[27] = 1000 & 0xFF;
+
+        // Offset Lower (at 76) -> 10
+        h[76] = 0;
+        h[77] = 10;
+        // Data Length Lower (at 78) -> 1000
+        h[78] = (1000 >> 8) & 0xFF;
+        h[79] = 1000 & 0xFF;
+
+        // Payload starts at 81. Length 100.
+        // We fill it with 'A' to make the overflow obvious if inspected.
+        std::memset(&packet[81], 'A', 100);
+
+        rtp_receive_packet(session, packet, 81 + 100);
+    }
+
+    rtp_kill(log, session);
+}
+
+TEST_F(RtpPublicTest, AudioHeapBufferOverflow)
+{
+    MockSessionData sd;
+    RTPSession *session = rtp_new(log, RTP_TYPE_AUDIO, mono_time, mock_send_packet, &sd, nullptr,
+        nullptr, nullptr, &sd, mock_m_cb);
+
+    uint16_t sequnum = 100;
+    uint32_t timestamp = 12345;
+    uint32_t ssrc = 0x11223344;
+
+    uint8_t packet[200];
+    std::memset(packet, 0, sizeof(packet));
+    packet[0] = RTP_TYPE_AUDIO;
+
+    uint8_t *h = &packet[1];
+    h[0] = 0x80;
+    h[1] = 0x40;  // 64 (Audio)
+    h[2] = (sequnum >> 8) & 0xFF;
+    h[3] = sequnum & 0xFF;
+    h[4] = (timestamp >> 24) & 0xFF;
+    h[5] = (timestamp >> 16) & 0xFF;
+    h[6] = (timestamp >> 8) & 0xFF;
+    h[7] = timestamp & 0xFF;
+    h[8] = (ssrc >> 24) & 0xFF;
+    h[9] = (ssrc >> 16) & 0xFF;
+    h[10] = (ssrc >> 8) & 0xFF;
+    h[11] = ssrc & 0xFF;
+    h[19] = 0;  // Small frame (Audio)
+
+    // Offset Lower (at 76) -> 90
+    h[76] = 0;
+    h[77] = 90;
+    // Data Length Lower (at 78) -> 100
+    h[78] = 0;
+    h[79] = 100;
+
+    // Payload starts at 81. Length 20.
+    // Total size required = 90 + 20 = 110.
+    // Allocated size = 100.
+    // Overflow by 10 bytes.
+    std::memset(&packet[81], 'A', 20);
+
+    rtp_receive_packet(session, packet, 81 + 20);
+
+    rtp_kill(log, session);
+}
+
+TEST_F(RtpPublicTest, HeapBufferOverflowMultipartAudio)
+{
+    MockSessionData sd;
+    RTPSession *session = rtp_new(log, RTP_TYPE_AUDIO, mono_time, mock_send_packet, &sd, nullptr,
+        nullptr, nullptr, &sd, mock_m_cb);
+
+    uint16_t sequnum = 200;
+    uint32_t timestamp = 67890;
+    uint32_t ssrc = 0x55667788;
+    uint16_t total_len = 100;
+
+    // --- Packet 1: Allocate buffer ---
+    // data_length_lower = 100
+    // offset_lower = 0
+    // payload_len = 10
+    {
+        uint8_t packet[200];
+        std::memset(packet, 0, sizeof(packet));
+        packet[0] = RTP_TYPE_AUDIO;
+
+        uint8_t *h = &packet[1];
+        h[0] = 0x80;
+        h[1] = 0x40;  // Audio
+        h[2] = (sequnum >> 8) & 0xFF;
+        h[3] = sequnum & 0xFF;
+        h[4] = (timestamp >> 24) & 0xFF;
+        h[5] = (timestamp >> 16) & 0xFF;
+        h[6] = (timestamp >> 8) & 0xFF;
+        h[7] = timestamp & 0xFF;
+        h[8] = (ssrc >> 24) & 0xFF;
+        h[9] = (ssrc >> 16) & 0xFF;
+        h[10] = (ssrc >> 8) & 0xFF;
+        h[11] = ssrc & 0xFF;
+        h[19] = 0;
+
+        // Offset Lower (at 76) -> 0
+        h[76] = 0;
+        h[77] = 0;
+        // Data Length Lower (at 78) -> 100
+        h[78] = (total_len >> 8) & 0xFF;
+        h[79] = total_len & 0xFF;
+
+        // Payload len 10
+        std::memset(&packet[81], 'A', 10);
+        rtp_receive_packet(session, packet, 81 + 10);
+    }
+
+    // --- Packet 2: Overflow ---
+    // offset_lower = 95
+    // payload_len = 10
+    //
+    // Check 1: total (100) - received (10) = 90. 90 >= 10. Safe.
+    // Check 2: total (100) > offset (95). Safe.
+    // Write: 95 + 10 = 105. Overflow.
+    {
+        uint8_t packet[200];
+        std::memset(packet, 0, sizeof(packet));
+        packet[0] = RTP_TYPE_AUDIO;
+
+        uint8_t *h = &packet[1];
+        h[0] = 0x80;
+        h[1] = 0x40;
+        h[2] = (sequnum >> 8) & 0xFF;
+        h[3] = sequnum & 0xFF;
+        h[4] = (timestamp >> 24) & 0xFF;
+        h[5] = (timestamp >> 16) & 0xFF;
+        h[6] = (timestamp >> 8) & 0xFF;
+        h[7] = timestamp & 0xFF;
+        h[8] = (ssrc >> 24) & 0xFF;
+        h[9] = (ssrc >> 16) & 0xFF;
+        h[10] = (ssrc >> 8) & 0xFF;
+        h[11] = ssrc & 0xFF;
+        h[19] = 0;
+
+        // Offset Lower (at 76) -> 95
+        h[76] = 0;
+        h[77] = 95;
+        // Data Length Lower (at 78) -> 100
+        h[78] = (total_len >> 8) & 0xFF;
+        h[79] = total_len & 0xFF;
+
+        // Payload len 10
+        std::memset(&packet[81], 'B', 10);
+        rtp_receive_packet(session, packet, 81 + 10);
+    }
+
+    rtp_kill(log, session);
+}
+
+TEST_F(RtpPublicTest, HeapBufferOverflowLogRead)
+{
+    MockSessionData sd;
+    RTPSession *session = rtp_new(log, RTP_TYPE_VIDEO, mono_time, mock_send_packet, &sd, nullptr,
+        nullptr, nullptr, &sd, mock_m_cb);
+
+    uint16_t sequnum = 123;
+    uint32_t timestamp = 99999;
+    uint32_t ssrc = 0x88776655;
+
+    // Packet with data_length_full = 1.
+    // The logger tries to read data[0] and data[1].
+    // data[1] will be out of bounds if only 1 byte is allocated.
+    uint8_t packet[100];
+    std::memset(packet, 0, sizeof(packet));
+    packet[0] = RTP_TYPE_VIDEO;
+
+    uint8_t *h = &packet[1];
+    h[0] = 0x80;
+    h[1] = 0x41;  // Video
+    h[2] = (sequnum >> 8) & 0xFF;
+    h[3] = sequnum & 0xFF;
+    h[4] = (timestamp >> 24) & 0xFF;
+    h[5] = (timestamp >> 16) & 0xFF;
+    h[6] = (timestamp >> 8) & 0xFF;
+    h[7] = timestamp & 0xFF;
+    h[8] = (ssrc >> 24) & 0xFF;
+    h[9] = (ssrc >> 16) & 0xFF;
+    h[10] = (ssrc >> 8) & 0xFF;
+    h[11] = ssrc & 0xFF;
+    h[19] = 1;  // Large frame
+
+    // Offset Full = 0
+    h[23] = 0;
+
+    // Data Length Full = 1
+    h[26] = 0;
+    h[27] = 1;
+
+    // Offset Lower (at 76) -> 0
+    h[76] = 0;
+    h[77] = 0;
+    // Data Length Lower (at 78) -> 1
+    h[78] = 0;
+    h[79] = 1;
+
+    // Payload starts at 81. Length 1.
+    packet[81] = 0xCC;
+
+    rtp_receive_packet(session, packet, 81 + 1);
+
+    rtp_kill(log, session);
+}
+
 }  // namespace

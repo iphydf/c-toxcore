@@ -17,6 +17,14 @@
 #include "../toxcore/network.h"
 #include "../toxcore/util.h"
 
+/**
+ * Maximum size of a single RTP frame in bytes.
+ * This limit prevents memory exhaustion attacks where a malicious peer sends
+ * a header indicating a very large frame size, causing the receiver to allocate
+ * excessive memory.
+ */
+#define MAX_RTP_FRAME_SIZE (32 * 1024 * 1024)
+
 struct RTPHeader {
     /* Standard RTP header */
     unsigned ve: 2; /* Version has only 2 bits! */
@@ -413,6 +421,11 @@ static bool fill_data_into_slot(const Logger *log, struct RTPWorkBufferList *wkb
     if (slot->received_len == 0) {
         assert(slot->buf == nullptr);
 
+        if (header->data_length_full > MAX_RTP_FRAME_SIZE) {
+            LOGGER_WARNING(log, "RTP frame too large: %u > %u", (unsigned)header->data_length_full, (unsigned)MAX_RTP_FRAME_SIZE);
+            return false;
+        }
+
         // No data for this slot has been received, yet, so we create a new
         // message for it with enough memory for the entire frame.
         struct RTPMessage *msg = (struct RTPMessage *)calloc(1, sizeof(struct RTPMessage) + header->data_length_full);
@@ -435,11 +448,23 @@ static bool fill_data_into_slot(const Logger *log, struct RTPWorkBufferList *wkb
 
         assert(wkbl->next_free_entry < USED_RTP_WORKBUFFER_COUNT);
         ++wkbl->next_free_entry;
+    } else {
+        if (slot->buf->header.data_length_full != header->data_length_full) {
+            LOGGER_WARNING(log, "Received packet with different length than previous packets in same frame: %u != %u",
+                           header->data_length_full, slot->buf->header.data_length_full);
+            return false;
+        }
     }
 
     // We already checked this when we received the packet, but we rely on it
     // here, so assert again.
     assert(header->offset_full < header->data_length_full);
+
+    if (header->data_length_full - header->offset_full < incoming_data_length) {
+        LOGGER_ERROR(log, "Packet too long for buffer: offset %u + len %u > total %u",
+                     (unsigned)header->offset_full, (unsigned)incoming_data_length, (unsigned)header->data_length_full);
+        return false;
+    }
 
     // Copy the incoming chunk of data into the correct position in the full
     // frame data array.
@@ -529,8 +554,14 @@ static int handle_video_packet(const Logger *log, RTPSession *session, const str
         // get_slot just told us it's full, so process_frame must return non-null.
         assert(m_new != nullptr);
 
-        LOGGER_DEBUG(log, "-- handle_video_packet -- CALLBACK-001a b0=%d b1=%d", (int)m_new->data[0],
-                     (int)m_new->data[1]);
+        if (m_new->len >= 2) {
+            LOGGER_DEBUG(log, "-- handle_video_packet -- CALLBACK-001a b0=%d b1=%d", (int)m_new->data[0],
+                         (int)m_new->data[1]);
+        } else if (m_new->len == 1) {
+            LOGGER_DEBUG(log, "-- handle_video_packet -- CALLBACK-001a b0=%d", (int)m_new->data[0]);
+        } else {
+            LOGGER_DEBUG(log, "-- handle_video_packet -- CALLBACK-001a (empty)");
+        }
         update_bwc_values(session, m_new);
         // Pass ownership of m_new to the callback.
         session->mcb(session->mono_time, session->cs, m_new);
@@ -568,8 +599,14 @@ static int handle_video_packet(const Logger *log, RTPSession *session, const str
     struct RTPMessage *m_new = process_frame(log, session->work_buffer_list, slot_id);
 
     if (m_new != nullptr) {
-        LOGGER_DEBUG(log, "-- handle_video_packet -- CALLBACK-003a b0=%d b1=%d", (int)m_new->data[0],
-                     (int)m_new->data[1]);
+        if (m_new->len >= 2) {
+            LOGGER_DEBUG(log, "-- handle_video_packet -- CALLBACK-003a b0=%d b1=%d", (int)m_new->data[0],
+                         (int)m_new->data[1]);
+        } else if (m_new->len == 1) {
+            LOGGER_DEBUG(log, "-- handle_video_packet -- CALLBACK-003a b0=%d", (int)m_new->data[0]);
+        } else {
+            LOGGER_DEBUG(log, "-- handle_video_packet -- CALLBACK-003a (empty)");
+        }
         update_bwc_values(session, m_new);
         session->mcb(session->mono_time, session->cs, m_new);
 
@@ -677,7 +714,8 @@ void rtp_receive_packet(RTPSession *session, const uint8_t *data, size_t length)
 
             /* Make sure we have enough allocated memory */
             if (session->mp->header.data_length_lower - session->mp->len < payload_size - RTP_HEADER_SIZE ||
-                    session->mp->header.data_length_lower <= header.offset_lower) {
+                    session->mp->header.data_length_lower <= header.offset_lower ||
+                    session->mp->header.data_length_lower - header.offset_lower < payload_size - RTP_HEADER_SIZE) {
                 LOGGER_WARNING(log, "Corruption on the stream: multipart audio packet does not fit");
                 return;
             }
@@ -716,6 +754,13 @@ void rtp_receive_packet(RTPSession *session, const uint8_t *data, size_t length)
          */
         /* This is also a point for new multiparted messages */
 NEW_MULTIPARTED:
+
+        if (header.data_length_lower - header.offset_lower < payload_size - RTP_HEADER_SIZE) {
+            LOGGER_WARNING(log, "Packet too long for buffer: offset %u + len %u > total %u",
+                           (unsigned)header.offset_lower, (unsigned)(payload_size - RTP_HEADER_SIZE),
+                           (unsigned)header.data_length_lower);
+            return;
+        }
 
         /* Message is not late; pick up the latest parameters */
         session->rsequnum = header.sequnum;
