@@ -591,9 +591,18 @@ static bool client_or_ip_port_in_list(const Logger *_Nonnull log, const Mono_Tim
 
     LOGGER_DEBUG(log, "coipil[%u]: switching public_key (ipv%d)", index, ip_version);
 
-    /* kill the other address, if it was set */
-    const IPPTsPng empty_ipptspng = {{{{0}}}};
-    *assoc = empty_ipptspng;
+    /* kill the other address, if it was set.
+     * We just updated `assoc` (which is either assoc4 or assoc6) with the new public_key.
+     * If there was an association for the other IP version, it's now invalid for this new identity.
+     */
+    if (ip_version == 4) {
+        const IPPTsPng empty_ipptspng = {{{{0}}}};
+        list[index].assoc6 = empty_ipptspng;
+    } else {
+        const IPPTsPng empty_ipptspng = {{{{0}}}};
+        list[index].assoc4 = empty_ipptspng;
+    }
+
     return true;
 }
 
@@ -641,12 +650,6 @@ static void get_close_nodes_inner(uint64_t cur_time, const uint8_t *_Nonnull pub
 
     for (uint32_t i = 0; i < client_list_length; ++i) {
         const Client_data *const client = &client_list[i];
-
-        /* node already in list? */
-        if (index_of_node_pk(nodes_list, MAX_SENT_NODES, client->public_key) != UINT32_MAX) {
-            continue;
-        }
-
         const IPPTsPng *ipptp;
 
         if (net_family_is_ipv4(sa_family)) {
@@ -676,6 +679,11 @@ static void get_close_nodes_inner(uint64_t cur_time, const uint8_t *_Nonnull pub
         }
 
 #endif /* CHECK_ANNOUNCE_NODE */
+
+        /* node already in list? */
+        if (index_of_node_pk(nodes_list, num_nodes, client->public_key) != UINT32_MAX) {
+            continue;
+        }
 
         if (num_nodes < MAX_SENT_NODES) {
             memcpy(nodes_list[num_nodes].public_key, client->public_key, CRYPTO_PUBLIC_KEY_SIZE);
