@@ -578,12 +578,24 @@ endfunction()
 #
 if(UNITTEST AND TARGET GTest::gtest AND TARGET GTest::gmock)
   if(BUILD_TOXAV)
+    add_library(av_test_support STATIC
+      toxav/av_test_support.cc
+      toxav/av_test_support.hh)
+    if(TARGET toxcore_static)
+      target_link_libraries(av_test_support PRIVATE toxcore_static)
+    else()
+      target_link_libraries(av_test_support PRIVATE toxcore_shared)
+    endif()
+    target_link_libraries(av_test_support PRIVATE GTest::gtest)
+
     unit_test(toxav audio)
+    target_link_libraries(unit_audio_test PRIVATE av_test_support)
     unit_test(toxav bwcontroller)
     unit_test(toxav msi)
     unit_test(toxav ring_buffer)
     unit_test(toxav rtp)
     unit_test(toxav video)
+    target_link_libraries(unit_video_test PRIVATE av_test_support)
   endif()
 
   unit_test(toxcore DHT)

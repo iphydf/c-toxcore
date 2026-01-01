@@ -62,6 +62,10 @@ FIND_QUERY="$FIND_QUERY -and -not -wholename './testing/fuzzing/*'"
 FIND_QUERY="$FIND_QUERY -and -not -wholename './third_party/cmp/examples/*'"
 FIND_QUERY="$FIND_QUERY -and -not -wholename './third_party/cmp/test/*'"
 
+if [ "$SKIP_BENCHMARK" == 1 ]; then
+  FIND_QUERY="$FIND_QUERY -and -not -name '*_bench.cc'"
+fi
+
 if [ "$SKIP_GTEST" == 1 ]; then
   FIND_QUERY="$FIND_QUERY -and -not -name '*_test.cc'"
 fi

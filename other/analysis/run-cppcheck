@@ -1,6 +1,7 @@
 #!/bin/bash
 
 SKIP_GTEST=1
+SKIP_BENCHMARK=1
 
 . other/analysis/gen-file.sh
 
@@ -24,8 +25,6 @@ CPPCHECK+=("--suppress=knownConditionTrueFalse")
 CPPCHECK+=("--suppress=missingIncludeSystem")
 # TODO(iphydf): Maybe fix?
 CPPCHECK+=("--suppress=signConversion")
-# We have suppressions in the code for the misra extension.
-CPPCHECK+=("--suppress=unmatchedSuppression")
 
 # We use this for VLAs.
 CPPCHECK_CXX+=("--suppress=allocaCalled")
