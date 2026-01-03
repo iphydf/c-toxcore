@@ -17,6 +17,7 @@
 #include "../toxcore/network.h"
 #include "../toxcore/util.h"
 
+
 /**
  * Maximum size of a single RTP frame in bytes.
  * This limit prevents memory exhaustion attacks where a malicious peer sends
@@ -934,6 +935,7 @@ void rtp_stop_receiving_mark(RTPSession *session)
 }
 
 static void rtp_send_piece(RTPSession *session, const struct RTPHeader *header,
+
                            const uint8_t *data, uint8_t *rdata, uint16_t length)
 {
     rtp_header_pack(rdata + 1, header);

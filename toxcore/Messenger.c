@@ -3443,7 +3443,8 @@ Messenger *new_messenger(Mono_Time *mono_time, const Memory *mem, const Random *
         return nullptr;
     }
 
-    m->net_crypto = new_net_crypto(m->log, m->mem, m->rng, m->ns, m->mono_time, m->net, m->dht, &options->proxy_info, m->tcp_np);
+    m->net_crypto = new_net_crypto(m->log, m->mem, m->rng, m->ns, m->mono_time, m->net, m->dht, &options->proxy_info, m->tcp_np, options->noise_compatibility_enabled);
+
 
     if (m->net_crypto == nullptr) {
         LOGGER_WARNING(m->log, "net_crypto initialisation failed");

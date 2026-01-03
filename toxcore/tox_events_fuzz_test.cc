@@ -32,7 +32,7 @@ void TestUnpack(Fuzz_Data data)
     Tox_Dispatch *dispatch = tox_dispatch_new(nullptr);
     assert(dispatch != nullptr);
 
-    auto ignore = [](auto *event, void *user_data) {};
+    auto ignore = [](auto *event, void *user_data) { };
     tox_events_callback_conference_connected(dispatch, ignore);
     tox_events_callback_conference_invite(dispatch, ignore);
     tox_events_callback_conference_message(dispatch, ignore);

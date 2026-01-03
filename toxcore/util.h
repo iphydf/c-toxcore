@@ -97,6 +97,16 @@ uint32_t jenkins_one_at_a_time_hash(const uint8_t *_Nonnull key, size_t len);
  */
 uint16_t data_checksum(const uint8_t *_Nonnull data, uint32_t length);
 
+/**
+ * @brief Generic function to print bytes as String; based on id_to_string() from Messenger.c
+ *
+ * @param bytes Bytes to be printed as String.
+ * @param bytes_length The length in bytes
+ * @param str The string to save the result to.
+ * @param str_length Length of the string
+ */
+void bytes_to_string(const uint8_t *_Nonnull bytes, size_t bytes_length, char *_Nonnull str, size_t str_length);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
