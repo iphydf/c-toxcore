@@ -51,6 +51,10 @@ typedef enum Friendconn_Status {
     FRIENDCONN_STATUS_CONNECTED,
 } Friendconn_Status;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct Friend_Connections Friend_Connections;
 
 Net_Crypto *_Nonnull friendconn_net_crypto(const Friend_Connections *_Nonnull fr_c);
@@ -158,5 +162,9 @@ typedef struct Friend_Conn Friend_Conn;
 Friend_Conn *_Nullable get_conn(const Friend_Connections *_Nonnull fr_c, int friendcon_id);
 int friend_conn_get_onion_friendnum(const Friend_Conn *_Nonnull fc);
 const IP_Port *_Nullable friend_conn_get_dht_ip_port(const Friend_Conn *_Nonnull fc);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif /* C_TOXCORE_TOXCORE_FRIEND_CONNECTION_H */

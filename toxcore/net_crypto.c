@@ -221,6 +221,10 @@ static int create_cookie_request(const Net_Crypto *_Nonnull c, uint8_t *_Nonnull
     memzero(plain + CRYPTO_PUBLIC_KEY_SIZE, CRYPTO_PUBLIC_KEY_SIZE);
     memcpy(plain + (CRYPTO_PUBLIC_KEY_SIZE * 2), &number, sizeof(uint64_t));
     const uint8_t *tmp_shared_key = c->dht_funcs->get_shared_key_sent(c->dht, dht_public_key);
+    if (tmp_shared_key == nullptr) {
+        LOGGER_ERROR(c->log, "Failed to get shared key for cookie request");
+        return -1;
+    }
     memcpy(shared_key, tmp_shared_key, CRYPTO_SHARED_KEY_SIZE);
     uint8_t nonce[CRYPTO_NONCE_SIZE];
     random_nonce(c->rng, nonce);
@@ -333,6 +337,10 @@ static int handle_cookie_request(const Net_Crypto *_Nonnull c, uint8_t *_Nonnull
 
     memcpy(dht_public_key, packet + 1, CRYPTO_PUBLIC_KEY_SIZE);
     const uint8_t *tmp_shared_key = c->dht_funcs->get_shared_key_sent(c->dht, dht_public_key);
+    if (tmp_shared_key == nullptr) {
+        LOGGER_ERROR(c->log, "Failed to get shared key for cookie response");
+        return -1;
+    }
     memcpy(shared_key, tmp_shared_key, CRYPTO_SHARED_KEY_SIZE);
     const int len = decrypt_data_symmetric(c->mem, shared_key, packet + 1 + CRYPTO_PUBLIC_KEY_SIZE,
                                            packet + 1 + CRYPTO_PUBLIC_KEY_SIZE + CRYPTO_NONCE_SIZE, COOKIE_REQUEST_PLAIN_LENGTH + CRYPTO_MAC_SIZE,
@@ -508,16 +516,19 @@ static bool handle_crypto_handshake(const Net_Crypto *_Nonnull c, uint8_t *_Nonn
                                     uint8_t *_Nonnull dht_public_key, uint8_t *_Nonnull cookie, const uint8_t *_Nonnull packet, uint16_t length, const uint8_t *_Nullable expected_real_pk)
 {
     if (length != HANDSHAKE_PACKET_LENGTH) {
+        LOGGER_WARNING(c->log, "Handshake length mismatch: %u != %u", length, (unsigned int)HANDSHAKE_PACKET_LENGTH);
         return false;
     }
 
     uint8_t cookie_plain[COOKIE_DATA_LENGTH];
 
     if (open_cookie(c->mem, c->mono_time, cookie_plain, packet + 1, c->secret_symmetric_key) != 0) {
+        LOGGER_WARNING(c->log, "Failed to open cookie");
         return false;
     }
 
     if (expected_real_pk != nullptr && !pk_equal(cookie_plain, expected_real_pk)) {
+        LOGGER_WARNING(c->log, "Expected real pk mismatch");
         return false;
     }
 
@@ -530,10 +541,12 @@ static bool handle_crypto_handshake(const Net_Crypto *_Nonnull c, uint8_t *_Nonn
                                  HANDSHAKE_PACKET_LENGTH - (1 + COOKIE_LENGTH + CRYPTO_NONCE_SIZE), plain);
 
     if (len != sizeof(plain)) {
+        LOGGER_WARNING(c->log, "Failed to decrypt handshake data");
         return false;
     }
 
     if (!crypto_sha512_eq(cookie_hash, plain + CRYPTO_NONCE_SIZE + CRYPTO_PUBLIC_KEY_SIZE)) {
+        LOGGER_WARNING(c->log, "Cookie hash mismatch");
         return false;
     }
 

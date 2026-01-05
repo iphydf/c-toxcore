@@ -15,6 +15,7 @@ STD_MODULE = """module std [system] {
   textual header "/usr/include/c++/14.2.0/algorithm"
   textual header "/usr/include/c++/14.2.0/array"
   textual header "/usr/include/c++/14.2.0/atomic"
+  textual header "/usr/include/c++/14.2.0/cassert"
   textual header "/usr/include/c++/14.2.0/cerrno"
   textual header "/usr/include/c++/14.2.0/chrono"
   textual header "/usr/include/c++/14.2.0/compare"

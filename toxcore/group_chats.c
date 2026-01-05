@@ -1773,7 +1773,7 @@ static int handle_gc_sync_response(const GC_Session *_Nonnull c, GC_Chat *_Nonnu
                                    uint16_t length, void *_Nullable userdata)
 {
     if (length > 0) {
-        if (data == NULL) {
+        if (data == nullptr) {
             return -1;
         }
         if (!unpack_gc_sync_announce(chat, data, length)) {

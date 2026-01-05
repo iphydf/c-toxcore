@@ -63,6 +63,10 @@
 #define ONION_DATA_FRIEND_REQ CRYPTO_PACKET_FRIEND_REQ
 #define ONION_DATA_DHTPK CRYPTO_PACKET_DHTPK
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct Onion_Client Onion_Client;
 
 /** @brief Add a node to the path_nodes bootstrap array.
@@ -215,5 +219,9 @@ const uint8_t *_Nonnull onion_friend_get_gc_public_key_num(const Onion_Client *_
 void onion_friend_set_gc_public_key(Onion_Friend *_Nonnull onion_friend, const uint8_t *_Nonnull public_key);
 void onion_friend_set_gc_data(Onion_Friend *_Nonnull onion_friend, const uint8_t *_Nullable gc_data, uint16_t gc_data_length);
 bool onion_friend_is_groupchat(const Onion_Friend *_Nonnull onion_friend);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif /* C_TOXCORE_TOXCORE_ONION_CLIENT_H */

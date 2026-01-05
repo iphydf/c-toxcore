@@ -598,9 +598,13 @@ cc_library(
         ":DHT",
         ":crypto_core",
         ":crypto_core_test_util",
+        ":logger",
+        ":mono_time",
+        ":net_crypto",
         ":network",
         ":network_test_util",
         ":test_util",
+        "//c-toxcore/testing/support",
     ],
 )
 
@@ -847,6 +851,44 @@ cc_library(
     ],
 )
 
+cc_test(
+    name = "net_crypto_test",
+    size = "small",
+    srcs = ["net_crypto_test.cc"],
+    deps = [
+        ":DHT_test_util",
+        ":crypto_core",
+        ":logger",
+        ":mono_time",
+        ":net_crypto",
+        ":net_profile",
+        ":network",
+        "//c-toxcore/testing/support",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "friend_connection_test",
+    size = "small",
+    srcs = ["friend_connection_test.cc"],
+    deps = [
+        ":DHT_test_util",
+        ":crypto_core",
+        ":friend_connection",
+        ":logger",
+        ":mono_time",
+        ":net_crypto",
+        ":net_profile",
+        ":network",
+        ":onion_client",
+        "//c-toxcore/testing/support",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
 cc_fuzz_test(
     name = "net_crypto_fuzz_test",
     size = "small",
@@ -992,6 +1034,25 @@ cc_library(
         ":sort",
         ":timed_auth",
         ":util",
+    ],
+)
+
+cc_test(
+    name = "onion_client_test",
+    size = "small",
+    srcs = ["onion_client_test.cc"],
+    deps = [
+        ":DHT_test_util",
+        ":crypto_core",
+        ":logger",
+        ":mono_time",
+        ":net_crypto",
+        ":net_profile",
+        ":network",
+        ":onion_client",
+        "//c-toxcore/testing/support",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 

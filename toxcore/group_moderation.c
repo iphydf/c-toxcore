@@ -694,7 +694,7 @@ static bool sanctions_list_remove_index(Moderation *_Nonnull moderation, uint16_
     }
 
     /* Operate on a copy of the list in case something goes wrong. */
-    if (moderation->sanctions == NULL) {
+    if (moderation->sanctions == nullptr) {
         return false;
     }
     Mod_Sanction *sanctions_copy = sanctions_list_copy(moderation->mem, moderation->sanctions, moderation->num_sanctions);
@@ -795,7 +795,7 @@ bool sanctions_list_add_entry(Moderation *_Nonnull moderation, const Mod_Sanctio
     Mod_Sanction *sanctions_copy = nullptr;
 
     if (moderation->num_sanctions > 0) {
-        if (moderation->sanctions == NULL) {
+        if (moderation->sanctions == nullptr) {
             return false;
         }
         sanctions_copy = sanctions_list_copy(moderation->mem, moderation->sanctions, moderation->num_sanctions);
