@@ -18,7 +18,7 @@ endif()
 function(scenario_test target)
   add_executable(auto_${target}_test ${target}_test.c)
   target_link_libraries(auto_${target}_test PRIVATE misc_tools scenario_framework)
-  add_test(NAME ${target} COMMAND ${CROSSCOMPILING_EMULATOR} auto_${target}_test)
+  add_test(NAME ${target} COMMAND auto_${target}_test)
   set_tests_properties(${target} PROPERTIES TIMEOUT "${TEST_TIMEOUT_SECONDS}")
   # add the source dir as environment variable, so the testdata can be found
   set_tests_properties(${target} PROPERTIES ENVIRONMENT "LLVM_PROFILE_FILE=${target}.profraw;srcdir=${CMAKE_CURRENT_SOURCE_DIR}/..")
