@@ -445,15 +445,15 @@ bool set_socket_dualstack(const Network *_Nonnull ns, Socket sock);
  *
  * Use `net_send_packet` to send it to an IP/port endpoint.
  */
-typedef struct Packet {
+typedef struct Net_Packet {
     const uint8_t *_Nonnull data;
     uint16_t length;
-} Packet;
+} Net_Packet;
 
 /**
  * Function to send a network packet to a given IP/port.
  */
-int net_send_packet(const Networking_Core *_Nonnull net, const IP_Port *_Nonnull ip_port, Packet packet);
+int net_send_packet(const Networking_Core *_Nonnull net, const IP_Port *_Nonnull ip_port, Net_Packet packet);
 
 /**
  * Function to send packet(data) of length length to ip_port.

@@ -2019,7 +2019,7 @@ static uint32_t foreach_ip_port(const DHT *_Nonnull dht, const DHT_Friend *_Nonn
 
 static bool send_packet_to_friend(const DHT *_Nonnull dht, const IP_Port *_Nonnull ip_port, uint32_t *_Nonnull n, void *_Nonnull userdata)
 {
-    const Packet *packet = (const Packet *)userdata;
+    const Net_Packet *packet = (const Net_Packet *)userdata;
     const int retval = net_send_packet(dht->net, ip_port, *packet);
 
     if ((uint32_t)retval == packet->length) {
@@ -2037,7 +2037,7 @@ static bool send_packet_to_friend(const DHT *_Nonnull dht, const IP_Port *_Nonnu
  * @return ip for friend.
  * @return number of nodes the packet was sent to. (Only works if more than (MAX_FRIEND_CLIENTS / 4).
  */
-uint32_t route_to_friend(const DHT *dht, const uint8_t *friend_id, const Packet *packet)
+uint32_t route_to_friend(const DHT *dht, const uint8_t *friend_id, const Net_Packet *packet)
 {
     const uint32_t num = index_of_friend_pk(dht->friends_list, dht->num_friends, friend_id);
 
@@ -2053,7 +2053,7 @@ uint32_t route_to_friend(const DHT *dht, const uint8_t *friend_id, const Packet 
     }
 
     const DHT_Friend *const dht_friend = &dht->friends_list[num];
-    Packet packet_userdata = *packet;  // Copy because it needs to be non-const.
+    Net_Packet packet_userdata = *packet;  // Copy because it needs to be non-const.
 
     return foreach_ip_port(dht, dht_friend, send_packet_to_friend, &packet_userdata);
 }
@@ -2070,7 +2070,7 @@ static bool get_ip_port(const DHT *_Nonnull dht, const IP_Port *_Nonnull ip_port
  *
  * @return number of nodes the packet was sent to.
  */
-static uint32_t routeone_to_friend(const DHT *_Nonnull dht, const uint8_t *_Nonnull friend_id, const Packet *_Nonnull packet)
+static uint32_t routeone_to_friend(const DHT *_Nonnull dht, const uint8_t *_Nonnull friend_id, const Net_Packet *_Nonnull packet)
 {
     const uint32_t num = index_of_friend_pk(dht->friends_list, dht->num_friends, friend_id);
 
@@ -2119,7 +2119,7 @@ static int send_nat_ping(const DHT *_Nonnull dht, const uint8_t *_Nonnull public
 
     assert(len <= UINT16_MAX);
     uint32_t num = 0;
-    const Packet packet = {packet_data, (uint16_t)len};
+    const Net_Packet packet = {packet_data, (uint16_t)len};
 
     if (type == 0) { /* If packet is request use many people to route it. */
         num = route_to_friend(dht, public_key, &packet);

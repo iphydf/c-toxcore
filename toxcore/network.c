@@ -896,7 +896,7 @@ uint16_t net_port(const Networking_Core *net)
 /* Basic network functions:
  */
 
-int net_send_packet(const Networking_Core *net, const IP_Port *ip_port, Packet packet)
+int net_send_packet(const Networking_Core *net, const IP_Port *ip_port, Net_Packet packet)
 {
     IP_Port ipp_copy = *ip_port;
 
@@ -957,7 +957,7 @@ int net_send_packet(const Networking_Core *net, const IP_Port *ip_port, Packet p
  */
 int sendpacket(const Networking_Core *net, const IP_Port *ip_port, const uint8_t *data, uint16_t length)
 {
-    const Packet packet = {data, length};
+    const Net_Packet packet = {data, length};
     return net_send_packet(net, ip_port, packet);
 }
 

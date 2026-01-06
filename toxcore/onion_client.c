@@ -1378,7 +1378,7 @@ static int send_dht_dhtpk(const Onion_Client *_Nonnull onion_c, int friend_num, 
               onion_c->mem, onion_c->rng, dht_get_self_public_key(onion_c->dht), dht_get_self_secret_key(onion_c->dht), packet_data,
               onion_c->friends_list[friend_num].dht_public_key, temp, temp_size, CRYPTO_PACKET_DHTPK);
     assert(len <= UINT16_MAX);
-    const Packet packet = {packet_data, (uint16_t)len};
+    const Net_Packet packet = {packet_data, (uint16_t)len};
 
     if (len == -1) {
         return -1;

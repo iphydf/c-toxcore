@@ -398,7 +398,7 @@ int route_packet(const DHT *_Nonnull dht, const uint8_t *_Nonnull public_key, co
  * @return ip for friend.
  * @return number of nodes the packet was sent to. (Only works if more than (MAX_FRIEND_CLIENTS / 4).
  */
-uint32_t route_to_friend(const DHT *_Nonnull dht, const uint8_t *_Nonnull friend_id, const Packet *_Nonnull packet);
+uint32_t route_to_friend(const DHT *_Nonnull dht, const uint8_t *_Nonnull friend_id, const Net_Packet *_Nonnull packet);
 
 /** Function to handle crypto packets. */
 void cryptopacket_registerhandler(DHT *_Nonnull dht, uint8_t byte, cryptopacket_handler_cb *_Nullable cb, void *_Nullable object);
