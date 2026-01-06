@@ -591,9 +591,10 @@ static int sys_sendto(void *_Nonnull obj, Socket sock, const uint8_t *_Nonnull b
 
 static int sys_recvfrom(void *_Nonnull obj, Socket sock, uint8_t *_Nonnull buf, size_t len, IP_Port *_Nonnull addr)
 {
-    Network_Addr naddr;
-    naddr.size = sizeof(naddr.addr);
-    const int ret = recvfrom(net_socket_to_native(sock), (char *)buf, len, 0, (struct sockaddr *)&naddr.addr, (socklen_t *)&naddr.size);
+    Network_Addr naddr = {0};
+    socklen_t addrlen = sizeof(naddr.addr);
+    const int ret = recvfrom(net_socket_to_native(sock), (char *)buf, len, 0, (struct sockaddr *)&naddr.addr, &addrlen);
+    naddr.size = addrlen;
     if (ret >= 0) {
         if (!network_addr_to_ip_port(&naddr, addr)) {
             // Ignore packets from unknown families

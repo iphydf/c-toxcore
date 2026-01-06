@@ -63,6 +63,9 @@ struct ToxAVCall {
     toxav_audio_receive_frame_cb *acb;
     void *acb_user_data;
 
+    toxav_video_receive_frame_cb *vcb;
+    void *vcb_user_data;
+
     pthread_mutex_t toxav_call_mutex[1];
 
     struct ToxAVCall *prev;
@@ -93,6 +96,7 @@ struct ToxAV {
     uint32_t calls_tail;
     uint32_t calls_head;
     pthread_mutex_t mutex[1];
+    pthread_mutex_t *mutable_mutex;
 
     /* Call callback */
     toxav_call_cb *ccb;
@@ -226,8 +230,10 @@ static void handle_audio_frame(uint32_t friend_number, const int16_t *_Nonnull p
                                uint32_t sampling_rate, void *_Nullable user_data)
 {
     ToxAVCall *call = (ToxAVCall *)user_data;
+    pthread_mutex_lock(call->toxav_call_mutex);
     toxav_audio_receive_frame_cb *acb = call->acb;
     void *acb_user_data = call->acb_user_data;
+    pthread_mutex_unlock(call->toxav_call_mutex);
 
     if (acb != nullptr) {
         acb(call->av, friend_number, pcm, sample_count, channels, sampling_rate, acb_user_data);
@@ -240,8 +246,10 @@ static void handle_video_frame(uint32_t friend_number, uint16_t width, uint16_t 
                                void *_Nullable user_data)
 {
     ToxAVCall *call = (ToxAVCall *)user_data;
-    toxav_video_receive_frame_cb *vcb = call->av->vcb;
-    void *vcb_user_data = call->av->vcb_user_data;
+    pthread_mutex_lock(call->toxav_call_mutex);
+    toxav_video_receive_frame_cb *vcb = call->vcb;
+    void *vcb_user_data = call->vcb_user_data;
+    pthread_mutex_unlock(call->toxav_call_mutex);
 
     if (vcb != nullptr) {
         vcb(call->av, friend_number, width, height, y, u, v, ystride, ustride, vstride, vcb_user_data);
@@ -341,6 +349,7 @@ ToxAV *toxav_new(Tox *tox, Toxav_Err_New *error)
         rc = TOXAV_ERR_NEW_MALLOC;
         goto RETURN;
     }
+    av->mutable_mutex = av->mutex;
 
     av->mem = tox->sys.mem;
     av->log = tox->m->log;
@@ -431,7 +440,11 @@ void toxav_kill(ToxAV *av)
 
 Tox *toxav_get_tox(const ToxAV *av)
 {
-    return av->tox;
+    Tox *tox;
+    pthread_mutex_lock(av->mutable_mutex);
+    tox = av->tox;
+    pthread_mutex_unlock(av->mutable_mutex);
+    return tox;
 }
 
 uint32_t toxav_audio_iteration_interval(const ToxAV *av)
@@ -1218,6 +1231,16 @@ void toxav_callback_video_receive_frame(ToxAV *av, toxav_video_receive_frame_cb 
     pthread_mutex_lock(av->mutex);
     av->vcb = callback;
     av->vcb_user_data = user_data;
+
+    if (av->calls != nullptr) {
+        for (ToxAVCall *i = av->calls[av->calls_head]; i != nullptr; i = i->next) {
+            pthread_mutex_lock(i->toxav_call_mutex);
+            i->vcb = callback;
+            i->vcb_user_data = user_data;
+            pthread_mutex_unlock(i->toxav_call_mutex);
+        }
+    }
+
     pthread_mutex_unlock(av->mutex);
 }
 
@@ -1612,6 +1635,8 @@ static bool call_prepare_transmission(ToxAVCall *_Nullable call)
         }
     }
     { /* Prepare video */
+        call->vcb = av->vcb;
+        call->vcb_user_data = av->vcb_user_data;
         call->video = vc_new(av->log, av->toxav_mono_time, call->friend_number, handle_video_frame, call);
 
         if (call->video == nullptr) {

@@ -111,8 +111,11 @@ static void framework_debug_log(Tox *tox, Tox_Log_Level level, const char *file,
 
 static uint64_t get_scenario_clock(void *user_data)
 {
-    const ToxScenario *s = (const ToxScenario *)user_data;
-    return s->virtual_clock;
+    ToxScenario *s = (ToxScenario *)user_data;
+    pthread_mutex_lock(&s->mutex);
+    uint64_t time = s->virtual_clock;
+    pthread_mutex_unlock(&s->mutex);
+    return time;
 }
 
 void tox_node_log(ToxNode *node, const char *format, ...)
@@ -187,7 +190,11 @@ void tox_scenario_free(ToxScenario *s)
 Tox *tox_node_get_tox(const ToxNode *node)
 {
     ck_assert(node != nullptr);
-    return node->tox;
+    ToxScenario *s = node->scenario;
+    pthread_mutex_lock(&s->mutex);
+    Tox *tox = node->tox;
+    pthread_mutex_unlock(&s->mutex);
+    return tox;
 }
 
 void tox_node_get_address(const ToxNode *node, uint8_t *address)
@@ -336,7 +343,6 @@ void tox_scenario_yield(ToxNode *self)
 
     // 2. Update mirror (Outside lock to reduce contention)
     self->mirror.connection_status = tox_self_get_connection_status(self->tox);
-    self->mirror.finished = self->finished;
     self->mirror.offline = self->offline;
     tox_self_get_public_key(self->tox, self->mirror.public_key);
     tox_self_get_dht_id(self->tox, self->mirror.dht_id);
@@ -350,6 +356,7 @@ void tox_scenario_yield(ToxNode *self)
 
     pthread_mutex_lock(&s->mutex);
 
+    self->mirror.finished = self->finished;
     self->last_tick = s->tick_count;
     s->num_ready++;
 
@@ -626,10 +633,12 @@ uint64_t tox_scenario_get_time(ToxScenario *s)
 
 ToxScenarioStatus tox_scenario_run(ToxScenario *s)
 {
+    pthread_mutex_lock(&s->mutex);
     s->num_active = s->num_nodes;
     s->num_ready = 0;
     s->tick_count = 0;
     s->run_started = true;
+    pthread_mutex_unlock(&s->mutex);
 
     // Start all node threads
     for (uint32_t i = 0; i < s->num_nodes; ++i) {
@@ -728,9 +737,18 @@ void tox_node_reload(ToxNode *node)
     ck_assert(data != nullptr);
     tox_get_savedata(node->tox, data);
 
+    Tox *old_tox = node->tox;
+    Tox_Dispatch *old_dispatch = node->dispatch;
+
+    // Invalidate node state while reloading
+    node->tox = nullptr;
+    node->dispatch = nullptr;
+
+    pthread_mutex_unlock(&s->mutex);
+
     // 2. Kill old instance
-    tox_dispatch_free(node->dispatch);
-    tox_kill(node->tox);
+    tox_dispatch_free(old_dispatch);
+    tox_kill(old_tox);
 
     // 3. Create new instance from save
     Tox_Options *opts = tox_options_new(nullptr);
@@ -740,20 +758,24 @@ void tox_node_reload(ToxNode *node)
     tox_options_set_savedata_data(opts, data, size);
 
     Tox_Err_New err;
-    node->tox = create_tox_with_port_retry(opts, node, &err);
+    Tox *new_tox = create_tox_with_port_retry(opts, node, &err);
     tox_options_free(opts);
     free(data);
 
     if (err != TOX_ERR_NEW_OK) {
         tox_node_log(node, "Failed to reload Tox instance: %u", err);
-        pthread_mutex_unlock(&s->mutex);
         return;
     }
 
-    ck_assert_msg(node->tox != nullptr, "tox_new said OK but returned NULL");
-    node->dispatch = tox_dispatch_new(nullptr);
-    tox_events_init(node->tox);
-    mono_time_set_current_time_callback(node->tox->mono_time, get_scenario_clock, s);
+    ck_assert_msg(new_tox != nullptr, "tox_new said OK but returned NULL");
+    Tox_Dispatch *new_dispatch = tox_dispatch_new(nullptr);
+    tox_events_init(new_tox);
+    mono_time_set_current_time_callback(new_tox->mono_time, get_scenario_clock, s);
+
+    pthread_mutex_lock(&s->mutex);
+    node->tox = new_tox;
+    node->dispatch = new_dispatch;
+    pthread_mutex_unlock(&s->mutex);
 
     // Re-bootstrap from siblings
     for (uint32_t i = 0; i < s->num_nodes; ++i) {
@@ -761,6 +783,4 @@ void tox_node_reload(ToxNode *node)
             tox_node_bootstrap(node, s->nodes[i]);
         }
     }
-
-    pthread_mutex_unlock(&s->mutex);
 }

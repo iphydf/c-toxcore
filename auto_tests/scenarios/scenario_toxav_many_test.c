@@ -156,7 +156,6 @@ int main(int argc, char *argv[])
 
     CallState alice_states[NUM_BOBS] = {0};
     Tox_Options *opts = tox_options_new(nullptr);
-    tox_options_set_experimental_thread_safety(opts, true);
     tox_options_set_ipv6_enabled(opts, false);
     tox_options_set_local_discovery_enabled(opts, false);
 

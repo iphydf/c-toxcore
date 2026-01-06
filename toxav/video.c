@@ -42,6 +42,7 @@ struct VCSession {
     void *user_data;
 
     pthread_mutex_t queue_mutex[1];
+    pthread_mutex_t *mutable_queue_mutex;
     const Logger *log;
 
     vpx_codec_iter_t iter;
@@ -178,6 +179,7 @@ VCSession *vc_new(const Logger *log, const Mono_Time *mono_time, uint32_t friend
         free(vc);
         return nullptr;
     }
+    vc->mutable_queue_mutex = vc->queue_mutex;
 
     const int cpu_used_value = VP8E_SET_CPUUSED_VALUE;
 
@@ -501,9 +503,9 @@ int vc_encode(VCSession *vc, uint16_t width, uint16_t height, const uint8_t *y,
     /* I420 "It comprises an NxM Y plane followed by (N/2)x(M/2) V and U planes."
      * http://fourcc.org/yuv.php#IYUV
      */
-    memcpy(img.planes[VPX_PLANE_Y], y, width * height);
-    memcpy(img.planes[VPX_PLANE_U], u, (width / 2) * (height / 2));
-    memcpy(img.planes[VPX_PLANE_V], v, (width / 2) * (height / 2));
+    memcpy(img.planes[VPX_PLANE_Y], y, (size_t)width * height);
+    memcpy(img.planes[VPX_PLANE_U], u, ((size_t)width / 2) * (height / 2));
+    memcpy(img.planes[VPX_PLANE_V], v, ((size_t)width / 2) * (height / 2));
 
     int vpx_flags = 0;
 
@@ -546,7 +548,11 @@ int vc_get_cx_data(VCSession *vc, uint8_t **data, uint32_t *size, bool *is_keyfr
 
 uint32_t vc_get_lcfd(const VCSession *vc)
 {
-    return vc->lcfd;
+    uint32_t lcfd;
+    pthread_mutex_lock(vc->mutable_queue_mutex);
+    lcfd = vc->lcfd;
+    pthread_mutex_unlock(vc->mutable_queue_mutex);
+    return lcfd;
 }
 
 pthread_mutex_t *vc_get_queue_mutex(VCSession *vc)
