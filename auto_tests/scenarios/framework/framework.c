@@ -59,6 +59,7 @@ struct ToxScenario {
     uint64_t tick_count;
 
     pthread_mutex_t mutex;
+    pthread_mutex_t clock_mutex;
     pthread_cond_t cond_runner;
     pthread_cond_t cond_nodes;
 
@@ -72,6 +73,15 @@ struct ToxScenario {
         uint32_t count;
     } barrier;
 };
+
+static uint64_t get_scenario_clock(void *user_data)
+{
+    ToxScenario *s = (ToxScenario *)user_data;
+    pthread_mutex_lock(&s->clock_mutex);
+    uint64_t time = s->virtual_clock;
+    pthread_mutex_unlock(&s->clock_mutex);
+    return time;
+}
 
 static void framework_debug_log(Tox *tox, Tox_Log_Level level, const char *file, uint32_t line,
                                 const char *func, const char *message, void *user_data)
@@ -104,18 +114,9 @@ static void framework_debug_log(Tox *tox, Tox_Log_Level level, const char *file,
             break;
     }
 
-    const uint64_t relative_time = node ? (node->scenario->virtual_clock - 1000) : 0;
+    const uint64_t relative_time = node ? (get_scenario_clock(node->scenario) - 1000) : 0;
     fprintf(stderr, "[%08lu] [%s] %s %s:%u %s: %s\n", (unsigned long)relative_time,
             node != nullptr ? node->alias : "Unknown", level_name, file, line, func, message);
-}
-
-static uint64_t get_scenario_clock(void *user_data)
-{
-    ToxScenario *s = (ToxScenario *)user_data;
-    pthread_mutex_lock(&s->mutex);
-    uint64_t time = s->virtual_clock;
-    pthread_mutex_unlock(&s->mutex);
-    return time;
 }
 
 void tox_node_log(ToxNode *node, const char *format, ...)
@@ -123,7 +124,7 @@ void tox_node_log(ToxNode *node, const char *format, ...)
     ck_assert(node != nullptr);
     va_list args;
     va_start(args, format);
-    uint64_t relative_time = node->scenario->virtual_clock - 1000;
+    uint64_t relative_time = get_scenario_clock(node->scenario) - 1000;
     fprintf(stderr, "[%08lu] [%s] ", (unsigned long)relative_time, node->alias ? node->alias : "Unknown");
     vfprintf(stderr, format, args);
     fprintf(stderr, "\n");
@@ -134,7 +135,7 @@ void tox_scenario_log(const ToxScenario *s, const char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    uint64_t relative_time = s->virtual_clock - 1000;
+    uint64_t relative_time = get_scenario_clock((void *)(uintptr_t)s) - 1000;
     fprintf(stderr, "[%08lu] [Runner] ", (unsigned long)relative_time);
     vfprintf(stderr, format, args);
     fprintf(stderr, "\n");
@@ -162,7 +163,9 @@ ToxScenario *tox_scenario_new(int argc, char *const argv[], uint64_t timeout_ms)
     s->virtual_clock = 1000;
     s->trace_enabled = (getenv("TOX_TRACE") != nullptr);
     s->event_log_enabled = (getenv("TOX_EVENT_LOG") != nullptr);
+
     pthread_mutex_init(&s->mutex, nullptr);
+    pthread_mutex_init(&s->clock_mutex, nullptr);
     pthread_cond_init(&s->cond_runner, nullptr);
     pthread_cond_init(&s->cond_nodes, nullptr);
     return s;
@@ -182,6 +185,7 @@ void tox_scenario_free(ToxScenario *s)
         free(node);
     }
     pthread_mutex_destroy(&s->mutex);
+    pthread_mutex_destroy(&s->clock_mutex);
     pthread_cond_destroy(&s->cond_runner);
     pthread_cond_destroy(&s->cond_nodes);
     free(s);
@@ -266,7 +270,11 @@ bool tox_node_is_offline(const ToxNode *node)
 bool tox_node_is_finished(const ToxNode *node)
 {
     ck_assert(node != nullptr);
-    return node->mirror_public.finished;
+    ToxScenario *s = node->scenario;
+    pthread_mutex_lock(&s->mutex);
+    bool finished = node->mirror_public.finished;
+    pthread_mutex_unlock(&s->mutex);
+    return finished;
 }
 
 bool tox_scenario_is_running(ToxNode *self)
@@ -442,7 +450,12 @@ static void *node_thread_wrapper(void *arg)
     pthread_mutex_lock(&s->mutex);
     node->finished = true;
     s->num_active--;
-    tox_node_log(node, "finished script, active nodes remaining: %u", s->num_active);
+    uint32_t active = s->num_active;
+    pthread_mutex_unlock(&s->mutex);
+
+    tox_node_log(node, "finished script, active nodes remaining: %u", active);
+
+    pthread_mutex_lock(&s->mutex);
     pthread_cond_signal(&s->cond_runner);
 
     while (s->run_started) {
@@ -645,10 +658,10 @@ ToxScenarioStatus tox_scenario_run(ToxScenario *s)
         pthread_create(&s->nodes[i]->thread, nullptr, node_thread_wrapper, s->nodes[i]);
     }
 
+    pthread_mutex_lock(&s->mutex);
+
     uint64_t start_clock = s->virtual_clock;
     uint64_t deadline = start_clock + s->timeout_ms;
-
-    pthread_mutex_lock(&s->mutex);
 
     while (s->num_active > 0 && s->virtual_clock < deadline) {
         // 1. Wait until all nodes (including finished ones) have reached the barrier
@@ -656,9 +669,7 @@ ToxScenarioStatus tox_scenario_run(ToxScenario *s)
             pthread_cond_wait(&s->cond_runner, &s->mutex);
         }
 
-        // 2. Synchronize Snapshots (Unlock while copying to reduce contention)
-        pthread_mutex_unlock(&s->mutex);
-
+        // 2. Synchronize Snapshots
         for (uint32_t i = 0; i < s->num_nodes; ++i) {
             ToxNode *node = s->nodes[i];
             ck_assert(node != nullptr);
@@ -668,16 +679,19 @@ ToxScenarioStatus tox_scenario_run(ToxScenario *s)
             }
         }
 
-        pthread_mutex_lock(&s->mutex);
-
         // 3. Advance tick and clock
         s->num_ready = 0;
         s->tick_count++;
+        pthread_mutex_lock(&s->clock_mutex);
         s->virtual_clock += TOX_SCENARIO_TICK_MS;
+        pthread_mutex_unlock(&s->clock_mutex);
 
         if (s->tick_count % 100 == 0) {
-            tox_scenario_log(s, "Tick %lu, virtual_clock %lu ms, active nodes: %u",
-                             (unsigned long)s->tick_count, (unsigned long)s->virtual_clock, s->num_active);
+            uint64_t tick = s->tick_count;
+            uint32_t active = s->num_active;
+            pthread_mutex_unlock(&s->mutex);
+            tox_scenario_log(s, "Tick %lu, active nodes: %u", (unsigned long)tick, active);
+            pthread_mutex_lock(&s->mutex);
         }
 
         // 4. Release nodes for the new tick
