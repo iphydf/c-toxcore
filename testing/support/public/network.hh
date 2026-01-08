@@ -27,6 +27,7 @@ public:
     virtual int connect(Socket sock, const IP_Port *addr) = 0;
     virtual int send(Socket sock, const uint8_t *buf, size_t len) = 0;
     virtual int recv(Socket sock, uint8_t *buf, size_t len) = 0;
+    virtual int recvbuf(Socket sock) = 0;
 
     // Auxiliary
     virtual int socket_nonblock(Socket sock, bool nonblock) = 0;

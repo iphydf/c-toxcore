@@ -26,6 +26,8 @@ const uint8_t *MockDHT::get_shared_key(const uint8_t *pk)
         return it->second.data();
     }
 
+    ++computation_count;
+
     // Compute new shared key
     std::array<uint8_t, CRYPTO_SHARED_KEY_SIZE> sk;
     encrypt_precompute(pk, self_secret_key, sk.data());

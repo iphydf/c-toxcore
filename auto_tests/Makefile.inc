@@ -1,5 +1,8 @@
 if BUILD_TESTS
 
+LOG_COMPILER = $(top_srcdir)/tools/test-wrapper.sh
+AM_LOG_FLAGS = --timeout 60 --retries 3
+
 noinst_LTLIBRARIES += libauto_test_support.la
 libauto_test_support_la_SOURCES = ../auto_tests/auto_test_support.c ../auto_tests/auto_test_support.h
 libauto_test_support_la_LIBADD = libmisc_tools.la libtoxcore.la

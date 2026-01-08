@@ -41,6 +41,8 @@ public:
     virtual int send(const uint8_t *buf, size_t len) = 0;
     virtual int recv(uint8_t *buf, size_t len) = 0;
 
+    virtual size_t recv_buffer_size() { return 0; }
+
     virtual int sendto(const uint8_t *buf, size_t len, const IP_Port *addr) = 0;
     virtual int recvfrom(uint8_t *buf, size_t len, IP_Port *addr) = 0;
 
@@ -126,6 +128,7 @@ public:
 
     int send(const uint8_t *buf, size_t len) override;
     int recv(uint8_t *buf, size_t len) override;
+    size_t recv_buffer_size() override;
 
     int sendto(const uint8_t *buf, size_t len, const IP_Port *addr) override;
     int recvfrom(uint8_t *buf, size_t len, IP_Port *addr) override;

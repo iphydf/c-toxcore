@@ -19,7 +19,8 @@ static const Network_Funcs kVtable = {
         [](void *obj, Socket sock, const IP_Port *addr) {
             return static_cast<FakeNetworkStack *>(obj)->connect(sock, addr);
         },
-    .recvbuf = [](void *obj, Socket sock) { return 0; },
+    .recvbuf
+    = [](void *obj, Socket sock) { return static_cast<FakeNetworkStack *>(obj)->recvbuf(sock); },
     .recv = [](void *obj, Socket sock, uint8_t *buf,
                 size_t len) { return static_cast<FakeNetworkStack *>(obj)->recv(sock, buf, len); },
     .recvfrom =
@@ -169,6 +170,14 @@ int FakeNetworkStack::recv(Socket sock, uint8_t *buf, size_t len)
 {
     if (auto *s = get_sock(sock))
         return s->recv(buf, len);
+    errno = EBADF;
+    return -1;
+}
+
+int FakeNetworkStack::recvbuf(Socket sock)
+{
+    if (auto *s = get_sock(sock))
+        return s->recv_buffer_size();
     errno = EBADF;
     return -1;
 }

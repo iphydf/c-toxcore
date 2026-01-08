@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <vector>
 
 namespace tox::test {
 
@@ -58,6 +59,43 @@ public:
     };
 
     Consumer consume1(const char *func) { return Consumer{func, *this}; }
+
+    template <typename T>
+    T consume_integral()
+    {
+        return consume1("consume_integral");
+    }
+
+    template <typename T>
+    T consume_integral_in_range(T min, T max)
+    {
+        if (min >= max)
+            return min;
+        T val = consume_integral<T>();
+        return min + (val % (max - min + 1));
+    }
+
+    std::size_t remaining_bytes() const { return size(); }
+
+    std::vector<uint8_t> consume_bytes(std::size_t count)
+    {
+        if (count == 0 || count > size_)
+            return {};
+        const uint8_t *start = consume("consume_bytes", count);
+        if (!start)
+            return {};
+        return std::vector<uint8_t>(start, start + count);
+    }
+
+    std::vector<uint8_t> consume_remaining_bytes()
+    {
+        if (empty())
+            return {};
+        std::size_t count = size();
+        const uint8_t *start = consume("consume_remaining_bytes", count);
+        return std::vector<uint8_t>(start, start + count);
+    }
+
     std::size_t size() const { return size_; }
     std::size_t pos() const { return data_ - base_; }
     const uint8_t *data() const { return data_; }

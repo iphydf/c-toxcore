@@ -37,6 +37,7 @@ struct MockDHT {
     std::map<std::array<uint8_t, CRYPTO_PUBLIC_KEY_SIZE>,
         std::array<uint8_t, CRYPTO_SHARED_KEY_SIZE>>
         shared_keys;
+    int computation_count = 0;
 
     explicit MockDHT(const Random *rng);
 
@@ -54,6 +55,7 @@ public:
     MockDHT *get_dht() { return &dht_; }
     const uint8_t *dht_public_key() const { return dht_.self_public_key; }
     const uint8_t *dht_secret_key() const { return dht_.self_secret_key; }
+    int dht_computation_count() const { return dht_.computation_count; }
 
     // Returns a valid IP_Port for this node in the simulation (Localhost IPv6)
     IP_Port get_ip_port() const;
@@ -61,6 +63,7 @@ public:
     void poll();
 
     tox::test::ScopedToxSystem &node() { return *node_; }
+    const tox::test::ScopedToxSystem &node() const { return *node_; }
     Networking_Core *networking() { return networking_.get(); }
     Mono_Time *mono_time() { return mono_time_.get(); }
     Logger *logger() { return logger_.get(); }
@@ -93,6 +96,7 @@ public:
     void poll();
 
     tox::test::ScopedToxSystem &node() { return *node_; }
+    const tox::test::ScopedToxSystem &node() const { return *node_; }
     Networking_Core *networking() { return networking_.get(); }
     Mono_Time *mono_time() { return mono_time_.get(); }
     Logger *logger() { return logger_.get(); }

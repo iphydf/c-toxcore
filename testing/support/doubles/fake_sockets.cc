@@ -122,7 +122,7 @@ int FakeUdpSocket::sendto(const uint8_t *buf, size_t len, const IP_Port *addr)
     // Source
     ip_init(&p.from.ip, net_family_is_ipv6(addr->ip.family));
     if (net_family_is_ipv4(p.from.ip.family)) {
-        p.from.ip.ip.v4.uint32 = 0x7F000001;
+        p.from.ip.ip.v4.uint32 = net_htonl(0x7F000001);
     } else {
         p.from.ip.ip.v6.uint8[15] = 1;
     }
@@ -272,7 +272,7 @@ int FakeTcpSocket::connect(const IP_Port *addr)
     Packet p{};
     ip_init(&p.from.ip, net_family_is_ipv6(addr->ip.family));
     if (net_family_is_ipv4(p.from.ip.family)) {
-        p.from.ip.ip.v4.uint32 = 0x7F000001;
+        p.from.ip.ip.v4.uint32 = net_htonl(0x7F000001);
     } else {
         p.from.ip.ip.v6.uint8[15] = 1;
     }
@@ -326,7 +326,7 @@ int FakeTcpSocket::send(const uint8_t *buf, size_t len)
     // Source
     ip_init(&p.from.ip, net_family_is_ipv6(remote_addr_.ip.family));
     if (net_family_is_ipv4(p.from.ip.family)) {
-        p.from.ip.ip.v4.uint32 = 0x7F000001;
+        p.from.ip.ip.v4.uint32 = net_htonl(0x7F000001);
     } else {
         p.from.ip.ip.v6.uint8[15] = 1;
     }
@@ -359,6 +359,12 @@ int FakeTcpSocket::recv(uint8_t *buf, size_t len)
         recv_buffer_.pop_front();
     }
     return actual;
+}
+
+size_t FakeTcpSocket::recv_buffer_size()
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    return recv_buffer_.size();
 }
 
 int FakeTcpSocket::sendto(const uint8_t *buf, size_t len, const IP_Port *addr)
