@@ -145,11 +145,8 @@ bool tox_event_friend_connection_status_unpack(
     return tox_event_friend_connection_status_unpack_into(*event, bu);
 }
 
-static Tox_Event_Friend_Connection_Status *tox_event_friend_connection_status_alloc(void *_Nonnull user_data)
+static Tox_Event_Friend_Connection_Status *tox_event_friend_connection_status_alloc(Tox_Events_State *_Nonnull state)
 {
-    Tox_Events_State *state = tox_events_alloc(user_data);
-    assert(state != nullptr);
-
     if (state->events == nullptr) {
         return nullptr;
     }
@@ -174,7 +171,8 @@ void tox_events_handle_friend_connection_status(
     Tox *tox, uint32_t friend_number, Tox_Connection connection_status,
     void *user_data)
 {
-    Tox_Event_Friend_Connection_Status *friend_connection_status = tox_event_friend_connection_status_alloc(user_data);
+    Tox_Events_State *state = tox_events_alloc(user_data);
+    Tox_Event_Friend_Connection_Status *friend_connection_status = tox_event_friend_connection_status_alloc(state);
 
     if (friend_connection_status == nullptr) {
         return;

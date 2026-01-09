@@ -53,11 +53,11 @@ uint32_t tox_event_conference_peer_name_get_peer_number(const Tox_Event_Conferen
 }
 
 static bool tox_event_conference_peer_name_set_name(Tox_Event_Conference_Peer_Name *_Nonnull conference_peer_name,
-        const uint8_t *_Nullable name, uint32_t name_length)
+        const Memory *_Nonnull mem, const uint8_t *_Nullable name, uint32_t name_length)
 {
     assert(conference_peer_name != nullptr);
     if (conference_peer_name->name != nullptr) {
-        free(conference_peer_name->name);
+        mem_delete(mem, conference_peer_name->name);
         conference_peer_name->name = nullptr;
         conference_peer_name->name_length = 0;
     }
@@ -67,7 +67,7 @@ static bool tox_event_conference_peer_name_set_name(Tox_Event_Conference_Peer_Na
         return true;
     }
 
-    uint8_t *name_copy = (uint8_t *)malloc(name_length);
+    uint8_t *name_copy = (uint8_t *)mem_balloc(mem, name_length);
 
     if (name_copy == nullptr) {
         return false;
@@ -97,7 +97,7 @@ static void tox_event_conference_peer_name_construct(Tox_Event_Conference_Peer_N
 }
 static void tox_event_conference_peer_name_destruct(Tox_Event_Conference_Peer_Name *_Nonnull conference_peer_name, const Memory *_Nonnull mem)
 {
-    free(conference_peer_name->name);
+    mem_delete(mem, conference_peer_name->name);
 }
 
 bool tox_event_conference_peer_name_pack(
@@ -186,11 +186,8 @@ bool tox_event_conference_peer_name_unpack(
     return tox_event_conference_peer_name_unpack_into(*event, bu);
 }
 
-static Tox_Event_Conference_Peer_Name *tox_event_conference_peer_name_alloc(void *_Nonnull user_data)
+static Tox_Event_Conference_Peer_Name *tox_event_conference_peer_name_alloc(Tox_Events_State *_Nonnull state)
 {
-    Tox_Events_State *state = tox_events_alloc(user_data);
-    assert(state != nullptr);
-
     if (state->events == nullptr) {
         return nullptr;
     }
@@ -215,7 +212,8 @@ void tox_events_handle_conference_peer_name(
     Tox *tox, uint32_t conference_number, uint32_t peer_number, const uint8_t *name, size_t length,
     void *user_data)
 {
-    Tox_Event_Conference_Peer_Name *conference_peer_name = tox_event_conference_peer_name_alloc(user_data);
+    Tox_Events_State *state = tox_events_alloc(user_data);
+    Tox_Event_Conference_Peer_Name *conference_peer_name = tox_event_conference_peer_name_alloc(state);
 
     if (conference_peer_name == nullptr) {
         return;
@@ -223,5 +221,5 @@ void tox_events_handle_conference_peer_name(
 
     tox_event_conference_peer_name_set_conference_number(conference_peer_name, conference_number);
     tox_event_conference_peer_name_set_peer_number(conference_peer_name, peer_number);
-    tox_event_conference_peer_name_set_name(conference_peer_name, name, length);
+    tox_event_conference_peer_name_set_name(conference_peer_name, state->mem, name, length);
 }

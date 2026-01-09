@@ -145,11 +145,8 @@ bool tox_event_group_privacy_state_unpack(
     return tox_event_group_privacy_state_unpack_into(*event, bu);
 }
 
-static Tox_Event_Group_Privacy_State *tox_event_group_privacy_state_alloc(void *_Nonnull user_data)
+static Tox_Event_Group_Privacy_State *tox_event_group_privacy_state_alloc(Tox_Events_State *_Nonnull state)
 {
-    Tox_Events_State *state = tox_events_alloc(user_data);
-    assert(state != nullptr);
-
     if (state->events == nullptr) {
         return nullptr;
     }
@@ -174,7 +171,8 @@ void tox_events_handle_group_privacy_state(
     Tox *tox, uint32_t group_number, Tox_Group_Privacy_State privacy_state,
     void *user_data)
 {
-    Tox_Event_Group_Privacy_State *group_privacy_state = tox_event_group_privacy_state_alloc(user_data);
+    Tox_Events_State *state = tox_events_alloc(user_data);
+    Tox_Event_Group_Privacy_State *group_privacy_state = tox_event_group_privacy_state_alloc(state);
 
     if (group_privacy_state == nullptr) {
         return;

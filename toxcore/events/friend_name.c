@@ -41,11 +41,11 @@ uint32_t tox_event_friend_name_get_friend_number(const Tox_Event_Friend_Name *fr
 }
 
 static bool tox_event_friend_name_set_name(Tox_Event_Friend_Name *_Nonnull friend_name,
-        const uint8_t *_Nullable name, uint32_t name_length)
+        const Memory *_Nonnull mem, const uint8_t *_Nullable name, uint32_t name_length)
 {
     assert(friend_name != nullptr);
     if (friend_name->name != nullptr) {
-        free(friend_name->name);
+        mem_delete(mem, friend_name->name);
         friend_name->name = nullptr;
         friend_name->name_length = 0;
     }
@@ -55,7 +55,7 @@ static bool tox_event_friend_name_set_name(Tox_Event_Friend_Name *_Nonnull frien
         return true;
     }
 
-    uint8_t *name_copy = (uint8_t *)malloc(name_length);
+    uint8_t *name_copy = (uint8_t *)mem_balloc(mem, name_length);
 
     if (name_copy == nullptr) {
         return false;
@@ -85,7 +85,7 @@ static void tox_event_friend_name_construct(Tox_Event_Friend_Name *_Nonnull frie
 }
 static void tox_event_friend_name_destruct(Tox_Event_Friend_Name *_Nonnull friend_name, const Memory *_Nonnull mem)
 {
-    free(friend_name->name);
+    mem_delete(mem, friend_name->name);
 }
 
 bool tox_event_friend_name_pack(
@@ -172,11 +172,8 @@ bool tox_event_friend_name_unpack(
     return tox_event_friend_name_unpack_into(*event, bu);
 }
 
-static Tox_Event_Friend_Name *tox_event_friend_name_alloc(void *_Nonnull user_data)
+static Tox_Event_Friend_Name *tox_event_friend_name_alloc(Tox_Events_State *_Nonnull state)
 {
-    Tox_Events_State *state = tox_events_alloc(user_data);
-    assert(state != nullptr);
-
     if (state->events == nullptr) {
         return nullptr;
     }
@@ -201,12 +198,13 @@ void tox_events_handle_friend_name(
     Tox *tox, uint32_t friend_number, const uint8_t *name, size_t length,
     void *user_data)
 {
-    Tox_Event_Friend_Name *friend_name = tox_event_friend_name_alloc(user_data);
+    Tox_Events_State *state = tox_events_alloc(user_data);
+    Tox_Event_Friend_Name *friend_name = tox_event_friend_name_alloc(state);
 
     if (friend_name == nullptr) {
         return;
     }
 
     tox_event_friend_name_set_friend_number(friend_name, friend_number);
-    tox_event_friend_name_set_name(friend_name, name, length);
+    tox_event_friend_name_set_name(friend_name, state->mem, name, length);
 }

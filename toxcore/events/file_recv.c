@@ -77,11 +77,11 @@ uint64_t tox_event_file_recv_get_file_size(const Tox_Event_File_Recv *file_recv)
 }
 
 static bool tox_event_file_recv_set_filename(Tox_Event_File_Recv *_Nonnull file_recv,
-        const uint8_t *_Nullable filename, uint32_t filename_length)
+        const Memory *_Nonnull mem, const uint8_t *_Nullable filename, uint32_t filename_length)
 {
     assert(file_recv != nullptr);
     if (file_recv->filename != nullptr) {
-        free(file_recv->filename);
+        mem_delete(mem, file_recv->filename);
         file_recv->filename = nullptr;
         file_recv->filename_length = 0;
     }
@@ -91,7 +91,7 @@ static bool tox_event_file_recv_set_filename(Tox_Event_File_Recv *_Nonnull file_
         return true;
     }
 
-    uint8_t *filename_copy = (uint8_t *)malloc(filename_length);
+    uint8_t *filename_copy = (uint8_t *)mem_balloc(mem, filename_length);
 
     if (filename_copy == nullptr) {
         return false;
@@ -121,7 +121,7 @@ static void tox_event_file_recv_construct(Tox_Event_File_Recv *_Nonnull file_rec
 }
 static void tox_event_file_recv_destruct(Tox_Event_File_Recv *_Nonnull file_recv, const Memory *_Nonnull mem)
 {
-    free(file_recv->filename);
+    mem_delete(mem, file_recv->filename);
 }
 
 bool tox_event_file_recv_pack(
@@ -214,11 +214,8 @@ bool tox_event_file_recv_unpack(
     return tox_event_file_recv_unpack_into(*event, bu);
 }
 
-static Tox_Event_File_Recv *tox_event_file_recv_alloc(void *_Nonnull user_data)
+static Tox_Event_File_Recv *tox_event_file_recv_alloc(Tox_Events_State *_Nonnull state)
 {
-    Tox_Events_State *state = tox_events_alloc(user_data);
-    assert(state != nullptr);
-
     if (state->events == nullptr) {
         return nullptr;
     }
@@ -243,7 +240,8 @@ void tox_events_handle_file_recv(
     Tox *tox, uint32_t friend_number, uint32_t file_number, uint32_t kind, uint64_t file_size, const uint8_t *filename, size_t filename_length,
     void *user_data)
 {
-    Tox_Event_File_Recv *file_recv = tox_event_file_recv_alloc(user_data);
+    Tox_Events_State *state = tox_events_alloc(user_data);
+    Tox_Event_File_Recv *file_recv = tox_event_file_recv_alloc(state);
 
     if (file_recv == nullptr) {
         return;
@@ -253,5 +251,5 @@ void tox_events_handle_file_recv(
     tox_event_file_recv_set_file_number(file_recv, file_number);
     tox_event_file_recv_set_kind(file_recv, kind);
     tox_event_file_recv_set_file_size(file_recv, file_size);
-    tox_event_file_recv_set_filename(file_recv, filename, filename_length);
+    tox_event_file_recv_set_filename(file_recv, state->mem, filename, filename_length);
 }

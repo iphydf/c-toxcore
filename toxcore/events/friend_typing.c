@@ -143,11 +143,8 @@ bool tox_event_friend_typing_unpack(
     return tox_event_friend_typing_unpack_into(*event, bu);
 }
 
-static Tox_Event_Friend_Typing *tox_event_friend_typing_alloc(void *_Nonnull user_data)
+static Tox_Event_Friend_Typing *tox_event_friend_typing_alloc(Tox_Events_State *_Nonnull state)
 {
-    Tox_Events_State *state = tox_events_alloc(user_data);
-    assert(state != nullptr);
-
     if (state->events == nullptr) {
         return nullptr;
     }
@@ -172,7 +169,8 @@ void tox_events_handle_friend_typing(
     Tox *tox, uint32_t friend_number, bool typing,
     void *user_data)
 {
-    Tox_Event_Friend_Typing *friend_typing = tox_event_friend_typing_alloc(user_data);
+    Tox_Events_State *state = tox_events_alloc(user_data);
+    Tox_Event_Friend_Typing *friend_typing = tox_event_friend_typing_alloc(state);
 
     if (friend_typing == nullptr) {
         return;

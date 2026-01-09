@@ -126,11 +126,8 @@ bool tox_event_self_connection_status_unpack(
     return tox_event_self_connection_status_unpack_into(*event, bu);
 }
 
-static Tox_Event_Self_Connection_Status *tox_event_self_connection_status_alloc(void *_Nonnull user_data)
+static Tox_Event_Self_Connection_Status *tox_event_self_connection_status_alloc(Tox_Events_State *_Nonnull state)
 {
-    Tox_Events_State *state = tox_events_alloc(user_data);
-    assert(state != nullptr);
-
     if (state->events == nullptr) {
         return nullptr;
     }
@@ -155,7 +152,8 @@ void tox_events_handle_self_connection_status(
     Tox *tox, Tox_Connection connection_status,
     void *user_data)
 {
-    Tox_Event_Self_Connection_Status *self_connection_status = tox_event_self_connection_status_alloc(user_data);
+    Tox_Events_State *state = tox_events_alloc(user_data);
+    Tox_Event_Self_Connection_Status *self_connection_status = tox_event_self_connection_status_alloc(state);
 
     if (self_connection_status == nullptr) {
         return;

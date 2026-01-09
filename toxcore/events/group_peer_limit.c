@@ -143,11 +143,8 @@ bool tox_event_group_peer_limit_unpack(
     return tox_event_group_peer_limit_unpack_into(*event, bu);
 }
 
-static Tox_Event_Group_Peer_Limit *tox_event_group_peer_limit_alloc(void *_Nonnull user_data)
+static Tox_Event_Group_Peer_Limit *tox_event_group_peer_limit_alloc(Tox_Events_State *_Nonnull state)
 {
-    Tox_Events_State *state = tox_events_alloc(user_data);
-    assert(state != nullptr);
-
     if (state->events == nullptr) {
         return nullptr;
     }
@@ -172,7 +169,8 @@ void tox_events_handle_group_peer_limit(
     Tox *tox, uint32_t group_number, uint32_t peer_limit,
     void *user_data)
 {
-    Tox_Event_Group_Peer_Limit *group_peer_limit = tox_event_group_peer_limit_alloc(user_data);
+    Tox_Events_State *state = tox_events_alloc(user_data);
+    Tox_Event_Group_Peer_Limit *group_peer_limit = tox_event_group_peer_limit_alloc(state);
 
     if (group_peer_limit == nullptr) {
         return;

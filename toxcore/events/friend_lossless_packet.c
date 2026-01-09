@@ -41,11 +41,11 @@ uint32_t tox_event_friend_lossless_packet_get_friend_number(const Tox_Event_Frie
 }
 
 static bool tox_event_friend_lossless_packet_set_data(Tox_Event_Friend_Lossless_Packet *_Nonnull friend_lossless_packet,
-        const uint8_t *_Nullable data, uint32_t data_length)
+        const Memory *_Nonnull mem, const uint8_t *_Nullable data, uint32_t data_length)
 {
     assert(friend_lossless_packet != nullptr);
     if (friend_lossless_packet->data != nullptr) {
-        free(friend_lossless_packet->data);
+        mem_delete(mem, friend_lossless_packet->data);
         friend_lossless_packet->data = nullptr;
         friend_lossless_packet->data_length = 0;
     }
@@ -55,7 +55,7 @@ static bool tox_event_friend_lossless_packet_set_data(Tox_Event_Friend_Lossless_
         return true;
     }
 
-    uint8_t *data_copy = (uint8_t *)malloc(data_length);
+    uint8_t *data_copy = (uint8_t *)mem_balloc(mem, data_length);
 
     if (data_copy == nullptr) {
         return false;
@@ -85,7 +85,7 @@ static void tox_event_friend_lossless_packet_construct(Tox_Event_Friend_Lossless
 }
 static void tox_event_friend_lossless_packet_destruct(Tox_Event_Friend_Lossless_Packet *_Nonnull friend_lossless_packet, const Memory *_Nonnull mem)
 {
-    free(friend_lossless_packet->data);
+    mem_delete(mem, friend_lossless_packet->data);
 }
 
 bool tox_event_friend_lossless_packet_pack(
@@ -172,11 +172,8 @@ bool tox_event_friend_lossless_packet_unpack(
     return tox_event_friend_lossless_packet_unpack_into(*event, bu);
 }
 
-static Tox_Event_Friend_Lossless_Packet *tox_event_friend_lossless_packet_alloc(void *_Nonnull user_data)
+static Tox_Event_Friend_Lossless_Packet *tox_event_friend_lossless_packet_alloc(Tox_Events_State *_Nonnull state)
 {
-    Tox_Events_State *state = tox_events_alloc(user_data);
-    assert(state != nullptr);
-
     if (state->events == nullptr) {
         return nullptr;
     }
@@ -201,12 +198,13 @@ void tox_events_handle_friend_lossless_packet(
     Tox *tox, uint32_t friend_number, const uint8_t *data, size_t length,
     void *user_data)
 {
-    Tox_Event_Friend_Lossless_Packet *friend_lossless_packet = tox_event_friend_lossless_packet_alloc(user_data);
+    Tox_Events_State *state = tox_events_alloc(user_data);
+    Tox_Event_Friend_Lossless_Packet *friend_lossless_packet = tox_event_friend_lossless_packet_alloc(state);
 
     if (friend_lossless_packet == nullptr) {
         return;
     }
 
     tox_event_friend_lossless_packet_set_friend_number(friend_lossless_packet, friend_number);
-    tox_event_friend_lossless_packet_set_data(friend_lossless_packet, data, length);
+    tox_event_friend_lossless_packet_set_data(friend_lossless_packet, state->mem, data, length);
 }

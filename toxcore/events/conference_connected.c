@@ -124,11 +124,8 @@ bool tox_event_conference_connected_unpack(
     return tox_event_conference_connected_unpack_into(*event, bu);
 }
 
-static Tox_Event_Conference_Connected *tox_event_conference_connected_alloc(void *_Nonnull user_data)
+static Tox_Event_Conference_Connected *tox_event_conference_connected_alloc(Tox_Events_State *_Nonnull state)
 {
-    Tox_Events_State *state = tox_events_alloc(user_data);
-    assert(state != nullptr);
-
     if (state->events == nullptr) {
         return nullptr;
     }
@@ -153,7 +150,8 @@ void tox_events_handle_conference_connected(
     Tox *tox, uint32_t conference_number,
     void *user_data)
 {
-    Tox_Event_Conference_Connected *conference_connected = tox_event_conference_connected_alloc(user_data);
+    Tox_Events_State *state = tox_events_alloc(user_data);
+    Tox_Event_Conference_Connected *conference_connected = tox_event_conference_connected_alloc(state);
 
     if (conference_connected == nullptr) {
         return;

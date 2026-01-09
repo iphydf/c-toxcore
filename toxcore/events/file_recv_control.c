@@ -159,11 +159,8 @@ bool tox_event_file_recv_control_unpack(
     return tox_event_file_recv_control_unpack_into(*event, bu);
 }
 
-static Tox_Event_File_Recv_Control *tox_event_file_recv_control_alloc(void *_Nonnull user_data)
+static Tox_Event_File_Recv_Control *tox_event_file_recv_control_alloc(Tox_Events_State *_Nonnull state)
 {
-    Tox_Events_State *state = tox_events_alloc(user_data);
-    assert(state != nullptr);
-
     if (state->events == nullptr) {
         return nullptr;
     }
@@ -188,7 +185,8 @@ void tox_events_handle_file_recv_control(
     Tox *tox, uint32_t friend_number, uint32_t file_number, Tox_File_Control control,
     void *user_data)
 {
-    Tox_Event_File_Recv_Control *file_recv_control = tox_event_file_recv_control_alloc(user_data);
+    Tox_Events_State *state = tox_events_alloc(user_data);
+    Tox_Event_File_Recv_Control *file_recv_control = tox_event_file_recv_control_alloc(state);
 
     if (file_recv_control == nullptr) {
         return;
