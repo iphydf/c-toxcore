@@ -638,9 +638,9 @@ Tox_Dispatch *tox_node_get_dispatch(const ToxNode *node)
 
 uint64_t tox_scenario_get_time(ToxScenario *s)
 {
-    pthread_mutex_lock(&s->mutex);
+    pthread_mutex_lock(&s->clock_mutex);
     uint64_t time = s->virtual_clock;
-    pthread_mutex_unlock(&s->mutex);
+    pthread_mutex_unlock(&s->clock_mutex);
     return time;
 }
 
