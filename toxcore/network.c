@@ -591,7 +591,7 @@ static int sys_sendto(void *_Nonnull obj, Socket sock, const uint8_t *_Nonnull b
 
 static int sys_recvfrom(void *_Nonnull obj, Socket sock, uint8_t *_Nonnull buf, size_t len, IP_Port *_Nonnull addr)
 {
-    Network_Addr naddr = {0};
+    Network_Addr naddr = {{0}};
     socklen_t addrlen = sizeof(naddr.addr);
     const int ret = recvfrom(net_socket_to_native(sock), (char *)buf, len, 0, (struct sockaddr *)&naddr.addr, &addrlen);
     naddr.size = addrlen;
@@ -1083,7 +1083,7 @@ Networking_Core *new_networking_ex(
     Net_Profile *np = netprof_new(log, mem);
 
     if (np == nullptr) {
-        free(temp);
+        mem_delete(mem, temp);
         return nullptr;
     }
 
