@@ -18,6 +18,7 @@ cc_library(
         "src/simulated_environment.cc",
         "src/simulation.cc",
         "src/tox_network.cc",
+        "src/tox_runner.cc",
     ],
     hdrs = [
         "doubles/fake_clock.hh",
@@ -31,11 +32,13 @@ cc_library(
         "public/fuzz_data.hh",
         "public/fuzz_helpers.hh",
         "public/memory.hh",
+        "public/mpsc_queue.hh",
         "public/network.hh",
         "public/random.hh",
         "public/simulated_environment.hh",
         "public/simulation.hh",
         "public/tox_network.hh",
+        "public/tox_runner.hh",
     ],
     copts = select({
         "//tools/config:windows": ["/wd4200"],  # Zero-sized array in struct/union
@@ -46,6 +49,7 @@ cc_library(
         "//c-toxcore/toxcore:mem",
         "//c-toxcore/toxcore:network",
         "//c-toxcore/toxcore:tox",
+        "//c-toxcore/toxcore:tox_events",
         "//c-toxcore/toxcore:tox_memory",
         "//c-toxcore/toxcore:tox_options",
         "//c-toxcore/toxcore:tox_random",

@@ -1,6 +1,7 @@
 #ifndef C_TOXCORE_TESTING_SUPPORT_DOUBLES_FAKE_MEMORY_H
 #define C_TOXCORE_TESTING_SUPPORT_DOUBLES_FAKE_MEMORY_H
 
+#include <atomic>
 #include <functional>
 
 #include "../public/memory.hh"
@@ -31,7 +32,13 @@ public:
     // Get the C-compatible struct
     struct Tox_Memory get_c_memory();
 
+    size_t current_allocation() const;
+    size_t max_allocation() const;
+
 private:
+    void on_allocation(size_t size);
+    void on_deallocation(size_t size);
+
     struct Header {
         size_t size;
         size_t magic;
@@ -39,8 +46,8 @@ private:
     static constexpr size_t kMagic = 0xDEADC0DE;
     static constexpr size_t kFreeMagic = 0xBAADF00D;
 
-    size_t current_allocation_ = 0;
-    size_t max_allocation_ = 0;
+    std::atomic<size_t> current_allocation_{0};
+    std::atomic<size_t> max_allocation_{0};
 
     FailureInjector failure_injector_;
     Observer observer_;

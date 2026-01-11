@@ -45,15 +45,9 @@ void *FakeMemory::malloc(size_t size)
     header->size = size;
     header->magic = kMagic;
 
-    current_allocation_ += size;
-    if (current_allocation_ > max_allocation_) {
-        max_allocation_ = current_allocation_;
-    }
+    on_allocation(size);
 
-    void *res = header + 1;
-    // std::cerr << "[FakeMemory] malloc(" << size << ") -> " << res << " (header=" << header << ")"
-    // << std::endl;
-    return res;
+    return header + 1;
 }
 
 void *FakeMemory::realloc(void *ptr, size_t size)
@@ -82,7 +76,6 @@ void *FakeMemory::realloc(void *ptr, size_t size)
     }
 
     if (fail) {
-        // If realloc fails, original block is left untouched.
         return nullptr;
     }
 
@@ -92,19 +85,14 @@ void *FakeMemory::realloc(void *ptr, size_t size)
         return nullptr;
     }
 
-    Header *header = static_cast<Header *>(new_ptr);
-    current_allocation_ -= old_size;
-    current_allocation_ += size;
-    if (current_allocation_ > max_allocation_) {
-        max_allocation_ = current_allocation_;
-    }
+    on_deallocation(old_size);
+    on_allocation(size);
 
+    Header *header = static_cast<Header *>(new_ptr);
     header->size = size;
     header->magic = kMagic;
-    void *res = header + 1;
-    // std::cerr << "[FakeMemory] realloc(" << ptr << ", " << size << ") -> " << res << " (header="
-    // << header << ")" << std::endl;
-    return res;
+
+    return header + 1;
 }
 
 void FakeMemory::free(void *ptr)
@@ -127,7 +115,7 @@ void FakeMemory::free(void *ptr)
     }
 
     size_t size = header->size;
-    current_allocation_ -= size;
+    on_deallocation(size);
     header->magic = kFreeMagic;  // Mark as free
     std::free(header);
 }
@@ -140,5 +128,18 @@ void FakeMemory::set_failure_injector(FailureInjector injector)
 void FakeMemory::set_observer(Observer observer) { observer_ = std::move(observer); }
 
 struct Tox_Memory FakeMemory::get_c_memory() { return Tox_Memory{&kFakeMemoryVtable, this}; }
+
+size_t FakeMemory::current_allocation() const { return current_allocation_.load(); }
+
+size_t FakeMemory::max_allocation() const { return max_allocation_.load(); }
+
+void FakeMemory::on_allocation(size_t size)
+{
+    size_t current = current_allocation_.fetch_add(size) + size;
+    size_t max = max_allocation_.load(std::memory_order_relaxed);
+    while (current > max && !max_allocation_.compare_exchange_weak(max, current)) { }
+}
+
+void FakeMemory::on_deallocation(size_t size) { current_allocation_.fetch_sub(size); }
 
 }  // namespace tox::test

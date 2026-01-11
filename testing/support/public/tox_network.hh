@@ -8,18 +8,19 @@
 #include <vector>
 
 #include "simulation.hh"
+#include "tox_runner.hh"
 
 namespace tox::test {
 
 struct ConnectedFriend {
     std::unique_ptr<SimulatedNode> node;
-    SimulatedNode::ToxPtr tox;
+    std::unique_ptr<ToxRunner> runner;
     uint32_t friend_number;
 
-    ConnectedFriend(std::unique_ptr<SimulatedNode> node_in, SimulatedNode::ToxPtr tox_in,
+    ConnectedFriend(std::unique_ptr<SimulatedNode> node_in, std::unique_ptr<ToxRunner> runner_in,
         uint32_t friend_number_in)
         : node(std::move(node_in))
-        , tox(std::move(tox_in))
+        , runner(std::move(runner_in))
         , friend_number(friend_number_in)
     {
     }
@@ -44,7 +45,8 @@ struct ConnectedFriend {
  * @return A vector of ConnectedFriend structures, each representing a friend.
  */
 std::vector<ConnectedFriend> setup_connected_friends(Simulation &sim, Tox *main_tox,
-    SimulatedNode &main_node, int num_friends, const Tox_Options *options = nullptr);
+    SimulatedNode &main_node, int num_friends, const Tox_Options *options = nullptr,
+    bool verbose = false);
 
 /**
  * @brief Connects two existing Tox instances as friends.

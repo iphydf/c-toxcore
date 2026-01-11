@@ -18,6 +18,7 @@ set(support_SOURCES
   src/simulated_environment.cc
   src/simulation.cc
   src/tox_network.cc
+  src/tox_runner.cc
   doubles/fake_clock.hh
   doubles/fake_memory.hh
   doubles/fake_network_stack.hh
@@ -29,11 +30,13 @@ set(support_SOURCES
   public/fuzz_data.hh
   public/fuzz_helpers.hh
   public/memory.hh
+  public/mpsc_queue.hh
   public/network.hh
   public/random.hh
   public/simulated_environment.hh
   public/simulation.hh
   public/tox_network.hh
+  public/tox_runner.hh
 )
 
 add_library(support STATIC ${support_SOURCES})

@@ -1,7 +1,9 @@
 #include "../public/simulation.hh"
 
 #include <cassert>
+#include <chrono>
 #include <iostream>
+#include <thread>
 
 namespace tox::test {
 
@@ -24,11 +26,123 @@ void Simulation::advance_time(uint64_t ms)
 void Simulation::run_until(std::function<bool()> condition, uint64_t timeout_ms)
 {
     uint64_t start_time = clock_->current_time_ms();
-    while (!condition()) {
+
+    // Initial check
+    if (condition())
+        return;
+
+    while (true) {
         if (clock_->current_time_ms() - start_time > timeout_ms) {
             break;
         }
-        advance_time(10);  // 10ms ticks
+
+        // 1. Advance Global Time
+        // Determine the time step based on the minimum requested delay from all runners
+        // during the previous tick. We default to 50ms if no specific request was made.
+        // The `exchange` operation resets the minimum accumulator for the current tick.
+        uint32_t step = next_step_min_.exchange(50);
+        advance_time(step);
+
+        // 2. Start Barrier (Signal Runners)
+        // Notify all registered runners that time has advanced and they should proceed
+        // with their next iteration.
+        {
+            std::lock_guard<std::mutex> lock(barrier_mutex_);
+            current_generation_++;
+            // Initialize the countdown of active runners for this tick.
+            active_runners_.store(registered_runners_);
+
+            for (const auto &l : tick_listeners_) {
+                l.callback(current_generation_);
+            }
+        }
+        barrier_cv_.notify_all();
+
+        // 3. End Barrier (Wait for Completion)
+        // Block until all active runners have reported completion via `tick_complete()`.
+        {
+            std::unique_lock<std::mutex> lock(barrier_mutex_);
+            // We use a lambda predicate to handle spurious wakeups.
+            // The wait finishes when `active_runners_` reaches zero.
+            barrier_cv_.wait(lock, [this] { return active_runners_.load() == 0; });
+        }
+
+        // 4. Check condition
+        if (condition())
+            return;
+    }
+}
+
+Simulation::TickListenerId Simulation::register_tick_listener(
+    std::function<void(uint64_t)> listener)
+{
+    std::lock_guard<std::mutex> lock(barrier_mutex_);
+    TickListenerId id = next_listener_id_++;
+    tick_listeners_.push_back({id, std::move(listener)});
+    return id;
+}
+
+void Simulation::unregister_tick_listener(TickListenerId id)
+{
+    std::lock_guard<std::mutex> lock(barrier_mutex_);
+    for (auto it = tick_listeners_.begin(); it != tick_listeners_.end(); ++it) {
+        if (it->id == id) {
+            tick_listeners_.erase(it);
+            break;
+        }
+    }
+}
+
+uint64_t Simulation::register_runner()
+{
+    std::lock_guard<std::mutex> lock(barrier_mutex_);
+    registered_runners_++;
+    return current_generation_;
+}
+
+void Simulation::unregister_runner()
+{
+    std::lock_guard<std::mutex> lock(barrier_mutex_);
+    registered_runners_--;
+
+    // If we are currently running a tick (active_runners > 0), we need to decrement it
+    // because this runner will not be calling tick_complete()
+    if (active_runners_.load() > 0) {
+        if (active_runners_.fetch_sub(1) == 1) {
+            barrier_cv_.notify_all();
+        }
+    }
+}
+
+uint64_t Simulation::wait_for_tick(
+    uint64_t last_gen, const std::atomic<bool> &stop_token, uint64_t timeout_ms)
+{
+    std::unique_lock<std::mutex> lock(barrier_mutex_);
+    // Wait until generation increases (new tick started) OR we are stopped OR timeout
+    bool result = barrier_cv_.wait_for(lock, std::chrono::milliseconds(timeout_ms),
+        [&] { return current_generation_ > last_gen || stop_token; });
+
+    if (stop_token)
+        return last_gen;
+    if (!result)
+        return last_gen;  // Timeout
+    return current_generation_;
+}
+
+void Simulation::tick_complete(uint32_t next_delay_ms)
+{
+    // Atomic min reduction
+    uint32_t current = next_step_min_.load(std::memory_order_relaxed);
+    while (
+        next_delay_ms < current && !next_step_min_.compare_exchange_weak(current, next_delay_ms)) {
+        // If exchange failed, current was updated to actual value, so loop checks again
+    }
+
+    // We don't need the mutex to decrement the atomic
+    if (active_runners_.fetch_sub(1) == 1) {
+        // Last runner to finish: notify main thread
+        std::lock_guard<std::mutex> lock(barrier_mutex_);
+        barrier_cv_.notify_all();
     }
 }
 

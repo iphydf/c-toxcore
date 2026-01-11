@@ -1,6 +1,7 @@
 #ifndef C_TOXCORE_TESTING_SUPPORT_SIMULATION_H
 #define C_TOXCORE_TESTING_SUPPORT_SIMULATION_H
 
+#include <condition_variable>
 #include <functional>
 #include <memory>
 #include <vector>
@@ -42,6 +43,57 @@ public:
     void advance_time(uint64_t ms);
     void run_until(std::function<bool()> condition, uint64_t timeout_ms = 5000);
 
+    // Synchronization Barrier
+    // These methods coordinate the lock-step execution of multiple Tox runners.
+
+    /**
+     * @brief Registers a new runner with the simulation barrier.
+     * @return The current generation ID of the simulation.
+     */
+    uint64_t register_runner();
+
+    /**
+     * @brief Unregisters a runner from the simulation barrier.
+     *
+     * This ensures the simulation does not block waiting for a terminated runner.
+     */
+    void unregister_runner();
+
+    using TickListenerId = int;
+
+    /**
+     * @brief Registers a callback to be invoked when a new simulation tick starts.
+     *
+     * @param listener The function to call with the new generation ID.
+     * @return An ID handle for unregistering the listener.
+     */
+    TickListenerId register_tick_listener(std::function<void(uint64_t)> listener);
+
+    /**
+     * @brief Unregisters a tick listener.
+     */
+    void unregister_tick_listener(TickListenerId id);
+
+    /**
+     * @brief Blocks until the simulation advances to the next tick.
+     *
+     * Called by runner threads to wait for the global clock to advance.
+     *
+     * @param last_gen The generation ID of the last processed tick.
+     * @param stop_token Atomic flag to signal termination while waiting.
+     * @param timeout_ms Maximum time to wait for the tick.
+     * @return The new generation ID, or `last_gen` on timeout/stop.
+     */
+    uint64_t wait_for_tick(
+        uint64_t last_gen, const std::atomic<bool> &stop_token, uint64_t timeout_ms = 10);
+
+    /**
+     * @brief Signals that a runner has completed its work for the current tick.
+     *
+     * @param next_delay_ms The requested delay until the next tick (from `tox_iteration_interval`).
+     */
+    void tick_complete(uint32_t next_delay_ms = 50);
+
     // Global Access
     FakeClock &clock() { return *clock_; }
     NetworkUniverse &net() { return *net_; }
@@ -53,6 +105,21 @@ private:
     std::unique_ptr<FakeClock> clock_;
     std::unique_ptr<NetworkUniverse> net_;
     uint32_t node_count_ = 0;
+
+    // Barrier State
+    std::mutex barrier_mutex_;
+    std::condition_variable barrier_cv_;
+    uint64_t current_generation_ = 0;
+    int registered_runners_ = 0;
+    std::atomic<int> active_runners_{0};
+    std::atomic<uint32_t> next_step_min_{50};
+
+    struct TickListener {
+        TickListenerId id;
+        std::function<void(uint64_t)> callback;
+    };
+    std::vector<TickListener> tick_listeners_;
+    TickListenerId next_listener_id_ = 0;
 };
 
 /**
@@ -89,6 +156,8 @@ public:
     struct Network get_c_network() { return network_->get_c_network(); }
     struct Tox_Random get_c_random() { return random_->get_c_random(); }
     struct Tox_Memory get_c_memory() { return memory_->get_c_memory(); }
+
+    Simulation &simulation() { return sim_; }
 
     // For fuzzing compatibility (exposes first bound UDP socket as "endpoint")
     FakeUdpSocket *get_primary_socket();

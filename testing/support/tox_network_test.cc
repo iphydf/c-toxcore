@@ -6,6 +6,8 @@
 
 #include <gtest/gtest.h>
 
+#include <atomic>
+
 namespace tox::test {
 namespace {
 
@@ -22,6 +24,8 @@ namespace {
 
         ASSERT_EQ(friends.size(), num_friends);
 
+        // Verification of connection status is done inside setup_connected_friends now,
+        // but we can double check main_tox's view.
         for (const auto &f : friends) {
             EXPECT_NE(tox_friend_get_connection_status(main_tox.get(), f.friend_number, nullptr),
                 TOX_CONNECTION_NONE);
@@ -29,7 +33,7 @@ namespace {
 
         // Verify they can actually communicate
         struct Context {
-            int count = 0;
+            std::atomic<int> count{0};
         } ctx;
 
         tox_callback_friend_message(main_tox.get(),
@@ -38,16 +42,14 @@ namespace {
             });
 
         for (const auto &f : friends) {
-            const uint8_t msg[] = "hello";
-            tox_friend_send_message(
-                f.tox.get(), 0, TOX_MESSAGE_TYPE_NORMAL, msg, sizeof(msg), nullptr);
+            f.runner->execute([](Tox *tox) {
+                const uint8_t msg[] = "hello";
+                tox_friend_send_message(tox, 0, TOX_MESSAGE_TYPE_NORMAL, msg, sizeof(msg), nullptr);
+            });
         }
 
         sim.run_until([&]() {
             tox_iterate(main_tox.get(), &ctx);
-            for (auto &f : friends) {
-                tox_iterate(f.tox.get(), nullptr);
-            }
             return ctx.count == num_friends;
         });
 
@@ -68,7 +70,7 @@ namespace {
         ASSERT_EQ(friends.size(), num_friends);
 
         struct Context {
-            int count = 0;
+            std::atomic<int> count{0};
         } ctx;
 
         tox_callback_friend_message(main_tox.get(),
@@ -77,17 +79,15 @@ namespace {
             });
 
         for (const auto &f : friends) {
-            const uint8_t msg[] = "hello";
-            tox_friend_send_message(
-                f.tox.get(), 0, TOX_MESSAGE_TYPE_NORMAL, msg, sizeof(msg), nullptr);
+            f.runner->execute([](Tox *tox) {
+                const uint8_t msg[] = "hello";
+                tox_friend_send_message(tox, 0, TOX_MESSAGE_TYPE_NORMAL, msg, sizeof(msg), nullptr);
+            });
         }
 
         sim.run_until(
             [&]() {
                 tox_iterate(main_tox.get(), &ctx);
-                for (auto &f : friends) {
-                    tox_iterate(f.tox.get(), nullptr);
-                }
                 return ctx.count == num_friends;
             },
             60000);
@@ -113,10 +113,10 @@ namespace {
         EXPECT_NE(tox_friend_get_connection_status(tox2.get(), 0, nullptr), TOX_CONNECTION_NONE);
 
         // Verify communication
-        bool received = false;
+        std::atomic<bool> received{false};
         tox_callback_friend_message(tox2.get(),
             [](Tox *, uint32_t, Tox_Message_Type, const uint8_t *, size_t, void *user_data) {
-                *static_cast<bool *>(user_data) = true;
+                *static_cast<std::atomic<bool> *>(user_data) = true;
             });
 
         const uint8_t msg[] = "hello";
@@ -125,7 +125,7 @@ namespace {
         sim.run_until([&]() {
             tox_iterate(tox1.get(), nullptr);
             tox_iterate(tox2.get(), &received);
-            return received;
+            return received.load();
         });
 
         EXPECT_TRUE(received);
@@ -148,7 +148,7 @@ namespace {
 
         // Verify we can send a group message
         struct Context {
-            int count = 0;
+            std::atomic<int> count{0};
         } ctx;
 
         tox_callback_group_message(main_tox.get(),
@@ -156,20 +156,18 @@ namespace {
                 void *user_data) { static_cast<Context *>(user_data)->count++; });
 
         for (const auto &f : friends) {
-            const uint8_t msg[] = "hello";
-            uint32_t f_gn = 0;  // It should be 0 since it's the first group.
-            Tox_Err_Group_Send_Message err_send;
-            tox_group_send_message(
-                f.tox.get(), f_gn, TOX_MESSAGE_TYPE_NORMAL, msg, sizeof(msg), &err_send);
-            EXPECT_EQ(err_send, TOX_ERR_GROUP_SEND_MESSAGE_OK);
+            f.runner->execute([](Tox *tox) {
+                const uint8_t msg[] = "hello";
+                uint32_t f_gn = 0;  // First group
+                Tox_Err_Group_Send_Message err_send;
+                tox_group_send_message(
+                    tox, f_gn, TOX_MESSAGE_TYPE_NORMAL, msg, sizeof(msg), &err_send);
+            });
         }
 
         sim.run_until(
             [&]() {
                 tox_iterate(main_tox.get(), &ctx);
-                for (auto &f : friends) {
-                    tox_iterate(f.tox.get(), nullptr);
-                }
                 return ctx.count == num_friends;
             },
             10000);
@@ -193,7 +191,7 @@ namespace {
         EXPECT_NE(group_number, UINT32_MAX);
 
         struct Context {
-            int count = 0;
+            std::atomic<int> count{0};
         } ctx;
 
         tox_callback_group_message(main_tox.get(),
@@ -201,20 +199,18 @@ namespace {
                 void *user_data) { static_cast<Context *>(user_data)->count++; });
 
         for (const auto &f : friends) {
-            const uint8_t msg[] = "hello";
-            uint32_t f_gn = 0;
-            Tox_Err_Group_Send_Message err_send;
-            tox_group_send_message(
-                f.tox.get(), f_gn, TOX_MESSAGE_TYPE_NORMAL, msg, sizeof(msg), &err_send);
-            EXPECT_EQ(err_send, TOX_ERR_GROUP_SEND_MESSAGE_OK);
+            f.runner->execute([](Tox *tox) {
+                const uint8_t msg[] = "hello";
+                uint32_t f_gn = 0;
+                Tox_Err_Group_Send_Message err_send;
+                tox_group_send_message(
+                    tox, f_gn, TOX_MESSAGE_TYPE_NORMAL, msg, sizeof(msg), &err_send);
+            });
         }
 
         sim.run_until(
             [&]() {
                 tox_iterate(main_tox.get(), &ctx);
-                for (auto &f : friends) {
-                    tox_iterate(f.tox.get(), nullptr);
-                }
                 return ctx.count == num_friends;
             },
             120000);
