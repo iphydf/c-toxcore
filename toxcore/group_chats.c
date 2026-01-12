@@ -7766,6 +7766,11 @@ int gc_invite_friend(const GC_Session *c, GC_Chat *chat, int32_t friend_number,
 
     mem_delete(chat->mem, packet);
 
+    if (chat->saved_invites[chat->saved_invites_index] != -1) {
+        LOGGER_WARNING(chat->log, "Overwriting pending group invite for friend %d due to buffer overflow",
+                       chat->saved_invites[chat->saved_invites_index]);
+    }
+
     chat->saved_invites[chat->saved_invites_index] = friend_number;
     chat->saved_invites_index = (chat->saved_invites_index + 1) % MAX_GC_SAVED_INVITES;
 
@@ -7992,6 +7997,8 @@ bool handle_gc_invite_accepted_packet(const GC_Session *c, int friend_number, co
     const int peer_number = peer_add(chat, nullptr, invite_chat_pk);
 
     if (!friend_was_invited(m, chat, friend_number)) {
+        LOGGER_WARNING(chat->log, "Group invite acceptance from friend %d rejected (not invited or invite buffer overflowed)",
+                       friend_number);
         return false;
     }
 
