@@ -132,11 +132,10 @@ int FakeUdpSocket::sendto(const uint8_t *buf, size_t len, const IP_Port *addr)
 
     universe_.send_packet(p);
     if (universe_.is_verbose()) {
-        uint32_t tip4 = net_ntohl(addr->ip.ip.v4.uint32);
+        Ip_Ntoa ip_str;
+        net_ip_ntoa(&addr->ip, &ip_str);
         std::cerr << "[FakeUdpSocket] sent " << len << " bytes from port " << local_port_ << " to "
-                  << ((tip4 >> 24) & 0xFF) << "." << ((tip4 >> 16) & 0xFF) << "."
-                  << ((tip4 >> 8) & 0xFF) << "." << (tip4 & 0xFF) << ":" << net_ntohs(addr->port)
-                  << std::endl;
+                  << ip_str.buf << ":" << net_ntohs(addr->port) << std::endl;
     }
     return len;
 }
@@ -196,15 +195,13 @@ void FakeUdpSocket::push_packet(std::vector<uint8_t> data, IP_Port from)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (universe_.is_verbose()) {
-        uint32_t fip4 = net_ntohl(from.ip.ip.v4.uint32);
+        Ip_Ntoa local_ip_str, from_ip_str;
+        net_ip_ntoa(&ip_, &local_ip_str);
+        net_ip_ntoa(&from.ip, &from_ip_str);
+
         std::cerr << "[FakeUdpSocket] push " << data.size() << " bytes into queue for "
-                  << ((ip_.ip.v4.uint32 >> 24) & 0xFF)
-                  << "."  // ip_ is in network order from net_htonl
-                  << ((ip_.ip.v4.uint32 >> 16) & 0xFF) << "." << ((ip_.ip.v4.uint32 >> 8) & 0xFF)
-                  << "." << (ip_.ip.v4.uint32 & 0xFF) << ":" << local_port_ << " from "
-                  << ((fip4 >> 24) & 0xFF) << "." << ((fip4 >> 16) & 0xFF) << "."
-                  << ((fip4 >> 8) & 0xFF) << "." << (fip4 & 0xFF) << ":" << net_ntohs(from.port)
-                  << std::endl;
+                  << local_ip_str.buf << ":" << local_port_ << " from " << from_ip_str.buf << ":"
+                  << net_ntohs(from.port) << std::endl;
     }
     recv_queue_.push_back({std::move(data), from});
 }

@@ -92,11 +92,30 @@ public:
      */
     Tox *unsafe_tox() { return tox_.get(); }
 
+    /**
+     * @brief Temporarily stops the runner from participating in the simulation.
+     *
+     * Unregisters the runner and its tick listener from the simulation.
+     * While paused, the runner will not call tox_iterate.
+     */
+    void pause();
+
+    /**
+     * @brief Resumes the runner's participation in the simulation.
+     */
+    void resume();
+
+    /**
+     * @brief Returns true if the runner is currently active.
+     */
+    bool is_active() const { return active_; }
+
 private:
     void loop();
 
     SimulatedNode::ToxPtr tox_;
     std::thread thread_;
+    std::atomic<bool> active_{true};
 
     struct Message {
         enum Type { Task, Tick, Stop } type;

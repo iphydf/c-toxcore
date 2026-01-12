@@ -69,6 +69,17 @@ cc_test(
 )
 
 cc_test(
+    name = "fake_network_udp_test",
+    srcs = ["doubles/fake_network_udp_test.cc"],
+    deps = [
+        ":support",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+        "@psocket",
+    ],
+)
+
+cc_test(
     name = "fake_network_stack_test",
     srcs = ["doubles/fake_network_stack_test.cc"],
     deps = [

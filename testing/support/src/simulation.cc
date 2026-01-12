@@ -32,15 +32,15 @@ void Simulation::run_until(std::function<bool()> condition, uint64_t timeout_ms)
         return;
 
     while (true) {
-        if (clock_->current_time_ms() - start_time > timeout_ms) {
+        if (clock_->current_time_ms() - start_time >= timeout_ms) {
             break;
         }
 
         // 1. Advance Global Time
         // Determine the time step based on the minimum requested delay from all runners
-        // during the previous tick. We default to 50ms if no specific request was made.
-        // The `exchange` operation resets the minimum accumulator for the current tick.
-        uint32_t step = next_step_min_.exchange(50);
+        // during the previous tick. We default to kDefaultTickIntervalMs if no specific request was
+        // made. The `exchange` operation resets the minimum accumulator for the current tick.
+        uint32_t step = next_step_min_.exchange(kDefaultTickIntervalMs);
         advance_time(step);
 
         // 2. Start Barrier (Signal Runners)
@@ -211,6 +211,8 @@ SimulatedNode::ToxPtr SimulatedNode::create_tox(const Tox_Options *options)
     Tox *t = tox_new_testing(options, &err, &opts_testing, &err_testing);
 
     if (!t) {
+        std::cerr << "tox_new_testing failed: " << err << " (testing err: " << err_testing << ")"
+                  << std::endl;
         return nullptr;
     }
     return ToxPtr(t);

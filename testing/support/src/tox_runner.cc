@@ -58,6 +58,32 @@ std::vector<ToxRunner::ToxEventsPtr> ToxRunner::poll_events()
     return ret;
 }
 
+void ToxRunner::pause()
+{
+    if (!active_.exchange(false)) {
+        return;
+    }
+
+    node_.simulation().unregister_tick_listener(tick_listener_id_);
+    node_.simulation().unregister_runner();
+    tick_listener_id_ = -1;
+}
+
+void ToxRunner::resume()
+{
+    if (active_.exchange(true)) {
+        return;
+    }
+
+    node_.simulation().register_runner();
+    tick_listener_id_ = node_.simulation().register_tick_listener([this](uint64_t gen) {
+        Message msg;
+        msg.type = Message::Tick;
+        msg.generation = gen;
+        queue_.push(std::move(msg));
+    });
+}
+
 void ToxRunner::loop()
 {
     while (true) {

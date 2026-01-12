@@ -39,4 +39,5 @@ if(BUILD_MISC_TESTS)
   endif()
 endif()
 
+add_subdirectory(bench)
 add_subdirectory(support)

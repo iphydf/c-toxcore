@@ -78,6 +78,28 @@ void NetworkUniverse::send_packet(Packet p)
     event_queue_.push(std::move(p));
 }
 
+static bool is_ipv4_mapped(const IP &ip)
+{
+    if (!net_family_is_ipv6(ip.family))
+        return false;
+    const uint8_t *b = ip.ip.v6.uint8;
+    for (int i = 0; i < 10; ++i)
+        if (b[i] != 0)
+            return false;
+    if (b[10] != 0xFF || b[11] != 0xFF)
+        return false;
+    return true;
+}
+
+static IP extract_ipv4(const IP &ip)
+{
+    IP ip4;
+    ip_init(&ip4, false);
+    const uint8_t *b = ip.ip.v6.uint8;
+    std::memcpy(ip4.ip.v4.uint8, b + 12, 4);
+    return ip4;
+}
+
 void NetworkUniverse::process_events(uint64_t current_time_ms)
 {
     while (true) {
@@ -98,9 +120,21 @@ void NetworkUniverse::process_events(uint64_t current_time_ms)
                     for (auto it = range.first; it != range.second; ++it) {
                         tcp_targets.push_back(it->second);
                     }
+                    if (tcp_targets.empty() && is_ipv4_mapped(p.to.ip)) {
+                        IP ip4 = extract_ipv4(p.to.ip);
+                        auto range4 = tcp_bindings_.equal_range({ip4, net_ntohs(p.to.port)});
+                        for (auto it = range4.first; it != range4.second; ++it) {
+                            tcp_targets.push_back(it->second);
+                        }
+                    }
                 } else {
                     if (udp_bindings_.count({p.to.ip, net_ntohs(p.to.port)})) {
                         udp_target = udp_bindings_[{p.to.ip, net_ntohs(p.to.port)}];
+                    } else if (is_ipv4_mapped(p.to.ip)) {
+                        IP ip4 = extract_ipv4(p.to.ip);
+                        if (udp_bindings_.count({ip4, net_ntohs(p.to.port)})) {
+                            udp_target = udp_bindings_[{ip4, net_ntohs(p.to.port)}];
+                        }
                     }
                 }
             }

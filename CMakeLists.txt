@@ -77,6 +77,7 @@ endif()
 
 enable_testing()
 find_package(GTest)
+find_package(benchmark QUIET)
 
 set(CMAKE_MACOSX_RPATH ON)
 
@@ -670,4 +671,45 @@ endif()
 
 if (BUILD_FUZZ_TESTS)
   add_subdirectory(testing/fuzzing)
+endif()
+
+################################################################################
+#
+# :: Benchmarks
+#
+################################################################################
+
+if(UNITTEST AND benchmark_FOUND)
+  if(BUILD_TOXAV AND TARGET av_test_support)
+    add_executable(rtp_bench toxav/rtp_bench.cc)
+    target_link_libraries(rtp_bench PRIVATE
+      toxcore_static
+      av_test_support
+      benchmark::benchmark
+    )
+
+    add_executable(audio_bench toxav/audio_bench.cc)
+    target_link_libraries(audio_bench PRIVATE
+      toxcore_static
+      av_test_support
+      benchmark::benchmark
+    )
+
+    add_executable(video_bench toxav/video_bench.cc)
+    target_link_libraries(video_bench PRIVATE
+      toxcore_static
+      av_test_support
+      benchmark::benchmark
+    )
+  endif()
+
+  add_executable(sort_bench
+    toxcore/sort_bench.cc
+    toxcore/sort_test_util.cc
+    toxcore/sort_test_util.hh
+  )
+  target_link_libraries(sort_bench PRIVATE
+    toxcore_static
+    benchmark::benchmark
+  )
 endif()

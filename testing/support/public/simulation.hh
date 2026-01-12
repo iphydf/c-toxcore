@@ -36,6 +36,8 @@ class SimulatedNode;
  */
 class Simulation {
 public:
+    static constexpr uint32_t kDefaultTickIntervalMs = 50;
+
     Simulation();
     ~Simulation();
 
@@ -92,11 +94,13 @@ public:
      *
      * @param next_delay_ms The requested delay until the next tick (from `tox_iteration_interval`).
      */
-    void tick_complete(uint32_t next_delay_ms = 50);
+    void tick_complete(uint32_t next_delay_ms = kDefaultTickIntervalMs);
 
     // Global Access
     FakeClock &clock() { return *clock_; }
+    const FakeClock &clock() const { return *clock_; }
     NetworkUniverse &net() { return *net_; }
+    const NetworkUniverse &net() const { return *net_; }
 
     // Node Factory
     std::unique_ptr<SimulatedNode> create_node();
@@ -112,7 +116,7 @@ private:
     uint64_t current_generation_ = 0;
     int registered_runners_ = 0;
     std::atomic<int> active_runners_{0};
-    std::atomic<uint32_t> next_step_min_{50};
+    std::atomic<uint32_t> next_step_min_{kDefaultTickIntervalMs};
 
     struct TickListener {
         TickListenerId id;
