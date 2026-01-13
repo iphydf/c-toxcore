@@ -16,7 +16,7 @@ using tox::test::SimulatedEnvironment;
 void TestHandleRequest(Fuzz_Data &input)
 {
     SimulatedEnvironment env;
-    auto c_mem = env.fake_memory().get_c_memory();
+    auto c_mem = env.fake_memory().c_memory();
 
     CONSUME_OR_RETURN(const uint8_t *self_public_key, input, CRYPTO_PUBLIC_KEY_SIZE);
     CONSUME_OR_RETURN(const uint8_t *self_secret_key, input, CRYPTO_SECRET_KEY_SIZE);
@@ -39,7 +39,7 @@ void TestUnpackNodes(Fuzz_Data &input)
         nodes, node_count, &processed_data_len, input.data(), input.size(), tcp_enabled);
     if (packed_count > 0) {
         SimulatedEnvironment env;
-        auto c_mem = env.fake_memory().get_c_memory();
+        auto c_mem = env.fake_memory().c_memory();
         Logger *logger = logger_new(&c_mem);
         std::vector<uint8_t> packed(packed_count * PACKED_NODE_SIZE_IP6);
         const int packed_size

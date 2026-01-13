@@ -37,7 +37,7 @@ using Mono_Time_Ptr = std::unique_ptr<Mono_Time, Mono_Time_Deleter>;
 TEST(PingArray, MinimumTimeoutIsOne)
 {
     SimulatedEnvironment env;
-    auto c_mem = env.fake_memory().get_c_memory();
+    auto c_mem = env.fake_memory().c_memory();
     EXPECT_EQ(ping_array_new(&c_mem, 1, 0), nullptr);
     EXPECT_NE(Ping_Array_Ptr(ping_array_new(&c_mem, 1, 1)), nullptr);
 }
@@ -45,7 +45,7 @@ TEST(PingArray, MinimumTimeoutIsOne)
 TEST(PingArray, MinimumArraySizeIsOne)
 {
     SimulatedEnvironment env;
-    auto c_mem = env.fake_memory().get_c_memory();
+    auto c_mem = env.fake_memory().c_memory();
     EXPECT_EQ(ping_array_new(&c_mem, 0, 1), nullptr);
     EXPECT_NE(Ping_Array_Ptr(ping_array_new(&c_mem, 1, 1)), nullptr);
 }
@@ -53,7 +53,7 @@ TEST(PingArray, MinimumArraySizeIsOne)
 TEST(PingArray, ArraySizeMustBePowerOfTwo)
 {
     SimulatedEnvironment env;
-    auto c_mem = env.fake_memory().get_c_memory();
+    auto c_mem = env.fake_memory().c_memory();
 
     Ping_Array_Ptr arr;
     arr.reset(ping_array_new(&c_mem, 2, 1));
@@ -70,8 +70,8 @@ TEST(PingArray, ArraySizeMustBePowerOfTwo)
 TEST(PingArray, StoredDataCanBeRetrieved)
 {
     SimulatedEnvironment env;
-    auto c_mem = env.fake_memory().get_c_memory();
-    auto c_rng = env.fake_random().get_c_random();
+    auto c_mem = env.fake_memory().c_memory();
+    auto c_rng = env.fake_random().c_random();
 
     Ping_Array_Ptr const arr(ping_array_new(&c_mem, 2, 1));
     Mono_Time_Ptr const mono_time(mono_time_new(&c_mem, nullptr, nullptr), c_mem);
@@ -89,8 +89,8 @@ TEST(PingArray, StoredDataCanBeRetrieved)
 TEST(PingArray, RetrievingDataWithTooSmallOutputBufferHasNoEffect)
 {
     SimulatedEnvironment env;
-    auto c_mem = env.fake_memory().get_c_memory();
-    auto c_rng = env.fake_random().get_c_random();
+    auto c_mem = env.fake_memory().c_memory();
+    auto c_rng = env.fake_random().c_random();
 
     Ping_Array_Ptr const arr(ping_array_new(&c_mem, 2, 1));
     Mono_Time_Ptr const mono_time(mono_time_new(&c_mem, nullptr, nullptr), c_mem);
@@ -112,8 +112,8 @@ TEST(PingArray, RetrievingDataWithTooSmallOutputBufferHasNoEffect)
 TEST(PingArray, ZeroLengthDataCanBeAdded)
 {
     SimulatedEnvironment env;
-    auto c_mem = env.fake_memory().get_c_memory();
-    auto c_rng = env.fake_random().get_c_random();
+    auto c_mem = env.fake_memory().c_memory();
+    auto c_rng = env.fake_random().c_random();
 
     Ping_Array_Ptr const arr(ping_array_new(&c_mem, 2, 1));
     Mono_Time_Ptr const mono_time(mono_time_new(&c_mem, nullptr, nullptr), c_mem);
@@ -129,7 +129,7 @@ TEST(PingArray, ZeroLengthDataCanBeAdded)
 TEST(PingArray, PingId0IsInvalid)
 {
     SimulatedEnvironment env;
-    auto c_mem = env.fake_memory().get_c_memory();
+    auto c_mem = env.fake_memory().c_memory();
 
     Ping_Array_Ptr const arr(ping_array_new(&c_mem, 2, 1));
     Mono_Time_Ptr const mono_time(mono_time_new(&c_mem, nullptr, nullptr), c_mem);
@@ -143,8 +143,8 @@ TEST(PingArray, PingId0IsInvalid)
 TEST(PingArray, DataCanOnlyBeRetrievedOnce)
 {
     SimulatedEnvironment env;
-    auto c_mem = env.fake_memory().get_c_memory();
-    auto c_rng = env.fake_random().get_c_random();
+    auto c_mem = env.fake_memory().c_memory();
+    auto c_rng = env.fake_random().c_random();
 
     Ping_Array_Ptr const arr(ping_array_new(&c_mem, 2, 1));
     Mono_Time_Ptr const mono_time(mono_time_new(&c_mem, nullptr, nullptr), c_mem);
@@ -161,8 +161,8 @@ TEST(PingArray, DataCanOnlyBeRetrievedOnce)
 TEST(PingArray, PingIdMustMatchOnCheck)
 {
     SimulatedEnvironment env;
-    auto c_mem = env.fake_memory().get_c_memory();
-    auto c_rng = env.fake_random().get_c_random();
+    auto c_mem = env.fake_memory().c_memory();
+    auto c_rng = env.fake_random().c_random();
 
     Ping_Array_Ptr const arr(ping_array_new(&c_mem, 1, 1));
     Mono_Time_Ptr const mono_time(mono_time_new(&c_mem, nullptr, nullptr), c_mem);

@@ -416,6 +416,38 @@ void RunGroupScaling(benchmark::State &state, GroupScalingContext &ctx)
         static_cast<double>(ctx.main_ctx.peer_count + 1), benchmark::Counter::kDefaults);
 }
 
+/**
+ * @brief Benchmark the time and CPU required to discover and connect to many friends.
+ *
+ * This stresses the Onion Client's discovery mechanism (shared key caching)
+ * and the DHT's shared key cache efficiency.
+ */
+static void BM_MassDiscovery(benchmark::State &state)
+{
+    const int num_friends = state.range(0);
+
+    for (auto _ : state) {
+        Simulation sim;
+        // Set a realistic latency to ensure packets are in flight and DHT/Onion logic
+        // has to run multiple iterations.
+        sim.net().set_latency(10);
+
+        auto alice_node = sim.create_node();
+        auto alice_tox = alice_node->create_tox();
+
+        // setup_connected_friends runs the simulation until all friends are connected.
+        auto friends = setup_connected_friends(sim, alice_tox.get(), *alice_node, num_friends);
+
+        benchmark::DoNotOptimize(friends);
+    }
+}
+BENCHMARK(BM_MassDiscovery)
+    ->Arg(50)
+    ->Arg(100)
+    ->Arg(200)
+    ->Unit(benchmark::kMillisecond)
+    ->Iterations(5);
+
 }  // namespace
 
 int main(int argc, char **argv)

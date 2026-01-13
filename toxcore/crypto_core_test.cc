@@ -53,8 +53,8 @@ TEST(PkEqual, IdCopyMakesKeysEqual)
 TEST(CryptoCore, EncryptLargeData)
 {
     SimulatedEnvironment env;
-    auto c_mem = env.fake_memory().get_c_memory();
-    auto c_rng = env.fake_random().get_c_random();
+    auto c_mem = env.fake_memory().c_memory();
+    auto c_rng = env.fake_random().c_random();
 
     Nonce nonce{};
     PublicKey pk;
@@ -105,7 +105,7 @@ TEST(CryptoCore, IncrementNonceNumber)
 TEST(CryptoCore, Signatures)
 {
     SimulatedEnvironment env;
-    auto c_rng = env.fake_random().get_c_random();
+    auto c_rng = env.fake_random().c_random();
 
     Extended_Public_Key pk;
     Extended_Secret_Key sk;
@@ -130,7 +130,7 @@ TEST(CryptoCore, Signatures)
 TEST(CryptoCore, Hmac)
 {
     SimulatedEnvironment env;
-    auto c_rng = env.fake_random().get_c_random();
+    auto c_rng = env.fake_random().c_random();
 
     HmacKey sk;
     new_hmac_key(&c_rng, sk.data());

@@ -28,7 +28,7 @@ protected:
 
     void SetUp() override
     {
-        c_mem_ = env.fake_memory().get_c_memory();
+        c_mem_ = env.fake_memory().c_memory();
         mono_time_ = mono_time_new(&c_mem_, nullptr, nullptr);
         ASSERT_NE(mono_time_, nullptr);
         setup_fake_clock(mono_time_, env.fake_clock());
@@ -130,7 +130,7 @@ protected:
 
     void SetUp() override
     {
-        c_mem_ = env.fake_memory().get_c_memory();
+        c_mem_ = env.fake_memory().c_memory();
         logger_ = logger_new(&c_mem_);
         ASSERT_NE(logger_, nullptr);
 

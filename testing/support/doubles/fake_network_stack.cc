@@ -97,7 +97,7 @@ FakeNetworkStack::FakeNetworkStack(NetworkUniverse &universe, const IP &node_ip)
 
 FakeNetworkStack::~FakeNetworkStack() = default;
 
-struct Network FakeNetworkStack::get_c_network() { return Network{&kVtable, this}; }
+struct Network FakeNetworkStack::c_network() { return Network{&kVtable, this}; }
 
 Socket FakeNetworkStack::socket(int domain, int type, int protocol)
 {

@@ -58,6 +58,6 @@ void FakeRandom::bytes(uint8_t *out, size_t count)
     }
 }
 
-struct Tox_Random FakeRandom::get_c_random() { return Tox_Random{&kFakeRandomVtable, this}; }
+struct Tox_Random FakeRandom::c_random() { return Tox_Random{&kFakeRandomVtable, this}; }
 
 }  // namespace tox::test

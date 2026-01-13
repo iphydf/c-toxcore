@@ -34,6 +34,11 @@ public:
     virtual int getsockopt(Socket sock, int level, int optname, void *optval, size_t *optlen) = 0;
     virtual int setsockopt(Socket sock, int level, int optname, const void *optval, size_t optlen)
         = 0;
+
+    /**
+     * @brief Returns C-compatible Network struct.
+     */
+    virtual struct Network c_network() = 0;
 };
 
 /**

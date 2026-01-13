@@ -52,11 +52,11 @@ std::unique_ptr<ScopedToxSystem> SimulatedEnvironment::create_node(uint16_t port
     scoped->endpoint = scoped->node->get_primary_socket();
 
     // Use global Random and Memory for legacy compatibility.
-    scoped->c_random = global_random_->get_c_random();
-    scoped->c_memory = global_memory_->get_c_memory();
+    scoped->c_random = global_random_->c_random();
+    scoped->c_memory = global_memory_->c_memory();
 
     // Use Node's Network
-    scoped->c_network = scoped->node->get_c_network();
+    scoped->c_network = scoped->node->c_network;
 
     // Setup System
     scoped->system.mem = &scoped->c_memory;

@@ -156,11 +156,6 @@ public:
 
     ToxPtr create_tox(const Tox_Options *options = nullptr);
 
-    // Helper to get C structs for manual injection
-    struct Network get_c_network() { return network_->get_c_network(); }
-    struct Tox_Random get_c_random() { return random_->get_c_random(); }
-    struct Tox_Memory get_c_memory() { return memory_->get_c_memory(); }
-
     Simulation &simulation() { return sim_; }
 
     // For fuzzing compatibility (exposes first bound UDP socket as "endpoint")

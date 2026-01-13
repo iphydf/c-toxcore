@@ -41,6 +41,7 @@ STD_MODULE = """module std [system] {
   textual header "/usr/include/c++/14.2.0/ostream"
   textual header "/usr/include/c++/14.2.0/queue"
   textual header "/usr/include/c++/14.2.0/random"
+  textual header "/usr/include/c++/14.2.0/set"
   textual header "/usr/include/c++/14.2.0/stdlib.h"
   textual header "/usr/include/c++/14.2.0/string"
   textual header "/usr/include/c++/14.2.0/thread"

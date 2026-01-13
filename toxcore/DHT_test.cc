@@ -39,7 +39,7 @@ struct KeyPair {
 TEST(IdClosest, KeyIsClosestToItself)
 {
     SimulatedEnvironment env;
-    auto c_rng = env.fake_random().get_c_random();
+    auto c_rng = env.fake_random().c_random();
 
     PublicKey pk0 = random_pk(&c_rng);
     PublicKey pk1;
@@ -54,7 +54,7 @@ TEST(IdClosest, KeyIsClosestToItself)
 TEST(IdClosest, IdenticalKeysAreSameDistance)
 {
     SimulatedEnvironment env;
-    auto c_rng = env.fake_random().get_c_random();
+    auto c_rng = env.fake_random().c_random();
 
     PublicKey pk0 = random_pk(&c_rng);
     PublicKey pk1 = random_pk(&c_rng);
@@ -65,7 +65,7 @@ TEST(IdClosest, IdenticalKeysAreSameDistance)
 TEST(IdClosest, DistanceIsCommutative)
 {
     SimulatedEnvironment env;
-    auto c_rng = env.fake_random().get_c_random();
+    auto c_rng = env.fake_random().c_random();
 
     PublicKey pk0 = random_pk(&c_rng);
     PublicKey pk1 = random_pk(&c_rng);
@@ -152,7 +152,7 @@ Node_format fill(Node_format v, PublicKey const &pk, IP_Port const &ip_port)
 TEST(AddToList, AddsFirstKeysInOrder)
 {
     SimulatedEnvironment env;
-    auto c_rng = env.fake_random().get_c_random();
+    auto c_rng = env.fake_random().c_random();
 
     // Make cmp_key the furthest away from 00000... as possible, so all initial inserts succeed.
     PublicKey const cmp_pk{0xff, 0xff, 0xff, 0xff};
@@ -255,7 +255,7 @@ TEST(AddToList, AddsFirstKeysInOrder)
 TEST(AddToList, KeepsKeysInOrder)
 {
     SimulatedEnvironment env;
-    auto c_rng = env.fake_random().get_c_random();
+    auto c_rng = env.fake_random().c_random();
 
     // Any random cmp_pk should work, as well as the smallest or (approximately) largest pk.
     for (PublicKey const cmp_pk : {random_pk(&c_rng), PublicKey{0x00}, PublicKey{0xff, 0xff}}) {
@@ -281,8 +281,8 @@ TEST(AddToList, KeepsKeysInOrder)
 TEST(Request, CreateAndParse)
 {
     SimulatedEnvironment env;
-    auto c_mem = env.fake_memory().get_c_memory();
-    auto c_rng = env.fake_random().get_c_random();
+    auto c_mem = env.fake_memory().c_memory();
+    auto c_rng = env.fake_random().c_random();
 
     // Peers.
     const KeyPair sender(&c_rng);
@@ -339,8 +339,8 @@ TEST(Request, CreateAndParse)
 TEST(AnnounceNodes, SetAndTest)
 {
     SimulatedEnvironment env;
-    auto c_mem = env.fake_memory().get_c_memory();
-    auto c_rng = env.fake_random().get_c_random();
+    auto c_mem = env.fake_memory().c_memory();
+    auto c_rng = env.fake_random().c_random();
 
     // Use FakeNetwork instead of Test_Network (which wrapped os_network)
     // Create endpoint bound to virtual port

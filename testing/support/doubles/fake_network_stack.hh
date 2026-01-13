@@ -33,7 +33,10 @@ public:
     int getsockopt(Socket sock, int level, int optname, void *optval, size_t *optlen) override;
     int setsockopt(Socket sock, int level, int optname, const void *optval, size_t optlen) override;
 
-    struct Network get_c_network();
+    /**
+     * @brief Returns C-compatible Network struct.
+     */
+    struct Network c_network() override;
 
     // For testing/fuzzing introspection
     FakeUdpSocket *get_udp_socket(Socket sock);

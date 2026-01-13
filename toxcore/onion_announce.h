@@ -41,6 +41,10 @@
 #define ONION_DATA_REQUEST_MIN_SIZE (1 + CRYPTO_PUBLIC_KEY_SIZE + CRYPTO_NONCE_SIZE + CRYPTO_PUBLIC_KEY_SIZE + CRYPTO_MAC_SIZE)
 #define MAX_DATA_REQUEST_SIZE (ONION_MAX_DATA_SIZE - ONION_DATA_REQUEST_MIN_SIZE)
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct Onion_Announce Onion_Announce;
 
 /** These two are not public; they are for tests only! */
@@ -128,4 +132,9 @@ Onion_Announce *_Nullable new_onion_announce(const Logger *_Nonnull log, const M
         Networking_Core *_Nonnull net);
 
 void kill_onion_announce(Onion_Announce *_Nullable onion_a);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
 #endif /* C_TOXCORE_TOXCORE_ONION_ANNOUNCE_H */

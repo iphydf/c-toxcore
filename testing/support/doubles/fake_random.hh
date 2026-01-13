@@ -32,7 +32,10 @@ public:
      */
     void set_observer(Observer observer);
 
-    struct Tox_Random get_c_random();
+    /**
+     * @brief Returns C-compatible Tox_Random struct.
+     */
+    struct Tox_Random c_random() override;
 
 private:
     std::minstd_rand rng_;

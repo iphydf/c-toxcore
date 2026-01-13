@@ -29,8 +29,10 @@ public:
     // Configure observer
     void set_observer(Observer observer);
 
-    // Get the C-compatible struct
-    struct Tox_Memory get_c_memory();
+    /**
+     * @brief Returns C-compatible Tox_Memory struct.
+     */
+    struct Tox_Memory c_memory() override;
 
     size_t current_allocation() const;
     size_t max_allocation() const;

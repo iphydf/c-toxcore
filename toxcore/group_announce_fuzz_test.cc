@@ -24,7 +24,7 @@ void TestUnpackAnnouncesList(Fuzz_Data &input)
     CONSUME1_OR_RETURN(const uint16_t, packed_size, input);
 
     SimulatedEnvironment env;
-    auto c_mem = env.fake_memory().get_c_memory();
+    auto c_mem = env.fake_memory().c_memory();
     Logger *logger = logger_new(&c_mem);
     if (gca_unpack_announces_list(logger, input.data(), input.size(), announces.data(), max_count)
         != -1) {
@@ -45,7 +45,7 @@ void TestUnpackPublicAnnounce(Fuzz_Data &input)
     CONSUME1_OR_RETURN(const uint16_t, packed_size, input);
 
     SimulatedEnvironment env;
-    auto c_mem = env.fake_memory().get_c_memory();
+    auto c_mem = env.fake_memory().c_memory();
     Logger *logger = logger_new(&c_mem);
     if (gca_unpack_public_announce(logger, input.data(), input.size(), &public_announce) != -1) {
         // Always allocate at least something to avoid passing nullptr to functions below.
@@ -58,7 +58,7 @@ void TestUnpackPublicAnnounce(Fuzz_Data &input)
 void TestDoGca(Fuzz_Data &input)
 {
     SimulatedEnvironment env;
-    auto c_mem = env.fake_memory().get_c_memory();
+    auto c_mem = env.fake_memory().c_memory();
     std::unique_ptr<Logger, void (*)(Logger *)> logger(logger_new(&c_mem), logger_kill);
 
     std::unique_ptr<Mono_Time, std::function<void(Mono_Time *)>> mono_time(

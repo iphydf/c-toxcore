@@ -4,6 +4,9 @@
 #include <cstdint>
 #include <vector>
 
+// Forward declaration
+struct Tox_Random;
+
 namespace tox::test {
 
 /**
@@ -15,6 +18,11 @@ public:
 
     virtual uint32_t uniform(uint32_t upper_bound) = 0;
     virtual void bytes(uint8_t *out, size_t count) = 0;
+
+    /**
+     * @brief Returns C-compatible Tox_Random struct.
+     */
+    virtual struct Tox_Random c_random() = 0;
 };
 
 }  // namespace tox::test

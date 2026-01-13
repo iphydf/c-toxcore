@@ -127,7 +127,7 @@ void FakeMemory::set_failure_injector(FailureInjector injector)
 
 void FakeMemory::set_observer(Observer observer) { observer_ = std::move(observer); }
 
-struct Tox_Memory FakeMemory::get_c_memory() { return Tox_Memory{&kFakeMemoryVtable, this}; }
+struct Tox_Memory FakeMemory::c_memory() { return Tox_Memory{&kFakeMemoryVtable, this}; }
 
 size_t FakeMemory::current_allocation() const { return current_allocation_.load(); }
 

@@ -165,9 +165,9 @@ SimulatedNode::SimulatedNode(Simulation &sim, uint32_t node_id)
     , network_(std::make_unique<FakeNetworkStack>(sim.net(), make_node_ip(node_id)))
     , random_(std::make_unique<FakeRandom>(12345 + node_id))  // Unique seed
     , memory_(std::make_unique<FakeMemory>())
-    , c_network(network_->get_c_network())
-    , c_random(random_->get_c_random())
-    , c_memory(memory_->get_c_memory())
+    , c_network(network_->c_network())
+    , c_random(random_->c_random())
+    , c_memory(memory_->c_memory())
     , ip(make_node_ip(node_id))
 {
 }
