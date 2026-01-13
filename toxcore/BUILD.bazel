@@ -55,27 +55,13 @@ cc_library(
 )
 
 cc_library(
-    name = "tox_memory",
-    srcs = ["tox_memory.c"],
-    hdrs = [
-        "tox_memory.h",
-        "tox_memory_impl.h",
-    ],
-    visibility = ["//c-toxcore:__subpackages__"],
-    deps = [
-        ":ccompat",
-        ":tox_attributes",
-    ],
-)
-
-cc_library(
     name = "os_memory",
     srcs = ["os_memory.c"],
     hdrs = ["os_memory.h"],
     visibility = ["//c-toxcore:__subpackages__"],
     deps = [
         ":attributes",
-        ":tox_memory",
+        ":mem",
     ],
 )
 
@@ -89,8 +75,8 @@ cc_library(
     visibility = ["//c-toxcore:__subpackages__"],
     deps = [
         ":ccompat",
+        ":mem",
         ":tox_attributes",
-        ":tox_memory",
     ],
 )
 
@@ -115,7 +101,6 @@ cc_library(
     deps = [
         ":attributes",
         ":ccompat",
-        ":tox_memory",
     ],
 )
 

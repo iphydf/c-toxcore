@@ -4,12 +4,12 @@
 #include "tox_random.h"
 
 #include "ccompat.h"
-#include "tox_memory.h"
+#include "mem.h"
 #include "tox_random_impl.h"
 
-Tox_Random *tox_random_new(const Tox_Random_Funcs *funcs, void *user_data, const Tox_Memory *mem)
+Tox_Random *tox_random_new(const Tox_Random_Funcs *funcs, void *user_data, const Memory *mem)
 {
-    Tox_Random *rng = (Tox_Random *)tox_memory_alloc(mem, sizeof(Tox_Random));
+    Tox_Random *rng = (Tox_Random *)mem_alloc(mem, sizeof(Tox_Random));
 
     if (rng == nullptr) {
         return nullptr;
@@ -28,7 +28,7 @@ void tox_random_free(Tox_Random *rng)
     if (rng == nullptr || rng->mem == nullptr) {
         return;
     }
-    tox_memory_dealloc(rng->mem, rng);
+    mem_delete(rng->mem, rng);
 }
 
 void tox_random_bytes(const Tox_Random *rng, uint8_t *bytes, uint32_t length)

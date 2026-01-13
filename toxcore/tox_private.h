@@ -25,7 +25,7 @@ typedef struct Tox_System {
     void *_Nullable mono_time_user_data;
     const struct Tox_Random *_Nullable rng;
     const struct Network *_Nullable ns;
-    const struct Tox_Memory *_Nullable mem;
+    const struct Memory *_Nullable mem;
 } Tox_System;
 
 Tox_System tox_default_system(void);

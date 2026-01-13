@@ -210,7 +210,7 @@ TEST(SanctionsList, PackUnpackSanctionsCreds)
 struct SanctionsListMod : ::testing::Test {
 protected:
     SimulatedEnvironment env;
-    Tox_Memory c_mem_;
+    Memory c_mem_;
     Tox_Random c_rng_;
 
     Extended_Public_Key pk;

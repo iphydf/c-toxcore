@@ -10,7 +10,7 @@
 
 #include "sort.h"
 
-struct Tox_Memory;
+struct Memory;
 
 template <typename T>
 constexpr Sort_Funcs sort_funcs()
@@ -42,7 +42,7 @@ constexpr Sort_Funcs sort_funcs()
 
 // A realistic test case where we have a struct with some stuff and an expensive value we compare.
 struct Some_Type {
-    const Tox_Memory *mem;
+    const Memory *mem;
     std::array<std::uint32_t, 8> compare_value;
     const char *name;
 

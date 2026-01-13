@@ -358,9 +358,6 @@ set(toxcore_SOURCES
   toxcore/tox_events.h
   toxcore/tox_log_level.c
   toxcore/tox_log_level.h
-  toxcore/tox_memory.c
-  toxcore/tox_memory.h
-  toxcore/tox_memory_impl.h
   toxcore/tox_options.c
   toxcore/tox_options.h
   toxcore/tox_private.c

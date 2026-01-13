@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "tox_memory.h"
+#include "mem.h"
 #include "tox_random.h"
 
 #ifdef __cplusplus
@@ -45,7 +45,7 @@ struct Tox_Random {
     const Tox_Random_Funcs *funcs;
     void *user_data;
 
-    const Tox_Memory *mem;
+    const Memory *mem;
 };
 
 #ifdef __cplusplus

@@ -17,19 +17,19 @@
 extern "C" {
 #endif
 
-struct Tox_Memory;
+struct Memory;
 
 struct Tox_Events {
     Tox_Event *_Nonnull events;
     uint32_t events_size;
     uint32_t events_capacity;
 
-    const struct Tox_Memory *_Nonnull mem;
+    const struct Memory *_Nonnull mem;
 };
 
 typedef struct Tox_Events_State {
     Tox_Err_Events_Iterate error;
-    const struct Tox_Memory *_Nonnull mem;
+    const struct Memory *_Nonnull mem;
     Tox_Events *_Nonnull events;
 } Tox_Events_State;
 

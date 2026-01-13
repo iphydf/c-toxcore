@@ -290,7 +290,7 @@ int main(int argc, char *argv[])
     IP ip;
     ip_init(&ip, enable_ipv6);
 
-    const Tox_Memory *mem = os_memory();
+    const Memory *mem = os_memory();
     const Tox_Random *rng = os_random();
     const Network *ns = os_network();
 

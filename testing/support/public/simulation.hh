@@ -16,8 +16,8 @@
 #include <sys/socket.h>
 #endif
 
+#include "../../../toxcore/mem.h"
 #include "../../../toxcore/tox.h"
-#include "../../../toxcore/tox_memory_impl.h"
 #include "../../../toxcore/tox_private.h"
 #include "../../../toxcore/tox_random_impl.h"
 #include "../doubles/fake_clock.hh"
@@ -172,7 +172,7 @@ private:
 public:
     struct Network c_network;
     struct Tox_Random c_random;
-    struct Tox_Memory c_memory;
+    struct Memory c_memory;
     struct IP ip;
 };
 

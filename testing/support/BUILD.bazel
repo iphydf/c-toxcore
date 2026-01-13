@@ -50,7 +50,6 @@ cc_library(
         "//c-toxcore/toxcore:network",
         "//c-toxcore/toxcore:tox",
         "//c-toxcore/toxcore:tox_events",
-        "//c-toxcore/toxcore:tox_memory",
         "//c-toxcore/toxcore:tox_options",
         "//c-toxcore/toxcore:tox_random",
         "@psocket",

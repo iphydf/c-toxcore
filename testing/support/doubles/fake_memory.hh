@@ -7,7 +7,7 @@
 #include "../public/memory.hh"
 
 // Forward declaration
-struct Tox_Memory;
+struct Memory;
 
 namespace tox::test {
 
@@ -30,9 +30,9 @@ public:
     void set_observer(Observer observer);
 
     /**
-     * @brief Returns C-compatible Tox_Memory struct.
+     * @brief Returns C-compatible Memory struct.
      */
-    struct Tox_Memory c_memory() override;
+    struct Memory c_memory() override;
 
     size_t current_allocation() const;
     size_t max_allocation() const;

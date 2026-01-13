@@ -292,7 +292,7 @@ TEST_F(OnionClientTest, OOBReadInHandleAnnounceResponse)
     std::uint64_t initial_recv_time = onion_testonly_get_last_packet_recv(alice.get_onion_client());
 
     // Setup Memory
-    Tox_Memory mem_struct = env.fake_memory().c_memory();
+    Memory mem_struct = env.fake_memory().c_memory();
     const Memory *mem = &mem_struct;
 
     // Observer
@@ -493,7 +493,7 @@ TEST_F(OnionClientTest, OnionAnnounceResponse_TooShort)
     bool triggered = false;
 
     // Setup Memory
-    Tox_Memory mem_struct = env.fake_memory().c_memory();
+    Memory mem_struct = env.fake_memory().c_memory();
     const Memory *mem = &mem_struct;
 
     bob_socket->set_recv_observer([&](const std::vector<std::uint8_t> &data, const IP_Port &from) {
@@ -637,7 +637,7 @@ TEST_F(OnionClientTest, SharedKeyCacheUseAfterFreeRegression)
         onion_add_bs_path_node(alice.get_onion_client(), &ip, pk);
     }
 
-    Tox_Memory mem_struct = env.fake_memory().c_memory();
+    Memory mem_struct = env.fake_memory().c_memory();
     const Memory *mem = &mem_struct;
 
     int total_decryption_failures = 0;
@@ -795,7 +795,7 @@ TEST_F(OnionClientTest, SharedKeyReuseOnEviction)
 
     int total_decrypted = 0;
     int total_failed = 0;
-    Tox_Memory mem_struct = env.fake_memory().c_memory();
+    Memory mem_struct = env.fake_memory().c_memory();
     const Memory *mem = &mem_struct;
 
     auto observer = [&](OnionNode *node, const std::vector<std::uint8_t> &data) {

@@ -4,13 +4,13 @@
 #include <iostream>
 #include <new>
 
-#include "../../../toxcore/tox_memory_impl.h"
+#include "../../../toxcore/mem.h"
 
 namespace tox::test {
 
 // --- Trampolines ---
 
-static const Tox_Memory_Funcs kFakeMemoryVtable = {
+static const Memory_Funcs kFakeMemoryVtable = {
     .malloc_callback
     = [](void *obj, uint32_t size) { return static_cast<FakeMemory *>(obj)->malloc(size); },
     .realloc_callback
@@ -127,7 +127,7 @@ void FakeMemory::set_failure_injector(FailureInjector injector)
 
 void FakeMemory::set_observer(Observer observer) { observer_ = std::move(observer); }
 
-struct Tox_Memory FakeMemory::c_memory() { return Tox_Memory{&kFakeMemoryVtable, this}; }
+struct Memory FakeMemory::c_memory() { return Memory{&kFakeMemoryVtable, this}; }
 
 size_t FakeMemory::current_allocation() const { return current_allocation_.load(); }
 

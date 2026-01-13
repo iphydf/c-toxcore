@@ -8,8 +8,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "tox_attributes.h"
-#include "tox_memory.h"
+#include "attributes.h"
+#include "mem.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,7 +19,7 @@ typedef struct Tox_Random_Funcs Tox_Random_Funcs;
 
 typedef struct Tox_Random Tox_Random;
 
-Tox_Random *_Nullable tox_random_new(const Tox_Random_Funcs *_Nonnull funcs, void *_Nullable user_data, const Tox_Memory *_Nonnull mem);
+Tox_Random *_Nullable tox_random_new(const Tox_Random_Funcs *_Nonnull funcs, void *_Nullable user_data, const Memory *_Nonnull mem);
 
 void tox_random_free(Tox_Random *_Nullable rng);
 

@@ -22,14 +22,14 @@ struct Ping_Array_Deleter {
 using Ping_Array_Ptr = std::unique_ptr<Ping_Array, Ping_Array_Deleter>;
 
 struct Mono_Time_Deleter {
-    Mono_Time_Deleter(Tox_Memory mem)
+    Mono_Time_Deleter(Memory mem)
         : mem_(mem)
     {
     }
     void operator()(Mono_Time *arr) { mono_time_free(&mem_, arr); }
 
 private:
-    Tox_Memory mem_;
+    Memory mem_;
 };
 
 using Mono_Time_Ptr = std::unique_ptr<Mono_Time, Mono_Time_Deleter>;

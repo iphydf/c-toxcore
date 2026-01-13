@@ -5,7 +5,7 @@
 #include <cstdint>
 
 // Forward declaration
-struct Tox_Memory;
+struct Memory;
 
 namespace tox::test {
 
@@ -21,9 +21,9 @@ public:
     virtual void free(void *ptr) = 0;
 
     /**
-     * @brief Returns C-compatible Tox_Memory struct.
+     * @brief Returns C-compatible Memory struct.
      */
-    virtual struct Tox_Memory c_memory() = 0;
+    virtual struct Memory c_memory() = 0;
 };
 
 }  // namespace tox::test
