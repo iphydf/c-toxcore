@@ -4,6 +4,7 @@ load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
 exports_files(
     srcs = [
         "tox.h",
+        "tox_attributes.h",
         "tox_dispatch.h",
         "tox_events.h",
         "tox_log_level.h",
@@ -1318,6 +1319,7 @@ cc_library(
         ":os_memory",
         ":os_random",
         ":state",
+        ":tox_attributes",
         ":tox_log_level",
         ":tox_options",
         ":util",
