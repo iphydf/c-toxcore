@@ -4,6 +4,7 @@ RUN ["apk", "add", "--no-cache", \
  "bash", \
  "benchmark-dev", \
  "clang", \
+ "gmock", \
  "gtest-dev", \
  "libc++-dev", \
  "libc++-static", \

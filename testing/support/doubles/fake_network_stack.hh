@@ -6,6 +6,7 @@
 #include <mutex>
 #include <vector>
 
+#include "../../../toxcore/net.h"
 #include "../public/network.hh"
 #include "fake_sockets.hh"
 #include "network_universe.hh"

@@ -6,6 +6,7 @@ cc_binary(
     srcs = ["tox_messenger_bench.cc"],
     deps = [
         "//c-toxcore/testing/support",
+        "//c-toxcore/toxcore:network",
         "//c-toxcore/toxcore:tox",
         "@benchmark",
     ],

@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later
- * Copyright © 2016-2025 The TokTok team.
+ * Copyright © 2016-2026 The TokTok team.
  * Copyright © 2013 Tox project.
  */
 
@@ -17,6 +17,7 @@
 #include "logger.h"
 #include "mem.h"
 #include "mono_time.h"
+#include "net.h"
 #include "network.h"
 #include "ping_array.h"
 #include "rng.h"

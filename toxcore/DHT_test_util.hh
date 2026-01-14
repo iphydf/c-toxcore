@@ -13,6 +13,7 @@
 #include "crypto_core.h"
 #include "logger.h"
 #include "mono_time.h"
+#include "net.h"
 #include "net_crypto.h"
 #include "rng.h"
 #include "test_util.hh"

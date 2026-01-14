@@ -19,6 +19,7 @@
 #include "logger.h"
 #include "mem.h"
 #include "mono_time.h"
+#include "net.h"
 #include "net_crypto.h"
 #include "network.h"
 #include "onion_announce.h"

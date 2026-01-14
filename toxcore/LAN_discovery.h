@@ -14,6 +14,7 @@
 
 #include "attributes.h"
 #include "mem.h"
+#include "net.h"
 #include "network.h"
 
 /**

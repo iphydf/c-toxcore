@@ -308,6 +308,8 @@ set(toxcore_SOURCES
   toxcore/mem.h
   toxcore/mono_time.c
   toxcore/mono_time.h
+  toxcore/net.c
+  toxcore/net.h
   toxcore/net_crypto.c
   toxcore/net_crypto.h
   toxcore/net_log.c
@@ -324,6 +326,8 @@ set(toxcore_SOURCES
   toxcore/onion.h
   toxcore/os_memory.c
   toxcore/os_memory.h
+  toxcore/os_network.c
+  toxcore/os_network.h
   toxcore/os_random.c
   toxcore/os_random.h
   toxcore/ping_array.c

@@ -18,6 +18,7 @@
 #include "logger.h"
 #include "mem.h"
 #include "mono_time.h"
+#include "net.h"
 #include "net_profile.h"
 #include "network.h"
 #include "onion.h"

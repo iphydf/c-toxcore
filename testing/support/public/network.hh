@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <vector>
 
+#include "../../../toxcore/net.h"
 #include "../../../toxcore/network.h"
 
 namespace tox::test {

@@ -8,6 +8,8 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//c-toxcore/testing:misc_tools",
+        "//c-toxcore/toxcore:attributes",
+        "//c-toxcore/toxcore:ccompat",
         "//c-toxcore/toxcore:mono_time",
         "//c-toxcore/toxcore:network",
         "//c-toxcore/toxcore:tox",

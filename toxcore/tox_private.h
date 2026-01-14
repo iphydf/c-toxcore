@@ -20,12 +20,16 @@ extern "C" {
 
 typedef uint64_t tox_mono_time_cb(void *_Nullable user_data);
 
+typedef struct Random Random;
+typedef struct Network Network;
+typedef struct Memory Memory;
+
 typedef struct Tox_System {
     tox_mono_time_cb *_Nullable mono_time_callback;
     void *_Nullable mono_time_user_data;
-    const struct Random *_Nullable rng;
-    const struct Network *_Nullable ns;
-    const struct Memory *_Nullable mem;
+    const Random *_Nullable rng;
+    const Network *_Nullable ns;
+    const Memory *_Nullable mem;
 } Tox_System;
 
 Tox_System tox_default_system(void);

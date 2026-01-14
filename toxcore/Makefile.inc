@@ -105,6 +105,8 @@ libtoxcore_la_SOURCES = ../third_party/cmp/cmp.c \
                         ../toxcore/net_log.h \
                         ../toxcore/net_profile.c \
                         ../toxcore/net_profile.h \
+                        ../toxcore/net.c \
+                        ../toxcore/net.h \
                         ../toxcore/network.c \
                         ../toxcore/network.h \
                         ../toxcore/onion_announce.c \
@@ -115,6 +117,8 @@ libtoxcore_la_SOURCES = ../third_party/cmp/cmp.c \
                         ../toxcore/onion.h \
                         ../toxcore/os_memory.c \
                         ../toxcore/os_memory.h \
+                        ../toxcore/os_network.c \
+                        ../toxcore/os_network.h \
                         ../toxcore/os_random.c \
                         ../toxcore/os_random.h \
                         ../toxcore/ping_array.c \

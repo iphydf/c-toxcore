@@ -10,6 +10,7 @@
 #include <future>
 #include <thread>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "../../../toxcore/tox_events.h"

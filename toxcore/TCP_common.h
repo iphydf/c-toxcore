@@ -13,6 +13,7 @@
 #include "crypto_core.h"
 #include "logger.h"
 #include "mem.h"
+#include "net.h"
 #include "net_profile.h"
 #include "network.h"
 #include "rng.h"
