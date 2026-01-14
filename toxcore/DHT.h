@@ -10,6 +10,7 @@
 #define C_TOXCORE_TOXCORE_DHT_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "attributes.h"
 #include "crypto_core.h"

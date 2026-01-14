@@ -5,6 +5,9 @@
 #ifndef C_TOXCORE_TOXCORE_FORWARDING_H
 #define C_TOXCORE_TOXCORE_FORWARDING_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "DHT.h"
 #include "attributes.h"
 #include "crypto_core.h"

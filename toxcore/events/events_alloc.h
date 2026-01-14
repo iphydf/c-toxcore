@@ -5,6 +5,9 @@
 #ifndef C_TOXCORE_TOXCORE_EVENTS_EVENTS_ALLOC_H
 #define C_TOXCORE_TOXCORE_EVENTS_EVENTS_ALLOC_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "../attributes.h"
 #include "../tox.h"
 #include "../tox_events.h"

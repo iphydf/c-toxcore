@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <iomanip>
+#include <ostream>
 
 #include "crypto_core.h"
 #include "test_util.hh"
@@ -16,8 +17,8 @@ PublicKey random_pk(const Random *rng)
 std::ostream &operator<<(std::ostream &out, PublicKey const &pk)
 {
     out << '"';
-    for (uint8_t byte : pk) {
-        out << std::setw(2) << std::setfill('0') << std::hex << uint32_t(byte);
+    for (std::uint8_t byte : pk) {
+        out << std::setw(2) << std::setfill('0') << std::hex << std::uint32_t(byte);
     }
     out << '"';
     return out;

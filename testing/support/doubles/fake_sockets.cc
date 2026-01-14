@@ -3,7 +3,11 @@
 #include <algorithm>
 #include <cerrno>
 #include <cstring>
+#include <deque>
+#include <functional>
 #include <iostream>
+#include <mutex>
+#include <vector>
 
 #include "network_universe.hh"
 

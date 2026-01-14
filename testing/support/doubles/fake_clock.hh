@@ -2,6 +2,7 @@
 #define C_TOXCORE_TESTING_SUPPORT_DOUBLES_FAKE_CLOCK_H
 
 #include <atomic>
+#include <cstdint>
 
 #include "../public/clock.hh"
 

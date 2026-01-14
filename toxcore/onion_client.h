@@ -11,6 +11,7 @@
 #define C_TOXCORE_TOXCORE_ONION_CLIENT_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "DHT.h"
 #include "attributes.h"

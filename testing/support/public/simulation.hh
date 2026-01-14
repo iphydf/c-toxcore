@@ -1,6 +1,7 @@
 #ifndef C_TOXCORE_TESTING_SUPPORT_SIMULATION_H
 #define C_TOXCORE_TESTING_SUPPORT_SIMULATION_H
 
+#include <atomic>
 #include <condition_variable>
 #include <functional>
 #include <memory>

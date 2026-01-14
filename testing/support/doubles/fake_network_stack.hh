@@ -2,7 +2,9 @@
 #define C_TOXCORE_TESTING_SUPPORT_DOUBLES_FAKE_NETWORK_STACK_H
 
 #include <map>
+#include <memory>
 #include <mutex>
+#include <vector>
 
 #include "../public/network.hh"
 #include "fake_sockets.hh"

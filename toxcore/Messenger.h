@@ -10,6 +10,9 @@
 #ifndef C_TOXCORE_TOXCORE_MESSENGER_H
 #define C_TOXCORE_TOXCORE_MESSENGER_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "DHT.h"
 #include "TCP_client.h"
 #include "TCP_server.h"

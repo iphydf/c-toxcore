@@ -12,6 +12,9 @@
 #ifndef C_TOXCORE_TOXCORE_TOX_EVENTS_H
 #define C_TOXCORE_TOXCORE_TOX_EVENTS_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "tox.h"
 
 #ifdef __cplusplus

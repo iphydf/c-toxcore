@@ -1,6 +1,7 @@
 #include "network_test_util.hh"
 
 #include <iomanip>
+#include <ostream>
 
 #include "crypto_core.h"
 #include "mem.h"

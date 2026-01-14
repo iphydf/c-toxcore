@@ -10,6 +10,9 @@
 #ifndef C_TOXCORE_TOXCORE_GROUP_CONNECTION_H
 #define C_TOXCORE_TOXCORE_GROUP_CONNECTION_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "DHT.h"
 #include "TCP_connection.h"
 #include "attributes.h"

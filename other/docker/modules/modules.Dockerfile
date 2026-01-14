@@ -1,10 +1,12 @@
-FROM alpine:3.21.0
+FROM alpine:3.23.0
 
 RUN ["apk", "add", "--no-cache", \
  "bash", \
  "benchmark-dev", \
  "clang", \
  "gtest-dev", \
+ "libc++-dev", \
+ "libc++-static", \
  "libconfig-dev", \
  "libsodium-dev", \
  "libvpx-dev", \

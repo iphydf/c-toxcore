@@ -5,6 +5,8 @@
 #ifndef C_TOXCORE_TESTING_SUPPORT_TOX_NETWORK_H
 #define C_TOXCORE_TESTING_SUPPORT_TOX_NETWORK_H
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "simulation.hh"

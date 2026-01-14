@@ -5,6 +5,7 @@
 #ifndef C_TOXCORE_TOXCORE_ANNOUNCE_H
 #define C_TOXCORE_TOXCORE_ANNOUNCE_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "DHT.h"

@@ -9,6 +9,9 @@
 #ifndef C_TOXCORE_TOXCORE_NET_CRYPTO_H
 #define C_TOXCORE_TOXCORE_NET_CRYPTO_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "DHT.h" // Node_format
 #include "TCP_client.h"
 #include "TCP_connection.h"

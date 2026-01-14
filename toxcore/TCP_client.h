@@ -9,6 +9,8 @@
 #ifndef C_TOXCORE_TOXCORE_TCP_CLIENT_H
 #define C_TOXCORE_TOXCORE_TCP_CLIENT_H
 
+#include <stdint.h>
+
 #include "attributes.h"
 #include "crypto_core.h"
 #include "forwarding.h"

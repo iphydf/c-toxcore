@@ -9,6 +9,7 @@
 #ifndef C_TOXCORE_TOXCORE_FRIEND_CONNECTION_H
 #define C_TOXCORE_TOXCORE_FRIEND_CONNECTION_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "DHT.h"

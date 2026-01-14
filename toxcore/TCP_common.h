@@ -6,6 +6,9 @@
 #ifndef C_TOXCORE_TOXCORE_TCP_COMMON_H
 #define C_TOXCORE_TOXCORE_TCP_COMMON_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "attributes.h"
 #include "crypto_core.h"
 #include "logger.h"

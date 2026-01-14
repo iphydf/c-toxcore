@@ -5,6 +5,8 @@
 #ifndef C_TOXCORE_TOXCORE_TOX_RANDOM_IMPL_H
 #define C_TOXCORE_TOXCORE_TOX_RANDOM_IMPL_H
 
+#include <stdint.h>
+
 #include "tox_memory.h"
 #include "tox_random.h"
 
