@@ -4,10 +4,12 @@
 
 #include <array>
 
+#include "attributes.h"
 #include "bin_unpack.h"
 #include "logger.h"
 #include "mem.h"
 #include "os_memory.h"
+#include "test_util.hh"
 
 namespace {
 
@@ -16,27 +18,27 @@ TEST(BinPack, TooSmallBufferIsNotExceeded)
     const std::uint64_t orig = 1234567812345678LL;
     std::array<std::uint8_t, sizeof(orig) - 1> buf;
     EXPECT_FALSE(bin_pack_obj(
-        [](const void *obj, const Logger *logger, Bin_Pack *bp) {
-            return bin_pack_u64_b(bp, *static_cast<const std::uint64_t *>(obj));
+        [](const void *_Nullable obj, const Logger *_Nullable logger, Bin_Pack *_Nonnull bp) {
+            return bin_pack_u64_b(bp, *static_cast<const std::uint64_t *>(REQUIRE_NOT_NULL(obj)));
         },
         &orig, nullptr, buf.data(), buf.size()));
 }
 
 TEST(BinPack, PackedUint64CanBeUnpacked)
 {
-    const Memory *mem = os_memory();
+    const Memory *_Nonnull mem = os_memory();
     const std::uint64_t orig = 1234567812345678LL;
     std::array<std::uint8_t, 8> buf;
     EXPECT_TRUE(bin_pack_obj(
-        [](const void *obj, const Logger *logger, Bin_Pack *bp) {
-            return bin_pack_u64_b(bp, *static_cast<const std::uint64_t *>(obj));
+        [](const void *_Nullable obj, const Logger *_Nullable logger, Bin_Pack *_Nonnull bp) {
+            return bin_pack_u64_b(bp, *static_cast<const std::uint64_t *>(REQUIRE_NOT_NULL(obj)));
         },
         &orig, nullptr, buf.data(), buf.size()));
 
     std::uint64_t unpacked = 0;
     EXPECT_TRUE(bin_unpack_obj(
         mem,
-        [](void *obj, Bin_Unpack *bu) {
+        [](void *_Nonnull obj, Bin_Unpack *_Nonnull bu) {
             return bin_unpack_u64_b(bu, static_cast<std::uint64_t *>(obj));
         },
         &unpacked, buf.data(), buf.size()));
@@ -45,19 +47,19 @@ TEST(BinPack, PackedUint64CanBeUnpacked)
 
 TEST(BinPack, MsgPackedUint8CanBeUnpackedAsUint32)
 {
-    const Memory *mem = os_memory();
+    const Memory *_Nonnull mem = os_memory();
     const std::uint8_t orig = 123;
     std::array<std::uint8_t, 2> buf;
     EXPECT_TRUE(bin_pack_obj(
-        [](const void *obj, const Logger *logger, Bin_Pack *bp) {
-            return bin_pack_u08(bp, *static_cast<const std::uint8_t *>(obj));
+        [](const void *_Nullable obj, const Logger *_Nullable logger, Bin_Pack *_Nonnull bp) {
+            return bin_pack_u08(bp, *static_cast<const std::uint8_t *>(REQUIRE_NOT_NULL(obj)));
         },
         &orig, nullptr, buf.data(), buf.size()));
 
     std::uint32_t unpacked = 0;
     EXPECT_TRUE(bin_unpack_obj(
         mem,
-        [](void *obj, Bin_Unpack *bu) {
+        [](void *_Nonnull obj, Bin_Unpack *_Nonnull bu) {
             return bin_unpack_u32(bu, static_cast<std::uint32_t *>(obj));
         },
         &unpacked, buf.data(), buf.size()));
@@ -66,19 +68,19 @@ TEST(BinPack, MsgPackedUint8CanBeUnpackedAsUint32)
 
 TEST(BinPack, MsgPackedUint32CanBeUnpackedAsUint8IfSmallEnough)
 {
-    const Memory *mem = os_memory();
+    const Memory *_Nonnull mem = os_memory();
     const std::uint32_t orig = 123;
     std::array<std::uint8_t, 2> buf;
     EXPECT_TRUE(bin_pack_obj(
-        [](const void *obj, const Logger *logger, Bin_Pack *bp) {
-            return bin_pack_u32(bp, *static_cast<const std::uint32_t *>(obj));
+        [](const void *_Nullable obj, const Logger *_Nullable logger, Bin_Pack *_Nonnull bp) {
+            return bin_pack_u32(bp, *static_cast<const std::uint32_t *>(REQUIRE_NOT_NULL(obj)));
         },
         &orig, nullptr, buf.data(), buf.size()));
 
     std::uint8_t unpacked = 0;
     EXPECT_TRUE(bin_unpack_obj(
         mem,
-        [](void *obj, Bin_Unpack *bu) {
+        [](void *_Nonnull obj, Bin_Unpack *_Nonnull bu) {
             return bin_unpack_u08(bu, static_cast<std::uint8_t *>(obj));
         },
         &unpacked, buf.data(), buf.size()));

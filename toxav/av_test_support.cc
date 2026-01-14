@@ -9,10 +9,11 @@
 #include "../toxcore/os_memory.h"
 
 // Mock Time
-std::uint64_t mock_time_cb(void *ud) { return static_cast<MockTime *>(ud)->t; }
+std::uint64_t mock_time_cb(void *_Nullable ud) { return static_cast<MockTime *>(ud)->t; }
 
 // RTP Mock
-int RtpMock::send_packet(void *user_data, const std::uint8_t *data, std::uint16_t length)
+int RtpMock::send_packet(
+    void *_Nullable user_data, const std::uint8_t *_Nonnull data, std::uint16_t length)
 {
     auto *self = static_cast<RtpMock *>(user_data);
     if (self->capture_packets) {
@@ -32,17 +33,20 @@ int RtpMock::send_packet(void *user_data, const std::uint8_t *data, std::uint16_
     return 0;
 }
 
-int RtpMock::audio_cb(const Mono_Time *mono_time, void *cs, RTPMessage *msg)
+int RtpMock::audio_cb(
+    const Mono_Time *_Nonnull mono_time, void *_Nullable cs, RTPMessage *_Nonnull msg)
 {
     return ac_queue_message(mono_time, cs, msg);
 }
 
-int RtpMock::video_cb(const Mono_Time *mono_time, void *cs, RTPMessage *msg)
+int RtpMock::video_cb(
+    const Mono_Time *_Nonnull mono_time, void *_Nullable cs, RTPMessage *_Nonnull msg)
 {
     return vc_queue_message(mono_time, cs, msg);
 }
 
-int RtpMock::noop_cb(const Mono_Time * /*mono_time*/, void * /*cs*/, RTPMessage *msg)
+int RtpMock::noop_cb(
+    const Mono_Time *_Nonnull /*mono_time*/, void *_Nullable /*cs*/, RTPMessage *_Nonnull msg)
 {
     std::free(msg);
     return 0;
@@ -80,8 +84,9 @@ void fill_silent_frame(
 AudioTestData::AudioTestData() = default;
 AudioTestData::~AudioTestData() = default;
 
-void AudioTestData::receive_frame(std::uint32_t friend_number, const std::int16_t *pcm,
-    std::size_t sample_count, std::uint8_t channels, std::uint32_t sampling_rate, void *user_data)
+void AudioTestData::receive_frame(std::uint32_t friend_number, const std::int16_t *_Nonnull pcm,
+    std::size_t sample_count, std::uint8_t channels, std::uint32_t sampling_rate,
+    void *_Nullable user_data)
 {
     auto *self = static_cast<AudioTestData *>(user_data);
     self->friend_number = friend_number;
@@ -135,8 +140,9 @@ VideoTestData::VideoTestData() = default;
 VideoTestData::~VideoTestData() = default;
 
 void VideoTestData::receive_frame(std::uint32_t friend_number, std::uint16_t width,
-    std::uint16_t height, const std::uint8_t *y, const std::uint8_t *u, const std::uint8_t *v,
-    std::int32_t ystride, std::int32_t ustride, std::int32_t vstride, void *user_data)
+    std::uint16_t height, const std::uint8_t *_Nonnull y, const std::uint8_t *_Nonnull u,
+    const std::uint8_t *_Nonnull v, std::int32_t ystride, std::int32_t ustride,
+    std::int32_t vstride, void *_Nullable user_data)
 {
     auto *self = static_cast<VideoTestData *>(user_data);
     self->friend_number = friend_number;
@@ -168,7 +174,7 @@ void AvTest::SetUp()
 
 void AvTest::TearDown()
 {
-    const Memory *mem = os_memory();
+    const Memory *_Nonnull mem = os_memory();
     mono_time_free(mem, mono_time);
     logger_kill(log);
 }

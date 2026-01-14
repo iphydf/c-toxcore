@@ -18,8 +18,8 @@ namespace tox::test {
 
 ConnectedFriend::~ConnectedFriend() = default;
 
-std::vector<ConnectedFriend> setup_connected_friends(Simulation &sim, Tox *main_tox,
-    SimulatedNode &main_node, int num_friends, const Tox_Options *options, bool verbose)
+std::vector<ConnectedFriend> setup_connected_friends(Simulation &sim, Tox *_Nonnull main_tox,
+    SimulatedNode &main_node, int num_friends, const Tox_Options *_Nullable options, bool verbose)
 {
     std::vector<ConnectedFriend> friends;
     friends.reserve(num_friends);
@@ -49,7 +49,7 @@ std::vector<ConnectedFriend> setup_connected_friends(Simulation &sim, Tox *main_
         auto runner = std::make_unique<ToxRunner>(*node, options);
 
         uint8_t friend_pk[TOX_PUBLIC_KEY_SIZE];
-        runner->invoke([&](Tox *tox) { tox_self_get_public_key(tox, friend_pk); });
+        runner->invoke([&](Tox *_Nonnull tox) { tox_self_get_public_key(tox, friend_pk); });
 
         Tox_Err_Friend_Add err;
         uint32_t fn = tox_friend_add_norequest(main_tox, friend_pk, &err);
@@ -58,7 +58,7 @@ std::vector<ConnectedFriend> setup_connected_friends(Simulation &sim, Tox *main_
         }
 
         // Execute add friend and bootstrap on runner
-        runner->execute([=](Tox *tox) {
+        runner->execute([=](Tox *_Nonnull tox) {
             tox_friend_add_norequest(tox, main_pk, nullptr);
             tox_bootstrap(tox, main_ip_str, main_port, main_dht_id, nullptr);
             if (i > 0) {
@@ -68,11 +68,11 @@ std::vector<ConnectedFriend> setup_connected_friends(Simulation &sim, Tox *main_
 
         // Retrieve previous node's DHT ID and update IP for the next iteration.
         // We use invoke to safely fetch data from the runner thread.
-        runner->invoke([&](Tox *tox) { tox_self_get_dht_id(tox, prev_dht_id); });
+        runner->invoke([&](Tox *_Nonnull tox) { tox_self_get_dht_id(tox, prev_dht_id); });
 
         ip_parse_addr(&node->ip, prev_ip_str, sizeof(prev_ip_str));
 
-        FakeUdpSocket *node_socket = node->get_primary_socket();
+        FakeUdpSocket *_Nullable node_socket = node->get_primary_socket();
         if (!node_socket) {
             return {};
         }
@@ -148,8 +148,8 @@ std::vector<ConnectedFriend> setup_connected_friends(Simulation &sim, Tox *main_
     return friends;
 }
 
-bool connect_friends(
-    Simulation &sim, SimulatedNode &node1, Tox *tox1, SimulatedNode &node2, Tox *tox2)
+bool connect_friends(Simulation &sim, SimulatedNode &node1, Tox *_Nonnull tox1,
+    SimulatedNode &node2, Tox *_Nonnull tox2)
 {
     // This helper function assumes the Tox instances are running in the current thread
     // (e.g., standard unit test) or that the caller is handling thread safety if they
@@ -210,7 +210,7 @@ bool connect_friends(
 }
 
 uint32_t setup_connected_group(
-    Simulation &sim, Tox *main_tox, const std::vector<ConnectedFriend> &friends)
+    Simulation &sim, Tox *_Nonnull main_tox, const std::vector<ConnectedFriend> &friends)
 {
     struct NodeGroupState {
         uint32_t peer_count = 0;
@@ -218,9 +218,10 @@ uint32_t setup_connected_group(
     };
 
     NodeGroupState main_state;
-    tox_callback_group_peer_join(main_tox, [](Tox *, uint32_t, uint32_t, void *user_data) {
-        static_cast<NodeGroupState *>(user_data)->peer_count++;
-    });
+    tox_callback_group_peer_join(
+        main_tox, [](Tox *_Nonnull, uint32_t, uint32_t, void *_Nullable user_data) {
+            static_cast<NodeGroupState *>(user_data)->peer_count++;
+        });
 
     Tox_Err_Group_New err_new;
     main_state.group_number = tox_group_new(main_tox, TOX_GROUP_PRIVACY_STATE_PUBLIC,
@@ -279,7 +280,7 @@ uint32_t setup_connected_group(
                             // We must copy data because the event structure will be freed.
                             std::vector<uint8_t> invite_data(data, data + len);
 
-                            friends[i].runner->execute([=](Tox *tox) {
+                            friends[i].runner->execute([=](Tox *_Nonnull tox) {
                                 Tox_Err_Group_Invite_Accept err;
                                 tox_group_invite_accept(tox, friend_number, invite_data.data(),
                                     invite_data.size(), reinterpret_cast<const uint8_t *>("peer"),

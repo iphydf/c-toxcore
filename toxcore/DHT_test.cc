@@ -10,6 +10,7 @@
 
 #include "../testing/support/public/simulated_environment.hh"
 #include "DHT_test_util.hh"
+#include "attributes.h"
 #include "crypto_core.h"
 #include "crypto_core_test_util.hh"
 #include "logger.h"
@@ -33,7 +34,7 @@ struct KeyPair {
     PublicKey pk;
     SecretKey sk;
 
-    explicit KeyPair(const Random *rng) { crypto_new_keypair(rng, pk.data(), sk.data()); }
+    explicit KeyPair(const Random *_Nonnull rng) { crypto_new_keypair(rng, pk.data(), sk.data()); }
 };
 
 TEST(IdClosest, KeyIsClosestToItself)

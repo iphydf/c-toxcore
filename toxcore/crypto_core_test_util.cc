@@ -7,7 +7,7 @@
 #include "crypto_core.h"
 #include "test_util.hh"
 
-PublicKey random_pk(const Random *rng)
+PublicKey random_pk(const Random *_Nonnull rng)
 {
     PublicKey pk;
     random_bytes(rng, pk.data(), pk.size());

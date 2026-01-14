@@ -14,11 +14,13 @@
 
 #include "../testing/support/public/simulated_environment.hh"
 #include "DHT_test_util.hh"
+#include "attributes.h"
 #include "crypto_core.h"
 #include "logger.h"
 #include "mono_time.h"
 #include "net_profile.h"
 #include "network.h"
+#include "test_util.hh"
 
 namespace {
 
@@ -39,9 +41,10 @@ public:
         // Setup Logger to stderr
         logger_callback_log(
             dht_wrapper_.logger(),
-            [](void *context, Logger_Level level, const char *file, std::uint32_t line,
-                const char *func, const char *message, void *) {
-                auto *self = static_cast<TestNode *>(context);
+            [](void *_Nullable context, Logger_Level level, const char *_Nonnull file,
+                std::uint32_t line, const char *_Nonnull func, const char *_Nonnull message,
+                void *_Nullable) {
+                auto *self = static_cast<TestNode *>(REQUIRE_NOT_NULL(context));
                 if (self->trace_enabled_ || level >= LOGGER_LEVEL_DEBUG) {
                     fprintf(stderr, "[%d] %s:%u %s: %s\n", level, file, line, func, message);
                 }
@@ -59,14 +62,14 @@ public:
         new_connection_handler(net_crypto_.get(), &TestNode::static_new_connection_cb, this);
     }
 
-    Net_Crypto *get_net_crypto() { return net_crypto_.get(); }
-    const std::uint8_t *dht_public_key() const { return dht_wrapper_.dht_public_key(); }
-    const std::uint8_t *real_public_key() const
+    Net_Crypto *_Nonnull get_net_crypto() { return REQUIRE_NOT_NULL(net_crypto_.get()); }
+    const std::uint8_t *_Nonnull dht_public_key() const { return dht_wrapper_.dht_public_key(); }
+    const std::uint8_t *_Nonnull real_public_key() const
     {
         return nc_get_self_public_key(net_crypto_.get());
     }
     int dht_computation_count() const { return dht_wrapper_.dht_computation_count(); }
-    const Memory *get_memory() const { return &dht_wrapper_.node().c_memory; }
+    const Memory *_Nonnull get_memory() const { return &dht_wrapper_.node().c_memory; }
 
     IP_Port get_ip_port() const { return dht_wrapper_.get_ip_port(); }
 
@@ -159,7 +162,7 @@ private:
 
     // -- Static Callbacks --
 
-    static int static_new_connection_cb(void *object, const New_Connection *n_c)
+    static int static_new_connection_cb(void *_Nonnull object, const New_Connection *_Nonnull n_c)
     {
         auto *self = static_cast<TestNode *>(object);
         int id = accept_crypto_connection(self->net_crypto_.get(), n_c);
@@ -170,7 +173,8 @@ private:
         return id;  // Return ID on success
     }
 
-    static int static_connection_status_cb(void *object, int id, bool status, void *userdata)
+    static int static_connection_status_cb(
+        void *_Nonnull object, int id, bool status, void *_Nullable userdata)
     {
         auto *self = static_cast<TestNode *>(object);
         if (id < static_cast<int>(self->connections_.size())) {
@@ -179,8 +183,8 @@ private:
         return 0;
     }
 
-    static int static_connection_data_cb(
-        void *object, int id, const std::uint8_t *data, std::uint16_t length, void *userdata)
+    static int static_connection_data_cb(void *_Nonnull object, int id,
+        const std::uint8_t *_Nonnull data, std::uint16_t length, void *_Nullable userdata)
     {
         auto *self = static_cast<TestNode *>(object);
         if (id < static_cast<int>(self->connections_.size())) {

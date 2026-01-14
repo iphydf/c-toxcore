@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "../../../toxcore/attributes.h"
 #include "../../../toxcore/tox_events.h"
 #include "mpsc_queue.hh"
 #include "simulation.hh"
@@ -21,14 +22,14 @@ namespace tox::test {
 
 class ToxRunner {
 public:
-    explicit ToxRunner(SimulatedNode &node, const Tox_Options *options = nullptr);
+    explicit ToxRunner(SimulatedNode &node, const Tox_Options *_Nullable options = nullptr);
     ~ToxRunner();
 
     ToxRunner(const ToxRunner &) = delete;
     ToxRunner &operator=(const ToxRunner &) = delete;
 
     struct ToxEventsDeleter {
-        void operator()(Tox_Events *e) const { tox_events_free(e); }
+        void operator()(Tox_Events *_Nonnull e) const { tox_events_free(e); }
     };
     using ToxEventsPtr = std::unique_ptr<Tox_Events, ToxEventsDeleter>;
 
@@ -40,7 +41,7 @@ public:
      *
      * @param task The function to execute, taking a raw Tox pointer.
      */
-    void execute(std::function<void(Tox *)> task);
+    void execute(std::function<void(Tox *_Nonnull)> task);
 
     /**
      * @brief Executes a task on the runner's thread and waits for the result.
@@ -54,13 +55,13 @@ public:
      * @return The result of the callable execution.
      */
     template <typename Func>
-    auto invoke(Func &&func) -> std::invoke_result_t<Func, Tox *>
+    auto invoke(Func &&func) -> std::invoke_result_t<Func, Tox *_Nonnull>
     {
-        using R = std::invoke_result_t<Func, Tox *>;
+        using R = std::invoke_result_t<Func, Tox *_Nonnull>;
         auto promise = std::make_shared<std::promise<R>>();
         auto future = promise->get_future();
 
-        execute([p = promise, f = std::forward<Func>(func)](Tox *tox) {
+        execute([p = promise, f = std::forward<Func>(func)](Tox *_Nonnull tox) {
             if constexpr (std::is_void_v<R>) {
                 f(tox);
                 p->set_value();
@@ -91,7 +92,7 @@ public:
      * idle (e.g., before the loop starts) or for accessing constant/read-only properties.
      * For all other operations, use `execute` or `invoke`.
      */
-    Tox *unsafe_tox() { return tox_.get(); }
+    Tox *_Nullable unsafe_tox() { return tox_.get(); }
 
     /**
      * @brief Temporarily stops the runner from participating in the simulation.
@@ -120,7 +121,7 @@ private:
 
     struct Message {
         enum Type { Task, Tick, Stop } type;
-        std::function<void(Tox *)> task;
+        std::function<void(Tox *_Nonnull)> task;
         uint64_t generation = 0;
     };
 

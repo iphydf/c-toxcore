@@ -9,6 +9,7 @@
 #include <queue>
 #include <vector>
 
+#include "../../../toxcore/attributes.h"
 #include "../../../toxcore/network.h"
 
 namespace tox::test {
@@ -45,11 +46,11 @@ public:
 
     // Registration
     // Returns true if binding succeeded
-    bool bind_udp(IP ip, uint16_t port, FakeUdpSocket *socket);
+    bool bind_udp(IP ip, uint16_t port, FakeUdpSocket *_Nonnull socket);
     void unbind_udp(IP ip, uint16_t port);
 
-    bool bind_tcp(IP ip, uint16_t port, FakeTcpSocket *socket);
-    void unbind_tcp(IP ip, uint16_t port, FakeTcpSocket *socket);
+    bool bind_tcp(IP ip, uint16_t port, FakeTcpSocket *_Nonnull socket);
+    void unbind_tcp(IP ip, uint16_t port, FakeTcpSocket *_Nonnull socket);
 
     // Routing
     void send_packet(Packet p);

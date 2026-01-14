@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <vector>
 
+#include "../toxcore/attributes.h"
 #include "../toxcore/logger.h"
 #include "../toxcore/mono_time.h"
 #include "../toxcore/network.h"
@@ -25,7 +26,8 @@ struct MockBwcData {
     std::vector<float> reported_losses;
     std::uint32_t friend_number = 0;
 
-    static int send_packet(void *user_data, const std::uint8_t *data, std::uint16_t length)
+    static int send_packet(
+        void *_Nullable user_data, const std::uint8_t *_Nonnull data, std::uint16_t length)
     {
         auto *sd = static_cast<MockBwcData *>(user_data);
         if (sd->fail_send) {
@@ -35,8 +37,8 @@ struct MockBwcData {
         return 0;
     }
 
-    static void loss_report(
-        BWController * /*bwc*/, std::uint32_t friend_number, float loss, void *user_data)
+    static void loss_report(BWController *_Nonnull /*bwc*/, std::uint32_t friend_number, float loss,
+        void *_Nullable user_data)
     {
         auto *sd = static_cast<MockBwcData *>(user_data);
         sd->friend_number = friend_number;
@@ -59,13 +61,13 @@ protected:
 
     void TearDown() override
     {
-        const Memory *mem = os_memory();
+        const Memory *_Nonnull mem = os_memory();
         mono_time_free(mem, mono_time);
         logger_kill(log);
     }
 
-    Logger *log;
-    Mono_Time *mono_time;
+    Logger *_Nullable log;
+    Mono_Time *_Nullable mono_time;
     BwcTimeMock tm;
 };
 

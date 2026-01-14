@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 
+#include "attributes.h"
 #include "mono_time_test_util.hh"
 
 namespace {
@@ -88,7 +89,8 @@ TEST(MonoTime, CustomTime)
 
     std::uint64_t test_time = 123456;
     mono_time_set_current_time_callback(
-        mono_time, [](void *user_data) { return *static_cast<std::uint64_t *>(user_data); },
+        mono_time,
+        [](void *_Nullable user_data) { return *static_cast<std::uint64_t *>(user_data); },
         &test_time);
     mono_time_update(mono_time);
 

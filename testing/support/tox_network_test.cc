@@ -8,6 +8,8 @@
 
 #include <atomic>
 
+#include "../../toxcore/attributes.h"
+
 namespace tox::test {
 namespace {
 
@@ -37,9 +39,8 @@ namespace {
         } ctx;
 
         tox_callback_friend_message(main_tox.get(),
-            [](Tox *, uint32_t, Tox_Message_Type, const uint8_t *, size_t, void *user_data) {
-                static_cast<Context *>(user_data)->count++;
-            });
+            [](Tox *_Nonnull, uint32_t, Tox_Message_Type, const uint8_t *_Nonnull, size_t,
+                void *_Nullable user_data) { static_cast<Context *>(user_data)->count++; });
 
         for (const auto &f : friends) {
             f.runner->execute([](Tox *tox) {
@@ -74,9 +75,8 @@ namespace {
         } ctx;
 
         tox_callback_friend_message(main_tox.get(),
-            [](Tox *, uint32_t, Tox_Message_Type, const uint8_t *, size_t, void *user_data) {
-                static_cast<Context *>(user_data)->count++;
-            });
+            [](Tox *_Nonnull, uint32_t, Tox_Message_Type, const uint8_t *_Nonnull, size_t,
+                void *_Nullable user_data) { static_cast<Context *>(user_data)->count++; });
 
         for (const auto &f : friends) {
             f.runner->execute([](Tox *tox) {
@@ -115,7 +115,8 @@ namespace {
         // Verify communication
         std::atomic<bool> received{false};
         tox_callback_friend_message(tox2.get(),
-            [](Tox *, uint32_t, Tox_Message_Type, const uint8_t *, size_t, void *user_data) {
+            [](Tox *_Nonnull, uint32_t, Tox_Message_Type, const uint8_t *_Nonnull, size_t,
+                void *_Nullable user_data) {
                 *static_cast<std::atomic<bool> *>(user_data) = true;
             });
 
@@ -152,8 +153,9 @@ namespace {
         } ctx;
 
         tox_callback_group_message(main_tox.get(),
-            [](Tox *, uint32_t, uint32_t, Tox_Message_Type, const uint8_t *, size_t, uint32_t,
-                void *user_data) { static_cast<Context *>(user_data)->count++; });
+            [](Tox *_Nonnull, uint32_t, uint32_t, Tox_Message_Type, const uint8_t *_Nonnull, size_t,
+                uint32_t,
+                void *_Nullable user_data) { static_cast<Context *>(user_data)->count++; });
 
         for (const auto &f : friends) {
             f.runner->execute([](Tox *tox) {
@@ -195,8 +197,9 @@ namespace {
         } ctx;
 
         tox_callback_group_message(main_tox.get(),
-            [](Tox *, uint32_t, uint32_t, Tox_Message_Type, const uint8_t *, size_t, uint32_t,
-                void *user_data) { static_cast<Context *>(user_data)->count++; });
+            [](Tox *_Nonnull, uint32_t, uint32_t, Tox_Message_Type, const uint8_t *_Nonnull, size_t,
+                uint32_t,
+                void *_Nullable user_data) { static_cast<Context *>(user_data)->count++; });
 
         for (const auto &f : friends) {
             f.runner->execute([](Tox *tox) {

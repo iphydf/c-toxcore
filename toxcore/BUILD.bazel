@@ -19,6 +19,9 @@ cc_library(
     testonly = True,
     srcs = ["test_util.cc"],
     hdrs = ["test_util.hh"],
+    deps = [
+        ":attributes",
+    ],
 )
 
 cc_test(
@@ -104,6 +107,7 @@ cc_test(
     size = "small",
     srcs = ["mem_test.cc"],
     deps = [
+        ":attributes",
         ":mem",
         ":os_memory",
         "@com_google_googletest//:gtest",
@@ -158,6 +162,7 @@ cc_library(
     srcs = ["sort_test_util.cc"],
     hdrs = ["sort_test_util.hh"],
     deps = [
+        ":attributes",
         ":sort",
         ":util",
     ],
@@ -180,6 +185,7 @@ cc_binary(
     testonly = True,
     srcs = ["sort_bench.cc"],
     deps = [
+        ":attributes",
         ":mem",
         ":sort",
         ":sort_test_util",
@@ -235,11 +241,13 @@ cc_test(
     size = "small",
     srcs = ["bin_pack_test.cc"],
     deps = [
+        ":attributes",
         ":bin_pack",
         ":bin_unpack",
         ":logger",
         ":mem",
         ":os_memory",
+        ":test_util",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -280,6 +288,7 @@ cc_library(
     srcs = ["crypto_core_test_util.cc"],
     hdrs = ["crypto_core_test_util.hh"],
     deps = [
+        ":attributes",
         ":crypto_core",
         ":rng",
         ":test_util",
@@ -362,6 +371,7 @@ cc_library(
     srcs = ["mono_time_test_util.cc"],
     hdrs = ["mono_time_test_util.hh"],
     deps = [
+        ":attributes",
         ":mono_time",
         "//c-toxcore/testing/support",
     ],
@@ -372,6 +382,7 @@ cc_test(
     size = "small",
     srcs = ["mono_time_test.cc"],
     deps = [
+        ":attributes",
         ":mono_time",
         ":mono_time_test_util",
         "//c-toxcore/testing/support",
@@ -406,7 +417,13 @@ cc_test(
     size = "small",
     srcs = ["shared_key_cache_test.cc"],
     deps = [
+        ":attributes",
+        ":crypto_core_test_util",
+        ":logger",
         ":mono_time",
+        ":mono_time_test_util",
+        ":os_memory",
+        ":rng",
         ":shared_key_cache",
         "//c-toxcore/testing/support",
         "@com_google_googletest//:gtest",
@@ -497,6 +514,7 @@ cc_library(
     srcs = ["network_test_util.cc"],
     hdrs = ["network_test_util.hh"],
     deps = [
+        ":attributes",
         ":crypto_core",
         ":mem",
         ":net",
@@ -551,9 +569,14 @@ cc_test(
     size = "small",
     srcs = ["ping_array_test.cc"],
     deps = [
+        ":attributes",
         ":crypto_core_test_util",
+        ":logger",
         ":mono_time",
+        ":mono_time_test_util",
+        ":os_memory",
         ":ping_array",
+        ":rng",
         "//c-toxcore/testing/support",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -624,6 +647,7 @@ cc_library(
     hdrs = ["DHT_test_util.hh"],
     deps = [
         ":DHT",
+        ":attributes",
         ":crypto_core",
         ":crypto_core_test_util",
         ":logger",
@@ -645,6 +669,7 @@ cc_test(
     deps = [
         ":DHT",
         ":DHT_test_util",
+        ":attributes",
         ":crypto_core",
         ":crypto_core_test_util",
         ":logger",
@@ -874,11 +899,15 @@ cc_test(
     deps = [
         ":TCP_client",
         ":TCP_common",
+        ":attributes",
         ":crypto_core",
         ":logger",
         ":mono_time",
         ":net_profile",
         ":network",
+        ":os_memory",
+        ":rng",
+        ":test_util",
         ":util",
         "//c-toxcore/testing/support",
         "@com_google_googletest//:gtest",
@@ -921,12 +950,14 @@ cc_test(
     srcs = ["net_crypto_test.cc"],
     deps = [
         ":DHT_test_util",
+        ":attributes",
         ":crypto_core",
         ":logger",
         ":mono_time",
         ":net_crypto",
         ":net_profile",
         ":network",
+        ":test_util",
         "//c-toxcore/testing/support",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -939,6 +970,7 @@ cc_test(
     srcs = ["friend_connection_test.cc"],
     deps = [
         ":DHT_test_util",
+        ":attributes",
         ":crypto_core",
         ":friend_connection",
         ":logger",
@@ -947,6 +979,7 @@ cc_test(
         ":net_profile",
         ":network",
         ":onion_client",
+        ":test_util",
         "//c-toxcore/testing/support",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -956,12 +989,12 @@ cc_test(
 cc_fuzz_test(
     name = "net_crypto_fuzz_test",
     size = "small",
-    testonly = True,
     srcs = ["net_crypto_fuzz_test.cc"],
-    corpus = ["//tools/toktok-fuzzer/corpus:net_crypto_fuzz_test"],
+    copts = ["-UNDEBUG"],
     deps = [
         ":DHT",
         ":TCP_client",
+        ":attributes",
         ":net_crypto",
         ":net_profile",
         ":network",
@@ -1028,6 +1061,7 @@ cc_test(
     srcs = ["group_announce_test.cc"],
     deps = [
         ":DHT",
+        ":attributes",
         ":crypto_core",
         ":group_announce",
         ":logger",
@@ -1043,10 +1077,10 @@ cc_test(
 cc_fuzz_test(
     name = "group_announce_fuzz_test",
     size = "small",
-    testonly = True,
     srcs = ["group_announce_fuzz_test.cc"],
-    corpus = ["//tools/toktok-fuzzer/corpus:group_announce_fuzz_test"],
+    copts = ["-UNDEBUG"],
     deps = [
+        ":attributes",
         ":group_announce",
         "//c-toxcore/testing/support",
     ],
@@ -1114,6 +1148,7 @@ cc_test(
     srcs = ["onion_client_test.cc"],
     deps = [
         ":DHT_test_util",
+        ":attributes",
         ":crypto_core",
         ":logger",
         ":mono_time",
@@ -1134,13 +1169,15 @@ cc_fuzz_test(
     size = "small",
     testonly = True,
     srcs = ["onion_client_fuzz_test.cc"],
-    # corpus = ["//tools/toktok-fuzzer/corpus:onion_client_fuzz_test"],
+    copts = ["-UNDEBUG"],
     deps = [
         ":DHT",
+        ":attributes",
         ":net_crypto",
         ":net_profile",
         ":network",
         ":onion_client",
+        ":test_util",
         "//c-toxcore/testing/support",
     ],
 )
@@ -1392,6 +1429,7 @@ cc_test(
     size = "small",
     srcs = ["tox_test.cc"],
     deps = [
+        ":attributes",
         ":crypto_core",
         ":os_random",
         ":tox",

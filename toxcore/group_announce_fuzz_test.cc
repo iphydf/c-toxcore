@@ -7,6 +7,7 @@
 
 #include "../testing/support/public/fuzz_data.hh"
 #include "../testing/support/public/simulated_environment.hh"
+#include "attributes.h"
 
 namespace {
 
@@ -64,7 +65,7 @@ void TestDoGca(Fuzz_Data &input)
     std::unique_ptr<Mono_Time, std::function<void(Mono_Time *)>> mono_time(
         mono_time_new(
             &c_mem,
-            [](void *user_data) -> std::uint64_t {
+            [](void *_Nullable user_data) -> std::uint64_t {
                 return static_cast<FakeClock *>(user_data)->current_time_ms();
             },
             &env.fake_clock()),

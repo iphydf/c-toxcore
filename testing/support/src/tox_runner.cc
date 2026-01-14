@@ -6,11 +6,13 @@
 
 namespace tox::test {
 
-ToxRunner::ToxRunner(SimulatedNode &node, const Tox_Options *options)
+ToxRunner::ToxRunner(SimulatedNode &node, const Tox_Options *_Nullable options)
     : tox_(node.create_tox(options))
     , node_(node)
 {
-    tox_events_init(tox_.get());
+    if (tox_) {
+        tox_events_init(tox_.get());
+    }
     node_.simulation().register_runner();
 
     tick_listener_id_ = node_.simulation().register_tick_listener([this](uint64_t gen) {
@@ -38,7 +40,7 @@ ToxRunner::~ToxRunner()
     }
 }
 
-void ToxRunner::execute(std::function<void(Tox *)> task)
+void ToxRunner::execute(std::function<void(Tox *_Nonnull)> task)
 {
     Message msg;
     msg.type = Message::Task;
@@ -94,12 +96,17 @@ void ToxRunner::loop()
             return;
 
         case Message::Task:
-            if (msg.task) {
+            if (msg.task && tox_) {
                 msg.task(tox_.get());
             }
             break;
 
         case Message::Tick: {
+            if (!tox_) {
+                node_.simulation().tick_complete();
+                break;
+            }
+
             // Run Tox Events
             Tox_Err_Events_Iterate err;
             Tox_Events *events = tox_events_iterate(tox_.get(), false, &err);

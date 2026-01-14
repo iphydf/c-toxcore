@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "attributes.h"
 #include "crypto_core_test_util.hh"
 #include "mono_time.h"
 
@@ -16,7 +17,7 @@ namespace {
 using tox::test::SimulatedEnvironment;
 
 struct Ping_Array_Deleter {
-    void operator()(Ping_Array *arr) { ping_array_kill(arr); }
+    void operator()(Ping_Array *_Nullable arr) { ping_array_kill(arr); }
 };
 
 using Ping_Array_Ptr = std::unique_ptr<Ping_Array, Ping_Array_Deleter>;
@@ -26,7 +27,7 @@ struct Mono_Time_Deleter {
         : mem_(mem)
     {
     }
-    void operator()(Mono_Time *arr) { mono_time_free(&mem_, arr); }
+    void operator()(Mono_Time *_Nullable arr) { mono_time_free(&mem_, arr); }
 
 private:
     Memory mem_;

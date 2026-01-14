@@ -179,7 +179,7 @@ ClockSystem &SimulatedNode::clock() { return sim_.clock(); }
 RandomSystem &SimulatedNode::random() { return *random_; }
 MemorySystem &SimulatedNode::memory() { return *memory_; }
 
-SimulatedNode::ToxPtr SimulatedNode::create_tox(const Tox_Options *options)
+SimulatedNode::ToxPtr SimulatedNode::create_tox(const Tox_Options *_Nullable options)
 {
     std::unique_ptr<Tox_Options, decltype(&tox_options_free)> default_options(
         nullptr, tox_options_free);
@@ -198,7 +198,7 @@ SimulatedNode::ToxPtr SimulatedNode::create_tox(const Tox_Options *options)
     system.ns = &c_network;
     system.rng = &c_random;
     system.mem = &c_memory;
-    system.mono_time_callback = [](void *user_data) -> uint64_t {
+    system.mono_time_callback = [](void *_Nullable user_data) -> uint64_t {
         return static_cast<FakeClock *>(user_data)->current_time_ms();
     };
     system.mono_time_user_data = &sim_.clock();
@@ -218,7 +218,7 @@ SimulatedNode::ToxPtr SimulatedNode::create_tox(const Tox_Options *options)
     return ToxPtr(t);
 }
 
-FakeUdpSocket *SimulatedNode::get_primary_socket()
+FakeUdpSocket *_Nullable SimulatedNode::get_primary_socket()
 {
     auto sockets = network_->get_bound_udp_sockets();
     if (sockets.empty())

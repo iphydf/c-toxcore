@@ -10,6 +10,7 @@
 #include <cstring>
 #include <vector>
 
+#include "../toxcore/attributes.h"
 #include "../toxcore/logger.h"
 #include "../toxcore/mono_time.h"
 #include "../toxcore/net_crypto.h"
@@ -37,21 +38,23 @@ struct MockSessionData {
 MockSessionData::MockSessionData() = default;
 MockSessionData::~MockSessionData() = default;
 
-static int mock_send_packet(void *user_data, const std::uint8_t *data, std::uint16_t length)
+static int mock_send_packet(
+    void *_Nullable user_data, const std::uint8_t *_Nonnull data, std::uint16_t length)
 {
     auto *sd = static_cast<MockSessionData *>(user_data);
     sd->sent_packets.emplace_back(data, data + length);
     return 0;
 }
 
-static int mock_m_cb(const Mono_Time * /*mono_time*/, void *cs, RTPMessage *msg)
+static int mock_m_cb(
+    const Mono_Time *_Nonnull /*mono_time*/, void *_Nullable cs, RTPMessage *_Nonnull msg)
 {
     auto *sd = static_cast<MockSessionData *>(cs);
 
     sd->received_pts.push_back(rtp_message_pt(msg));
     sd->received_flags.push_back(rtp_message_flags(msg));
 
-    const std::uint8_t *data = rtp_message_data(msg);
+    const std::uint8_t *_Nonnull data = rtp_message_data(msg);
     std::uint32_t len = rtp_message_len(msg);
     std::uint32_t full_len = rtp_message_data_length_full(msg);
 
@@ -68,13 +71,13 @@ static int mock_m_cb(const Mono_Time * /*mono_time*/, void *cs, RTPMessage *msg)
     return 0;
 }
 
-static void mock_add_recv(void *user_data, std::uint32_t bytes)
+static void mock_add_recv(void *_Nullable user_data, std::uint32_t bytes)
 {
     auto *sd = static_cast<MockSessionData *>(user_data);
     sd->total_bytes_received += bytes;
 }
 
-static void mock_add_lost(void *user_data, std::uint32_t bytes)
+static void mock_add_lost(void *_Nullable user_data, std::uint32_t bytes)
 {
     auto *sd = static_cast<MockSessionData *>(user_data);
     sd->total_bytes_lost += bytes;
@@ -92,13 +95,13 @@ protected:
 
     void TearDown() override
     {
-        const Memory *mem = os_memory();
+        const Memory *_Nonnull mem = os_memory();
         mono_time_free(mem, mono_time);
         logger_kill(log);
     }
 
-    Logger *log;
-    Mono_Time *mono_time;
+    Logger *_Nullable log;
+    Mono_Time *_Nullable mono_time;
 };
 
 TEST_F(RtpPublicTest, BasicAudioSendReceive)

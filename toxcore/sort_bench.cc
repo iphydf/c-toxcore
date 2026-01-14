@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <random>
 
+#include "attributes.h"
 #include "mem.h"
 #include "sort.h"
 #include "sort_test_util.hh"

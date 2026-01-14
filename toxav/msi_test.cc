@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <vector>
 
+#include "../toxcore/attributes.h"
 #include "../toxcore/logger.h"
 #include "../toxcore/os_memory.h"
 
@@ -28,11 +29,11 @@ struct MockMsi {
         int capabilities = 0;
     } stats;
 
-    MSICall *last_call = nullptr;
+    MSICall *_Nullable last_call = nullptr;
     MSIError last_error = MSI_E_NONE;
 
-    static int send_packet(
-        void *user_data, std::uint32_t friend_number, const std::uint8_t *data, std::size_t length)
+    static int send_packet(void *_Nullable user_data, std::uint32_t friend_number,
+        const std::uint8_t *_Nonnull data, std::size_t length)
     {
         auto *self = static_cast<MockMsi *>(user_data);
         self->sent_packets.emplace_back(data, data + length);
@@ -40,7 +41,7 @@ struct MockMsi {
         return 0;
     }
 
-    static int on_invite(void *object, MSICall *call)
+    static int on_invite(void *_Nullable object, MSICall *_Nonnull call)
     {
         auto *self = static_cast<MockMsi *>(object);
         self->stats.invite++;
@@ -48,7 +49,7 @@ struct MockMsi {
         return 0;
     }
 
-    static int on_start(void *object, MSICall *call)
+    static int on_start(void *_Nullable object, MSICall *_Nonnull call)
     {
         auto *self = static_cast<MockMsi *>(object);
         self->stats.start++;
@@ -56,7 +57,7 @@ struct MockMsi {
         return 0;
     }
 
-    static int on_end(void *object, MSICall *call)
+    static int on_end(void *_Nullable object, MSICall *_Nonnull call)
     {
         auto *self = static_cast<MockMsi *>(object);
         self->stats.end++;
@@ -64,7 +65,7 @@ struct MockMsi {
         return 0;
     }
 
-    static int on_error(void *object, MSICall *call)
+    static int on_error(void *_Nullable object, MSICall *_Nonnull call)
     {
         auto *self = static_cast<MockMsi *>(object);
         self->stats.error++;
@@ -73,7 +74,7 @@ struct MockMsi {
         return 0;
     }
 
-    static int on_peertimeout(void *object, MSICall *call)
+    static int on_peertimeout(void *_Nullable object, MSICall *_Nonnull call)
     {
         auto *self = static_cast<MockMsi *>(object);
         self->stats.peertimeout++;
@@ -81,7 +82,7 @@ struct MockMsi {
         return 0;
     }
 
-    static int on_capabilities(void *object, MSICall *call)
+    static int on_capabilities(void *_Nullable object, MSICall *_Nonnull call)
     {
         auto *self = static_cast<MockMsi *>(object);
         self->stats.capabilities++;
@@ -94,7 +95,7 @@ class MsiTest : public ::testing::Test {
 protected:
     void SetUp() override
     {
-        const Memory *mem = os_memory();
+        const Memory *_Nonnull mem = os_memory();
         log = logger_new(mem);
 
         MSICallbacks callbacks = {MockMsi::on_invite, MockMsi::on_start, MockMsi::on_end,
@@ -111,8 +112,8 @@ protected:
         logger_kill(log);
     }
 
-    Logger *log;
-    MSISession *session = nullptr;
+    Logger *_Nullable log;
+    MSISession *_Nullable session = nullptr;
     MockMsi mock;
 };
 

@@ -10,11 +10,13 @@
 #include <vector>
 
 #include "TCP_common.h"
+#include "attributes.h"
 #include "crypto_core.h"
 #include "logger.h"
 #include "mono_time.h"
 #include "net_profile.h"
 #include "network.h"
+#include "test_util.hh"
 #include "util.h"
 
 namespace {
@@ -25,12 +27,12 @@ class TCPClientTest : public ::testing::Test {
 protected:
     SimulatedEnvironment env;
 
-    Mono_Time *create_mono_time(const Memory *mem)
+    Mono_Time *_Nonnull create_mono_time(const Memory *_Nonnull mem)
     {
-        Mono_Time *mt = mono_time_new(mem, nullptr, nullptr);
+        Mono_Time *_Nonnull mt = REQUIRE_NOT_NULL(mono_time_new(mem, nullptr, nullptr));
         mono_time_set_current_time_callback(
             mt,
-            [](void *user_data) -> std::uint64_t {
+            [](void *_Nullable user_data) -> std::uint64_t {
                 auto *clock = static_cast<FakeClock *>(user_data);
                 return clock->current_time_ms();
             },
@@ -38,15 +40,19 @@ protected:
         return mt;
     }
 
-    static void log_cb(void *context, Logger_Level level, const char *file, std::uint32_t line,
-        const char *func, const char *message, void *userdata)
+    static void log_cb(void *_Nullable context, Logger_Level level, const char *_Nonnull file,
+        std::uint32_t line, const char *_Nonnull func, const char *_Nonnull message,
+        void *_Nullable userdata)
     {
         if (level > LOGGER_LEVEL_TRACE) {
             fprintf(stderr, "[%d] %s:%u %s: %s\n", level, file, line, func, message);
         }
     }
 
-    static void net_profile_deleter(Net_Profile *p, const Memory *mem) { netprof_kill(mem, p); }
+    static void net_profile_deleter(Net_Profile *_Nullable p, const Memory *_Nonnull mem)
+    {
+        netprof_kill(mem, p);
+    }
 };
 
 TEST_F(TCPClientTest, ConnectsToRelay)

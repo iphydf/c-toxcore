@@ -10,9 +10,11 @@
 #include "../testing/support/public/fuzz_data.hh"
 #include "../testing/support/public/simulated_environment.hh"
 #include "DHT.h"
+#include "attributes.h"
 #include "net_crypto.h"
 #include "net_profile.h"
 #include "network.h"
+#include "test_util.hh"
 
 namespace {
 
@@ -57,12 +59,12 @@ public:
             mono_time_.get(), networking_.get(), true, true));
     }
 
-    DHT *get_dht() { return dht_.get(); }
-    Networking_Core *networking() { return networking_.get(); }
-    Mono_Time *mono_time() { return mono_time_.get(); }
-    Logger *logger() { return logger_.get(); }
+    DHT *_Nonnull get_dht() { return REQUIRE_NOT_NULL(dht_.get()); }
+    Networking_Core *_Nonnull networking() { return REQUIRE_NOT_NULL(networking_.get()); }
+    Mono_Time *_Nonnull mono_time() { return REQUIRE_NOT_NULL(mono_time_.get()); }
+    Logger *_Nonnull logger() { return REQUIRE_NOT_NULL(logger_.get()); }
     tox::test::ScopedToxSystem &node() { return *node_; }
-    FakeUdpSocket *endpoint() { return node_->endpoint; }
+    FakeUdpSocket *_Nullable endpoint() { return node_->endpoint; }
 
     static const Net_Crypto_DHT_Funcs funcs;
 
@@ -75,11 +77,11 @@ private:
 };
 
 const Net_Crypto_DHT_Funcs FuzzDHT::funcs = {
-    [](void *obj, const std::uint8_t *public_key) {
+    [](void *_Nonnull obj, const std::uint8_t *_Nonnull public_key) {
         return dht_get_shared_key_sent(static_cast<DHT *>(obj), public_key);
     },
-    [](const void *obj) { return dht_get_self_public_key(static_cast<const DHT *>(obj)); },
-    [](const void *obj) { return dht_get_self_secret_key(static_cast<const DHT *>(obj)); },
+    [](const void *_Nonnull obj) { return dht_get_self_public_key(static_cast<const DHT *>(obj)); },
+    [](const void *_Nonnull obj) { return dht_get_self_secret_key(static_cast<const DHT *>(obj)); },
 };
 
 class OnionClientFuzzer {

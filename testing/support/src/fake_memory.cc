@@ -11,12 +11,13 @@ namespace tox::test {
 // --- Trampolines ---
 
 static const Memory_Funcs kFakeMemoryVtable = {
-    .malloc_callback
-    = [](void *obj, uint32_t size) { return static_cast<FakeMemory *>(obj)->malloc(size); },
+    .malloc_callback = [](void *_Nonnull obj,
+                           uint32_t size) { return static_cast<FakeMemory *>(obj)->malloc(size); },
     .realloc_callback
-    = [](void *obj, void *ptr,
+    = [](void *_Nonnull obj, void *_Nullable ptr,
           uint32_t size) { return static_cast<FakeMemory *>(obj)->realloc(ptr, size); },
-    .dealloc_callback = [](void *obj, void *ptr) { static_cast<FakeMemory *>(obj)->free(ptr); },
+    .dealloc_callback
+    = [](void *_Nonnull obj, void *_Nullable ptr) { static_cast<FakeMemory *>(obj)->free(ptr); },
 };
 
 // --- Implementation ---
@@ -24,7 +25,7 @@ static const Memory_Funcs kFakeMemoryVtable = {
 FakeMemory::FakeMemory() = default;
 FakeMemory::~FakeMemory() = default;
 
-void *FakeMemory::malloc(size_t size)
+void *_Nullable FakeMemory::malloc(size_t size)
 {
     bool fail = failure_injector_ && failure_injector_(size);
 
@@ -50,7 +51,7 @@ void *FakeMemory::malloc(size_t size)
     return header + 1;
 }
 
-void *FakeMemory::realloc(void *ptr, size_t size)
+void *_Nullable FakeMemory::realloc(void *_Nullable ptr, size_t size)
 {
     if (!ptr) {
         return malloc(size);
@@ -95,7 +96,7 @@ void *FakeMemory::realloc(void *ptr, size_t size)
     return header + 1;
 }
 
-void FakeMemory::free(void *ptr)
+void FakeMemory::free(void *_Nullable ptr)
 {
     if (!ptr) {
         return;

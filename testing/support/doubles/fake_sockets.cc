@@ -31,8 +31,14 @@ int FakeSocket::close()
     return 0;
 }
 
-int FakeSocket::getsockopt(int level, int optname, void *optval, size_t *optlen) { return 0; }
-int FakeSocket::setsockopt(int level, int optname, const void *optval, size_t optlen) { return 0; }
+int FakeSocket::getsockopt(int level, int optname, void *_Nonnull optval, size_t *_Nonnull optlen)
+{
+    return 0;
+}
+int FakeSocket::setsockopt(int level, int optname, const void *_Nonnull optval, size_t optlen)
+{
+    return 0;
+}
 int FakeSocket::socket_nonblock(bool nonblock)
 {
     nonblocking_ = nonblock;
@@ -63,7 +69,7 @@ void FakeUdpSocket::close_impl()
     }
 }
 
-int FakeUdpSocket::bind(const IP_Port *addr)
+int FakeUdpSocket::bind(const IP_Port *_Nonnull addr)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (local_port_ != 0)
@@ -84,7 +90,7 @@ int FakeUdpSocket::bind(const IP_Port *addr)
     return -1;
 }
 
-int FakeUdpSocket::connect(const IP_Port *addr)
+int FakeUdpSocket::connect(const IP_Port *_Nonnull addr)
 {
     // UDP connect just sets default dest.
     // Not strictly needed for toxcore UDP but good for completeness.
@@ -96,23 +102,23 @@ int FakeUdpSocket::listen(int backlog)
     errno = EOPNOTSUPP;
     return -1;
 }
-std::unique_ptr<FakeSocket> FakeUdpSocket::accept(IP_Port *addr)
+std::unique_ptr<FakeSocket> FakeUdpSocket::accept(IP_Port *_Nullable addr)
 {
     errno = EOPNOTSUPP;
     return nullptr;
 }
-int FakeUdpSocket::send(const uint8_t *buf, size_t len)
+int FakeUdpSocket::send(const uint8_t *_Nonnull buf, size_t len)
 {
     errno = EDESTADDRREQ;
     return -1;
 }
-int FakeUdpSocket::recv(uint8_t *buf, size_t len)
+int FakeUdpSocket::recv(uint8_t *_Nonnull buf, size_t len)
 {
     errno = EOPNOTSUPP;
     return -1;
 }
 
-int FakeUdpSocket::sendto(const uint8_t *buf, size_t len, const IP_Port *addr)
+int FakeUdpSocket::sendto(const uint8_t *_Nonnull buf, size_t len, const IP_Port *_Nonnull addr)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (local_port_ == 0) {
@@ -144,7 +150,7 @@ int FakeUdpSocket::sendto(const uint8_t *buf, size_t len, const IP_Port *addr)
     return len;
 }
 
-int FakeUdpSocket::recvfrom(uint8_t *buf, size_t len, IP_Port *addr)
+int FakeUdpSocket::recvfrom(uint8_t *_Nonnull buf, size_t len, IP_Port *_Nonnull addr)
 {
     RecvObserver observer_copy;
     std::vector<uint8_t> data_copy;
@@ -248,7 +254,7 @@ void FakeTcpSocket::close_impl()
     state_ = CLOSED;
 }
 
-int FakeTcpSocket::bind(const IP_Port *addr)
+int FakeTcpSocket::bind(const IP_Port *_Nonnull addr)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (local_port_ != 0)
@@ -277,7 +283,7 @@ int FakeTcpSocket::listen(int backlog)
     return 0;
 }
 
-int FakeTcpSocket::connect(const IP_Port *addr)
+int FakeTcpSocket::connect(const IP_Port *_Nonnull addr)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (local_port_ == 0) {
@@ -311,7 +317,7 @@ int FakeTcpSocket::connect(const IP_Port *addr)
     return -1;
 }
 
-std::unique_ptr<FakeSocket> FakeTcpSocket::accept(IP_Port *addr)
+std::unique_ptr<FakeSocket> FakeTcpSocket::accept(IP_Port *_Nullable addr)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (state_ != LISTEN) {
@@ -333,7 +339,7 @@ std::unique_ptr<FakeSocket> FakeTcpSocket::accept(IP_Port *addr)
     return client;
 }
 
-int FakeTcpSocket::send(const uint8_t *buf, size_t len)
+int FakeTcpSocket::send(const uint8_t *_Nonnull buf, size_t len)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (state_ != ESTABLISHED) {
@@ -358,7 +364,7 @@ int FakeTcpSocket::send(const uint8_t *buf, size_t len)
     return len;
 }
 
-int FakeTcpSocket::recv(uint8_t *buf, size_t len)
+int FakeTcpSocket::recv(uint8_t *_Nonnull buf, size_t len)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (recv_buffer_.empty()) {
@@ -382,12 +388,12 @@ size_t FakeTcpSocket::recv_buffer_size()
     return recv_buffer_.size();
 }
 
-int FakeTcpSocket::sendto(const uint8_t *buf, size_t len, const IP_Port *addr)
+int FakeTcpSocket::sendto(const uint8_t *_Nonnull buf, size_t len, const IP_Port *_Nonnull addr)
 {
     errno = EOPNOTSUPP;
     return -1;
 }
-int FakeTcpSocket::recvfrom(uint8_t *buf, size_t len, IP_Port *addr)
+int FakeTcpSocket::recvfrom(uint8_t *_Nonnull buf, size_t len, IP_Port *_Nonnull addr)
 {
     errno = EOPNOTSUPP;
     return -1;

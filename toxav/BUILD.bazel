@@ -29,6 +29,7 @@ cc_test(
     srcs = ["ring_buffer_test.cc"],
     deps = [
         ":ring_buffer",
+        "//c-toxcore/toxcore:attributes",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -66,6 +67,7 @@ cc_test(
     srcs = ["rtp_test.cc"],
     deps = [
         ":rtp",
+        "//c-toxcore/toxcore:attributes",
         "//c-toxcore/toxcore:logger",
         "//c-toxcore/toxcore:mono_time",
         "//c-toxcore/toxcore:net_crypto",
@@ -83,6 +85,7 @@ cc_fuzz_test(
     deps = [
         ":rtp",
         "//c-toxcore/testing/support",
+        "//c-toxcore/toxcore:attributes",
         "//c-toxcore/toxcore:logger",
         "//c-toxcore/toxcore:mono_time",
         "//c-toxcore/toxcore:os_memory",
@@ -109,6 +112,7 @@ cc_test(
     srcs = ["bwcontroller_test.cc"],
     deps = [
         ":bwcontroller",
+        "//c-toxcore/toxcore:attributes",
         "//c-toxcore/toxcore:logger",
         "//c-toxcore/toxcore:mono_time",
         "//c-toxcore/toxcore:network",
@@ -143,6 +147,7 @@ cc_library(
         ":audio",
         ":rtp",
         ":video",
+        "//c-toxcore/toxcore:attributes",
         "//c-toxcore/toxcore:logger",
         "//c-toxcore/toxcore:mono_time",
         "//c-toxcore/toxcore:os_memory",
@@ -207,6 +212,7 @@ cc_binary(
         ":av_test_support",
         ":rtp",
         ":video",
+        "//c-toxcore/toxcore:attributes",
         "//c-toxcore/toxcore:logger",
         "//c-toxcore/toxcore:mono_time",
         "//c-toxcore/toxcore:os_memory",
@@ -222,6 +228,7 @@ cc_binary(
         ":audio",
         ":av_test_support",
         ":rtp",
+        "//c-toxcore/toxcore:attributes",
         "//c-toxcore/toxcore:logger",
         "//c-toxcore/toxcore:mono_time",
         "//c-toxcore/toxcore:network",
@@ -237,6 +244,7 @@ cc_binary(
     deps = [
         ":av_test_support",
         ":rtp",
+        "//c-toxcore/toxcore:attributes",
         "//c-toxcore/toxcore:logger",
         "//c-toxcore/toxcore:mono_time",
         "//c-toxcore/toxcore:os_memory",
@@ -262,6 +270,7 @@ cc_test(
     srcs = ["msi_test.cc"],
     deps = [
         ":msi",
+        "//c-toxcore/toxcore:attributes",
         "//c-toxcore/toxcore:logger",
         "//c-toxcore/toxcore:os_memory",
         "@com_google_googletest//:gtest",

@@ -8,6 +8,7 @@
 #include <array>
 #include <vector>
 
+#include "attributes.h"
 #include "crypto_core.h"
 #include "os_random.h"
 #include "tox_log_level.h"
@@ -18,8 +19,8 @@ namespace {
 
 using tox::test::SimulatedEnvironment;
 
-static void set_random_name_and_status_message(
-    Tox *tox, const Random *rng, std::uint8_t *name, std::uint8_t *status_message)
+static void set_random_name_and_status_message(Tox *_Nonnull tox, const Random *_Nonnull rng,
+    std::uint8_t *_Nonnull name, std::uint8_t *_Nonnull status_message)
 {
     for (std::uint16_t i = 0; i < tox_max_name_length(); ++i) {
         name[i] = random_u08(rng);
@@ -92,8 +93,8 @@ TEST(Tox, OneTest)
     ASSERT_NE(options, nullptr);
 
     tox_options_set_log_callback(options,
-        [](Tox *tox, Tox_Log_Level level, const char *file, std::uint32_t line, const char *func,
-            const char *message, void *user_data) {
+        [](Tox *_Nonnull tox, Tox_Log_Level level, const char *_Nonnull file, std::uint32_t line,
+            const char *_Nonnull func, const char *_Nonnull message, void *_Nullable user_data) {
             fprintf(stderr, "[%c] %s:%u(%s): %s\n", tox_log_level_to_string(level)[0], file, line,
                 func, message);
         });

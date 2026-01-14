@@ -9,6 +9,7 @@
 #include <cstring>
 #include <vector>
 
+#include "../toxcore/attributes.h"
 #include "../toxcore/logger.h"
 #include "../toxcore/mono_time.h"
 #include "../toxcore/os_memory.h"
@@ -22,7 +23,7 @@ class VideoBench : public benchmark::Fixture {
 public:
     void SetUp(const ::benchmark::State &state) override
     {
-        const Memory *mem = os_memory();
+        const Memory *_Nonnull mem = os_memory();
         log = logger_new(mem);
         tm.t = 1000;
         mono_time = mono_time_new(mem, mock_time_cb, &tm);
@@ -61,10 +62,10 @@ public:
         }
     }
 
-    Logger *log = nullptr;
-    Mono_Time *mono_time = nullptr;
+    Logger *_Nullable log = nullptr;
+    Mono_Time *_Nullable mono_time = nullptr;
     MockTime tm;
-    VCSession *vc = nullptr;
+    VCSession *_Nullable vc = nullptr;
     RtpMock rtp_mock;
     std::uint16_t width = 0, height = 0;
     std::vector<std::uint8_t> y, u, v;

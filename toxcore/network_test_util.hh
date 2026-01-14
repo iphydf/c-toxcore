@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <iosfwd>
 
+#include "attributes.h"
 #include "crypto_core.h"
 #include "mem.h"
 #include "net.h"
@@ -14,14 +15,14 @@
 template <>
 struct Deleter<Networking_Core> : Function_Deleter<Networking_Core, kill_networking> { };
 
-IP_Port random_ip_port(const Random *rng);
+IP_Port random_ip_port(const Random *_Nonnull rng);
 
 class increasing_ip_port {
     std::uint8_t start_;
-    const Random *rng_;
+    const Random *_Nonnull rng_;
 
 public:
-    explicit increasing_ip_port(std::uint8_t start, const Random *rng)
+    explicit increasing_ip_port(std::uint8_t start, const Random *_Nonnull rng)
         : start_(start)
         , rng_(rng)
     {

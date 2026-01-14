@@ -20,21 +20,24 @@ public:
 
     // NetworkSystem Implementation
     Socket socket(int domain, int type, int protocol) override;
-    int bind(Socket sock, const IP_Port *addr) override;
+    int bind(Socket sock, const IP_Port *_Nonnull addr) override;
     int close(Socket sock) override;
-    int sendto(Socket sock, const uint8_t *buf, size_t len, const IP_Port *addr) override;
-    int recvfrom(Socket sock, uint8_t *buf, size_t len, IP_Port *addr) override;
+    int sendto(Socket sock, const uint8_t *_Nonnull buf, size_t len,
+        const IP_Port *_Nonnull addr) override;
+    int recvfrom(Socket sock, uint8_t *_Nonnull buf, size_t len, IP_Port *_Nonnull addr) override;
 
     int listen(Socket sock, int backlog) override;
     Socket accept(Socket sock) override;
-    int connect(Socket sock, const IP_Port *addr) override;
-    int send(Socket sock, const uint8_t *buf, size_t len) override;
-    int recv(Socket sock, uint8_t *buf, size_t len) override;
+    int connect(Socket sock, const IP_Port *_Nonnull addr) override;
+    int send(Socket sock, const uint8_t *_Nonnull buf, size_t len) override;
+    int recv(Socket sock, uint8_t *_Nonnull buf, size_t len) override;
     int recvbuf(Socket sock) override;
 
     int socket_nonblock(Socket sock, bool nonblock) override;
-    int getsockopt(Socket sock, int level, int optname, void *optval, size_t *optlen) override;
-    int setsockopt(Socket sock, int level, int optname, const void *optval, size_t optlen) override;
+    int getsockopt(Socket sock, int level, int optname, void *_Nonnull optval,
+        size_t *_Nonnull optlen) override;
+    int setsockopt(
+        Socket sock, int level, int optname, const void *_Nonnull optval, size_t optlen) override;
 
     /**
      * @brief Returns C-compatible Network struct.
@@ -42,13 +45,13 @@ public:
     struct Network c_network() override;
 
     // For testing/fuzzing introspection
-    FakeUdpSocket *get_udp_socket(Socket sock);
+    FakeUdpSocket *_Nullable get_udp_socket(Socket sock);
     std::vector<FakeUdpSocket *> get_bound_udp_sockets();
 
     NetworkUniverse &universe() { return universe_; }
 
 private:
-    FakeSocket *get_sock(Socket sock);
+    FakeSocket *_Nullable get_sock(Socket sock);
 
     NetworkUniverse &universe_;
     std::map<int, std::unique_ptr<FakeSocket>> sockets_;

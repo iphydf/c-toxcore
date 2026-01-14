@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "../testing/support/public/simulation.hh"
+#include "attributes.h"
 #include "mono_time.h"
 
 namespace {
@@ -30,7 +31,7 @@ protected:
 
         mono_time = mono_time_new(
             &node->c_memory,
-            [](void *user_data) -> std::uint64_t {
+            [](void *_Nullable user_data) -> std::uint64_t {
                 return static_cast<Simulation *>(user_data)->clock().current_time_ms();
             },
             sim.get());
@@ -53,9 +54,9 @@ protected:
     std::unique_ptr<SimulatedNode> node;
     std::uint8_t alice_pk[CRYPTO_PUBLIC_KEY_SIZE];
     std::uint8_t alice_sk[CRYPTO_SECRET_KEY_SIZE];
-    Mono_Time *mono_time = nullptr;
-    Logger *logger = nullptr;
-    Shared_Key_Cache *cache = nullptr;
+    Mono_Time *_Nullable mono_time = nullptr;
+    Logger *_Nullable logger = nullptr;
+    Shared_Key_Cache *_Nullable cache = nullptr;
 };
 
 TEST_F(SharedKeyCacheTest, BasicLookup)

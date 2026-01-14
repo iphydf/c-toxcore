@@ -19,9 +19,9 @@ public:
     FakeMemory();
     ~FakeMemory() override;
 
-    void *malloc(size_t size) override;
-    void *realloc(void *ptr, size_t size) override;
-    void free(void *ptr) override;
+    void *_Nullable malloc(size_t size) override;
+    void *_Nullable realloc(void *_Nullable ptr, size_t size) override;
+    void free(void *_Nullable ptr) override;
 
     // Configure failure injection
     void set_failure_injector(FailureInjector injector);

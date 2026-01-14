@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include "DHT.h"
+#include "attributes.h"
 #include "crypto_core.h"
 #include "logger.h"
 #include "mono_time.h"
@@ -21,8 +22,8 @@ struct Announces : ::testing::Test {
 protected:
     SimulatedEnvironment env;
     Memory c_mem_;
-    Mono_Time *mono_time_ = nullptr;
-    GC_Announces_List *gca_ = nullptr;
+    Mono_Time *_Nullable mono_time_ = nullptr;
+    GC_Announces_List *_Nullable gca_ = nullptr;
     GC_Announce _ann1;
     GC_Announce _ann2;
 

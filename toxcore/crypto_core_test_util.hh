@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <iosfwd>
 
+#include "attributes.h"
 #include "crypto_core.h"
 #include "test_util.hh"
 
@@ -53,6 +54,6 @@ inline bool operator==(PublicKey::Base const &pk1, PublicKey const &pk2)
 
 std::ostream &operator<<(std::ostream &out, PublicKey const &pk);
 
-PublicKey random_pk(const Random *rng);
+PublicKey random_pk(const Random *_Nonnull rng);
 
 #endif  // C_TOXCORE_TOXCORE_CRYPTO_CORE_TEST_UTIL_H

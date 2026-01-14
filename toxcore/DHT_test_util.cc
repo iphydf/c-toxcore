@@ -16,9 +16,12 @@ using tox::test::FakeClock;
 
 // --- Mock DHT Implementation ---
 
-MockDHT::MockDHT(const Random *rng) { crypto_new_keypair(rng, self_public_key, self_secret_key); }
+MockDHT::MockDHT(const Random *_Nonnull rng)
+{
+    crypto_new_keypair(rng, self_public_key, self_secret_key);
+}
 
-const std::uint8_t *MockDHT::get_shared_key(const std::uint8_t *pk)
+const std::uint8_t *_Nullable MockDHT::get_shared_key(const std::uint8_t *_Nonnull pk)
 {
     std::array<std::uint8_t, CRYPTO_PUBLIC_KEY_SIZE> pk_arr;
     std::copy(pk, pk + CRYPTO_PUBLIC_KEY_SIZE, pk_arr.begin());
@@ -37,11 +40,11 @@ const std::uint8_t *MockDHT::get_shared_key(const std::uint8_t *pk)
 }
 
 const Net_Crypto_DHT_Funcs MockDHT::funcs = {
-    [](void *obj, const std::uint8_t *public_key) {
+    [](void *_Nonnull obj, const std::uint8_t *_Nonnull public_key) {
         return static_cast<MockDHT *>(obj)->get_shared_key(public_key);
     },
-    [](const void *obj) { return static_cast<const MockDHT *>(obj)->self_public_key; },
-    [](const void *obj) { return static_cast<const MockDHT *>(obj)->self_secret_key; },
+    [](const void *_Nonnull obj) { return static_cast<const MockDHT *>(obj)->self_public_key; },
+    [](const void *_Nonnull obj) { return static_cast<const MockDHT *>(obj)->self_secret_key; },
 };
 
 // --- WrappedMockDHT Implementation ---
@@ -51,7 +54,7 @@ WrappedMockDHT::WrappedMockDHT(tox::test::SimulatedEnvironment &env, std::uint16
     , logger_(logger_new(&node_->c_memory), [](Logger *l) { logger_kill(l); })
     , mono_time_(mono_time_new(
                      &node_->c_memory,
-                     [](void *ud) -> std::uint64_t {
+                     [](void *_Nullable ud) -> std::uint64_t {
                          return static_cast<tox::test::FakeClock *>(ud)->current_time_ms();
                      },
                      &env.fake_clock()),
@@ -97,7 +100,7 @@ WrappedDHT::WrappedDHT(tox::test::SimulatedEnvironment &env, std::uint16_t port)
     , logger_(logger_new(&node_->c_memory), [](Logger *l) { logger_kill(l); })
     , mono_time_(mono_time_new(
                      &node_->c_memory,
-                     [](void *ud) -> std::uint64_t {
+                     [](void *_Nullable ud) -> std::uint64_t {
                          return static_cast<FakeClock *>(ud)->current_time_ms();
                      },
                      &env.fake_clock()),
@@ -150,16 +153,16 @@ void WrappedDHT::poll()
 }
 
 const Net_Crypto_DHT_Funcs WrappedDHT::funcs = {
-    [](void *obj, const std::uint8_t *public_key) {
+    [](void *_Nonnull obj, const std::uint8_t *_Nonnull public_key) {
         return dht_get_shared_key_sent(static_cast<DHT *>(obj), public_key);
     },
-    [](const void *obj) { return dht_get_self_public_key(static_cast<const DHT *>(obj)); },
-    [](const void *obj) { return dht_get_self_secret_key(static_cast<const DHT *>(obj)); },
+    [](const void *_Nonnull obj) { return dht_get_self_public_key(static_cast<const DHT *>(obj)); },
+    [](const void *_Nonnull obj) { return dht_get_self_secret_key(static_cast<const DHT *>(obj)); },
 };
 
 // --- Test Util Functions ---
 
-Node_format random_node_format(const Random *rng)
+Node_format random_node_format(const Random *_Nonnull rng)
 {
     Node_format node;
     auto const pk = random_pk(rng);

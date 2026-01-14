@@ -9,6 +9,7 @@
 #include <cstring>
 #include <vector>
 
+#include "../toxcore/attributes.h"
 #include "../toxcore/logger.h"
 #include "../toxcore/mono_time.h"
 #include "../toxcore/os_memory.h"
@@ -21,7 +22,7 @@ class RtpBench : public benchmark::Fixture {
 public:
     void SetUp(const ::benchmark::State &) override
     {
-        const Memory *mem = os_memory();
+        const Memory *_Nonnull mem = os_memory();
         log = logger_new(mem);
         mono_time = mono_time_new(mem, nullptr, nullptr);
 
@@ -39,9 +40,9 @@ public:
         logger_kill(log);
     }
 
-    Logger *log = nullptr;
-    Mono_Time *mono_time = nullptr;
-    RTPSession *session = nullptr;
+    Logger *_Nullable log = nullptr;
+    Mono_Time *_Nullable mono_time = nullptr;
+    RTPSession *_Nullable session = nullptr;
     RtpMock mock;
 };
 

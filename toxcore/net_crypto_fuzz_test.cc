@@ -11,6 +11,7 @@
 #include "../testing/support/public/simulated_environment.hh"
 #include "DHT.h"
 #include "TCP_client.h"
+#include "attributes.h"
 #include "net_profile.h"
 #include "network.h"
 
@@ -37,11 +38,11 @@ std::optional<std::tuple<IP_Port, std::uint8_t>> prepare(Fuzz_Data &input)
 }
 
 static constexpr Net_Crypto_DHT_Funcs dht_funcs = {
-    [](void *dht, const std::uint8_t *public_key) {
+    [](void *_Nonnull dht, const std::uint8_t *_Nonnull public_key) {
         return dht_get_shared_key_sent(static_cast<DHT *>(dht), public_key);
     },
-    [](const void *dht) { return dht_get_self_public_key(static_cast<const DHT *>(dht)); },
-    [](const void *dht) { return dht_get_self_secret_key(static_cast<const DHT *>(dht)); },
+    [](const void *_Nonnull dht) { return dht_get_self_public_key(static_cast<const DHT *>(dht)); },
+    [](const void *_Nonnull dht) { return dht_get_self_secret_key(static_cast<const DHT *>(dht)); },
 };
 
 void TestNetCrypto(Fuzz_Data &input)
@@ -73,7 +74,9 @@ void TestNetCrypto(Fuzz_Data &input)
     const std::unique_ptr<Mono_Time, std::function<void(Mono_Time *)>> mono_time(
         mono_time_new(
             &node->c_memory,
-            [](void *user_data) { return static_cast<FakeClock *>(user_data)->current_time_ms(); },
+            [](void *_Nullable user_data) {
+                return static_cast<FakeClock *>(user_data)->current_time_ms();
+            },
             &env.fake_clock()),
         [&node](Mono_Time *ptr) { mono_time_free(&node->c_memory, ptr); });
 

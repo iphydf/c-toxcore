@@ -24,7 +24,7 @@ bool NetworkUniverse::IP_Port_Key::operator<(const IP_Port_Key &other) const
 NetworkUniverse::NetworkUniverse() { }
 NetworkUniverse::~NetworkUniverse() { }
 
-bool NetworkUniverse::bind_udp(IP ip, uint16_t port, FakeUdpSocket *socket)
+bool NetworkUniverse::bind_udp(IP ip, uint16_t port, FakeUdpSocket *_Nonnull socket)
 {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     IP_Port_Key key{ip, port};
@@ -40,14 +40,14 @@ void NetworkUniverse::unbind_udp(IP ip, uint16_t port)
     udp_bindings_.erase({ip, port});
 }
 
-bool NetworkUniverse::bind_tcp(IP ip, uint16_t port, FakeTcpSocket *socket)
+bool NetworkUniverse::bind_tcp(IP ip, uint16_t port, FakeTcpSocket *_Nonnull socket)
 {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     tcp_bindings_.insert({{ip, port}, socket});
     return true;
 }
 
-void NetworkUniverse::unbind_tcp(IP ip, uint16_t port, FakeTcpSocket *socket)
+void NetworkUniverse::unbind_tcp(IP ip, uint16_t port, FakeTcpSocket *_Nonnull socket)
 {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     auto range = tcp_bindings_.equal_range({ip, port});

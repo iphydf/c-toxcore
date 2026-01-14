@@ -15,6 +15,7 @@
 
 #include "../testing/support/public/simulated_environment.hh"
 #include "DHT_test_util.hh"
+#include "attributes.h"
 #include "crypto_core.h"
 #include "logger.h"
 #include "mono_time.h"
@@ -65,21 +66,24 @@ public:
             dht_wrapper_.get_dht(), dht_wrapper_.networking()));
     }
 
-    Onion_Client *get_onion_client() { return onion_client_.get(); }
-    Net_Crypto *get_net_crypto() { return net_crypto_.get(); }
-    DHT *get_dht() { return dht_wrapper_.get_dht(); }
-    Logger *get_logger() { return dht_wrapper_.logger(); }
-    const std::uint8_t *dht_public_key() const { return dht_wrapper_.dht_public_key(); }
-    const std::uint8_t *real_public_key() const
+    Onion_Client *_Nonnull get_onion_client() { return REQUIRE_NOT_NULL(onion_client_.get()); }
+    Net_Crypto *_Nonnull get_net_crypto() { return REQUIRE_NOT_NULL(net_crypto_.get()); }
+    DHT *_Nonnull get_dht() { return dht_wrapper_.get_dht(); }
+    Logger *_Nonnull get_logger() { return dht_wrapper_.logger(); }
+    const std::uint8_t *_Nonnull dht_public_key() const { return dht_wrapper_.dht_public_key(); }
+    const std::uint8_t *_Nonnull real_public_key() const
     {
         return nc_get_self_public_key(net_crypto_.get());
     }
-    const std::uint8_t *dht_secret_key() const { return dht_wrapper_.dht_secret_key(); }
-    const Random *get_random() { return &dht_wrapper_.node().c_random; }
+    const std::uint8_t *_Nonnull dht_secret_key() const { return dht_wrapper_.dht_secret_key(); }
+    const Random *_Nonnull get_random() { return &dht_wrapper_.node().c_random; }
 
     IP_Port get_ip_port() const { return dht_wrapper_.get_ip_port(); }
     tox::test::ScopedToxSystem &node() { return dht_wrapper_.node(); }
-    Onion_Announce *get_onion_announce() { return onion_announce_.get(); }
+    Onion_Announce *_Nonnull get_onion_announce()
+    {
+        return REQUIRE_NOT_NULL(onion_announce_.get());
+    }
 
     void poll(bool poll_onion = true)
     {

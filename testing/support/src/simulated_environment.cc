@@ -64,7 +64,7 @@ std::unique_ptr<ScopedToxSystem> SimulatedEnvironment::create_node(uint16_t port
     scoped->system.rng = &scoped->c_random;
 
     scoped->system.mono_time_user_data = &sim_->clock();
-    scoped->system.mono_time_callback = [](void *user_data) -> uint64_t {
+    scoped->system.mono_time_callback = [](void *_Nullable user_data) -> uint64_t {
         return static_cast<FakeClock *>(user_data)->current_time_ms();
     };
 

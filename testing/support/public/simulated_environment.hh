@@ -13,6 +13,7 @@
 #include <sys/socket.h>
 #endif
 
+#include "../../../toxcore/attributes.h"
 #include "../../../toxcore/mem.h"
 #include "../../../toxcore/rng.h"
 #include "../../../toxcore/tox_private.h"
@@ -29,7 +30,7 @@ struct ScopedToxSystem {
     std::unique_ptr<SimulatedNode> node;
 
     // Direct access to primary socket (for fuzzer injection)
-    FakeUdpSocket *endpoint;
+    FakeUdpSocket *_Nullable endpoint;
 
     // C structs
     struct Network c_network;

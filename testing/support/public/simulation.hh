@@ -16,6 +16,7 @@
 #include <sys/socket.h>
 #endif
 
+#include "../../../toxcore/attributes.h"
 #include "../../../toxcore/mem.h"
 #include "../../../toxcore/rng.h"
 #include "../../../toxcore/tox.h"
@@ -151,16 +152,16 @@ public:
     // Returns a configured Tox instance bound to this node's environment.
     // The user owns the Tox instance.
     struct ToxDeleter {
-        void operator()(Tox *t) const { tox_kill(t); }
+        void operator()(Tox *_Nonnull t) const { tox_kill(t); }
     };
     using ToxPtr = std::unique_ptr<Tox, ToxDeleter>;
 
-    ToxPtr create_tox(const Tox_Options *options = nullptr);
+    ToxPtr create_tox(const Tox_Options *_Nullable options = nullptr);
 
     Simulation &simulation() { return sim_; }
 
     // For fuzzing compatibility (exposes first bound UDP socket as "endpoint")
-    FakeUdpSocket *get_primary_socket();
+    FakeUdpSocket *_Nullable get_primary_socket();
 
 private:
     Simulation &sim_;
