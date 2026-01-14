@@ -7,7 +7,7 @@
 #include "../public/random.hh"
 
 // Forward declaration
-struct Tox_Random;
+struct Random;
 
 namespace tox::test {
 
@@ -33,9 +33,9 @@ public:
     void set_observer(Observer observer);
 
     /**
-     * @brief Returns C-compatible Tox_Random struct.
+     * @brief Returns C-compatible Random struct.
      */
-    struct Tox_Random c_random() override;
+    struct Random c_random() override;
 
 private:
     std::minstd_rand rng_;

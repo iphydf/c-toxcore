@@ -121,6 +121,8 @@ libtoxcore_la_SOURCES = ../third_party/cmp/cmp.c \
                         ../toxcore/ping_array.h \
                         ../toxcore/ping.c \
                         ../toxcore/ping.h \
+                        ../toxcore/rng.c \
+                        ../toxcore/rng.h \
                         ../toxcore/shared_key_cache.c \
                         ../toxcore/shared_key_cache.h \
                         ../toxcore/sort.c \
@@ -153,9 +155,6 @@ libtoxcore_la_SOURCES = ../third_party/cmp/cmp.c \
                         ../toxcore/tox_pack.h \
                         ../toxcore/tox_private.c \
                         ../toxcore/tox_private.h \
-                        ../toxcore/tox_random.c \
-                        ../toxcore/tox_random.h \
-                        ../toxcore/tox_random_impl.h \
                         ../toxcore/tox_struct.h \
                         ../toxcore/tox_unpack.c \
                         ../toxcore/tox_unpack.h \

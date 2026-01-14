@@ -15,6 +15,7 @@
 #include "mem.h"
 #include "net_profile.h"
 #include "network.h"
+#include "rng.h"
 
 typedef struct TCP_Priority_List TCP_Priority_List;
 struct TCP_Priority_List {

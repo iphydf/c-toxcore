@@ -19,6 +19,7 @@
 #include "mono_time.h"
 #include "network.h"
 #include "ping_array.h"
+#include "rng.h"
 
 #ifdef __cplusplus
 extern "C" {

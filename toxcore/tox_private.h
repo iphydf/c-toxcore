@@ -23,7 +23,7 @@ typedef uint64_t tox_mono_time_cb(void *_Nullable user_data);
 typedef struct Tox_System {
     tox_mono_time_cb *_Nullable mono_time_callback;
     void *_Nullable mono_time_user_data;
-    const struct Tox_Random *_Nullable rng;
+    const struct Random *_Nullable rng;
     const struct Network *_Nullable ns;
     const struct Memory *_Nullable mem;
 } Tox_System;

@@ -5,7 +5,7 @@
 #include <vector>
 
 // Forward declaration
-struct Tox_Random;
+struct Random;
 
 namespace tox::test {
 
@@ -20,9 +20,9 @@ public:
     virtual void bytes(uint8_t *out, size_t count) = 0;
 
     /**
-     * @brief Returns C-compatible Tox_Random struct.
+     * @brief Returns C-compatible Random struct.
      */
-    virtual struct Tox_Random c_random() = 0;
+    virtual struct Random c_random() = 0;
 };
 
 }  // namespace tox::test

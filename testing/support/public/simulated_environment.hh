@@ -14,8 +14,8 @@
 #endif
 
 #include "../../../toxcore/mem.h"
+#include "../../../toxcore/rng.h"
 #include "../../../toxcore/tox_private.h"
-#include "../../../toxcore/tox_random_impl.h"
 #include "../doubles/fake_clock.hh"
 #include "../doubles/fake_memory.hh"
 #include "../doubles/fake_random.hh"
@@ -33,7 +33,7 @@ struct ScopedToxSystem {
 
     // C structs
     struct Network c_network;
-    struct Tox_Random c_random;
+    struct Random c_random;
     struct Memory c_memory;
 
     // The main struct passed to tox_new

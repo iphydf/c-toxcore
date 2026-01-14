@@ -291,7 +291,7 @@ int main(int argc, char *argv[])
     ip_init(&ip, enable_ipv6);
 
     const Memory *mem = os_memory();
-    const Tox_Random *rng = os_random();
+    const Random *rng = os_random();
     const Network *ns = os_network();
 
     Logger *logger = logger_new(mem);

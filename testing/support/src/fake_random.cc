@@ -2,13 +2,13 @@
 
 #include <algorithm>
 
-#include "../../../toxcore/tox_random_impl.h"
+#include "../../../toxcore/rng.h"
 
 namespace tox::test {
 
-// --- Trampolines for Tox_Random_Funcs ---
+// --- Trampolines for Random_Funcs ---
 
-static const Tox_Random_Funcs kFakeRandomVtable = {
+static const Random_Funcs kFakeRandomVtable = {
     .bytes_callback
     = [](void *obj, uint8_t *bytes,
           uint32_t length) { static_cast<FakeRandom *>(obj)->bytes(bytes, length); },
@@ -58,6 +58,6 @@ void FakeRandom::bytes(uint8_t *out, size_t count)
     }
 }
 
-struct Tox_Random FakeRandom::c_random() { return Tox_Random{&kFakeRandomVtable, this}; }
+struct Random FakeRandom::c_random() { return Random{&kFakeRandomVtable, this}; }
 
 }  // namespace tox::test

@@ -211,7 +211,7 @@ struct SanctionsListMod : ::testing::Test {
 protected:
     SimulatedEnvironment env;
     Memory c_mem_;
-    Tox_Random c_rng_;
+    Random c_rng_;
 
     Extended_Public_Key pk;
     Extended_Secret_Key sk;

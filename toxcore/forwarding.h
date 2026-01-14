@@ -15,6 +15,7 @@
 #include "mem.h"
 #include "mono_time.h"
 #include "network.h"
+#include "rng.h"
 
 #ifdef __cplusplus
 extern "C" {

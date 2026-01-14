@@ -55,6 +55,17 @@ cc_library(
 )
 
 cc_library(
+    name = "mem",
+    srcs = ["mem.c"],
+    hdrs = ["mem.h"],
+    visibility = ["//c-toxcore:__subpackages__"],
+    deps = [
+        ":attributes",
+        ":ccompat",
+    ],
+)
+
+cc_library(
     name = "os_memory",
     srcs = ["os_memory.c"],
     hdrs = ["os_memory.h"],
@@ -66,21 +77,6 @@ cc_library(
 )
 
 cc_library(
-    name = "tox_random",
-    srcs = ["tox_random.c"],
-    hdrs = [
-        "tox_random.h",
-        "tox_random_impl.h",
-    ],
-    visibility = ["//c-toxcore:__subpackages__"],
-    deps = [
-        ":ccompat",
-        ":mem",
-        ":tox_attributes",
-    ],
-)
-
-cc_library(
     name = "os_random",
     srcs = ["os_random.c"],
     hdrs = ["os_random.h"],
@@ -88,19 +84,18 @@ cc_library(
     deps = [
         ":attributes",
         ":ccompat",
-        ":tox_random",
+        ":rng",
         "@libsodium",
     ],
 )
 
 cc_library(
-    name = "mem",
-    srcs = ["mem.c"],
-    hdrs = ["mem.h"],
+    name = "rng",
+    srcs = ["rng.c"],
+    hdrs = ["rng.h"],
     visibility = ["//c-toxcore:__subpackages__"],
     deps = [
         ":attributes",
-        ":ccompat",
     ],
 )
 
@@ -259,7 +254,7 @@ cc_library(
         ":attributes",
         ":ccompat",
         ":mem",
-        ":tox_random",
+        ":rng",
         ":util",
         "@libsodium",
     ],
@@ -286,8 +281,8 @@ cc_library(
     hdrs = ["crypto_core_test_util.hh"],
     deps = [
         ":crypto_core",
+        ":rng",
         ":test_util",
-        ":tox_random",
     ],
 )
 
@@ -478,6 +473,7 @@ cc_library(
         ":crypto_core",
         ":mem",
         ":network",
+        ":rng",
         ":test_util",
     ],
 )
@@ -517,6 +513,7 @@ cc_library(
         ":crypto_core",
         ":mem",
         ":mono_time",
+        ":rng",
         ":util",
     ],
 )
@@ -581,6 +578,7 @@ cc_library(
         ":mono_time",
         ":network",
         ":ping_array",
+        ":rng",
         ":shared_key_cache",
         ":sort",
         ":state",
@@ -602,6 +600,7 @@ cc_library(
         ":net_crypto",
         ":network",
         ":network_test_util",
+        ":rng",
         ":test_util",
         "//c-toxcore/testing/support",
     ],
@@ -658,6 +657,7 @@ cc_library(
         ":mem",
         ":mono_time",
         ":network",
+        ":rng",
         ":shared_key_cache",
         ":util",
     ],
@@ -681,6 +681,7 @@ cc_library(
         ":mem",
         ":mono_time",
         ":network",
+        ":rng",
         ":timed_auth",
     ],
 )
@@ -715,6 +716,7 @@ cc_library(
         ":mem",
         ":mono_time",
         ":network",
+        ":rng",
         ":shared_key_cache",
         ":timed_auth",
         ":util",
@@ -734,6 +736,7 @@ cc_library(
         ":mem",
         ":net_profile",
         ":network",
+        ":rng",
     ],
 )
 
@@ -763,6 +766,7 @@ cc_library(
         ":net_profile",
         ":network",
         ":onion",
+        ":rng",
         ":util",
         "@psocket",
     ],
@@ -784,6 +788,7 @@ cc_library(
         ":mono_time",
         ":net_profile",
         ":network",
+        ":rng",
         ":util",
     ],
 )
@@ -808,6 +813,7 @@ cc_library(
         ":net_profile",
         ":network",
         ":onion",
+        ":rng",
         ":util",
     ],
 )
@@ -864,6 +870,7 @@ cc_library(
         ":mono_time",
         ":net_profile",
         ":network",
+        ":rng",
         ":util",
         "@pthread",
     ],
@@ -943,6 +950,7 @@ cc_library(
         ":mono_time",
         ":network",
         ":onion",
+        ":rng",
         ":shared_key_cache",
         ":sort",
         ":timed_auth",
@@ -1023,6 +1031,7 @@ cc_library(
         ":mono_time",
         ":network",
         ":onion_announce",
+        ":rng",
         ":timed_auth",
     ],
 )
@@ -1050,6 +1059,7 @@ cc_library(
         ":onion",
         ":onion_announce",
         ":ping_array",
+        ":rng",
         ":sort",
         ":timed_auth",
         ":util",
@@ -1112,6 +1122,7 @@ cc_library(
         ":onion",
         ":onion_announce",
         ":onion_client",
+        ":rng",
         ":util",
     ],
 )
@@ -1135,6 +1146,7 @@ cc_library(
         ":onion",
         ":onion_announce",
         ":onion_client",
+        ":rng",
         ":util",
     ],
 )
@@ -1235,6 +1247,7 @@ cc_library(
         ":onion",
         ":onion_announce",
         ":onion_client",
+        ":rng",
         ":state",
         ":util",
         "@libsodium",
@@ -1258,6 +1271,7 @@ cc_library(
         ":mono_time",
         ":net_crypto",
         ":network",
+        ":rng",
         ":sort",
         ":state",
         ":util",

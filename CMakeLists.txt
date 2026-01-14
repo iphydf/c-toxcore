@@ -330,6 +330,8 @@ set(toxcore_SOURCES
   toxcore/ping_array.h
   toxcore/ping.c
   toxcore/ping.h
+  toxcore/rng.c
+  toxcore/rng.h
   toxcore/shared_key_cache.c
   toxcore/shared_key_cache.h
   toxcore/sort.c
@@ -364,9 +366,6 @@ set(toxcore_SOURCES
   toxcore/tox_private.h
   toxcore/tox_pack.c
   toxcore/tox_pack.h
-  toxcore/tox_random.c
-  toxcore/tox_random.h
-  toxcore/tox_random_impl.h
   toxcore/tox_unpack.c
   toxcore/tox_unpack.h
   toxcore/util.c
@@ -391,8 +390,7 @@ if(EXPERIMENTAL_API)
     ${toxcore_SOURCE_DIR}/toxcore/tox_attributes.h^tox
     ${toxcore_SOURCE_DIR}/toxcore/tox_dispatch.h^tox
     ${toxcore_SOURCE_DIR}/toxcore/tox_events.h^tox
-    ${toxcore_SOURCE_DIR}/toxcore/tox_private.h^tox
-    ${toxcore_SOURCE_DIR}/toxcore/tox_random.h^tox)
+    ${toxcore_SOURCE_DIR}/toxcore/tox_private.h^tox)
 endif()
 
 ################################################################################

@@ -14,6 +14,7 @@
 #include "logger.h"
 #include "mono_time.h"
 #include "net_crypto.h"
+#include "rng.h"
 #include "test_util.hh"
 
 namespace tox::test {

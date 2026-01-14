@@ -16,6 +16,7 @@
 #include "mem.h"
 #include "mono_time.h"
 #include "network.h"
+#include "rng.h"
 
 #define MAX_ANNOUNCEMENT_SIZE 512
 

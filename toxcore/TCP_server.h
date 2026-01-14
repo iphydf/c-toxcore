@@ -21,6 +21,7 @@
 #include "net_profile.h"
 #include "network.h"
 #include "onion.h"
+#include "rng.h"
 
 #ifdef __cplusplus
 extern "C" {

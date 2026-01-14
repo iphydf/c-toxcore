@@ -48,10 +48,10 @@ cc_library(
     deps = [
         "//c-toxcore/toxcore:mem",
         "//c-toxcore/toxcore:network",
+        "//c-toxcore/toxcore:rng",
         "//c-toxcore/toxcore:tox",
         "//c-toxcore/toxcore:tox_events",
         "//c-toxcore/toxcore:tox_options",
-        "//c-toxcore/toxcore:tox_random",
         "@psocket",
     ],
 )

@@ -7,6 +7,7 @@
 #include "crypto_core.h"
 #include "mem.h"
 #include "network.h"
+#include "rng.h"
 #include "test_util.hh"
 
 template <>

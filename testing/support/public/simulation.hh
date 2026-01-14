@@ -17,9 +17,9 @@
 #endif
 
 #include "../../../toxcore/mem.h"
+#include "../../../toxcore/rng.h"
 #include "../../../toxcore/tox.h"
 #include "../../../toxcore/tox_private.h"
-#include "../../../toxcore/tox_random_impl.h"
 #include "../doubles/fake_clock.hh"
 #include "../doubles/fake_memory.hh"
 #include "../doubles/fake_network_stack.hh"
@@ -171,7 +171,7 @@ private:
     // C-compatible views (must stay valid for the lifetime of Tox)
 public:
     struct Network c_network;
-    struct Tox_Random c_random;
+    struct Random c_random;
     struct Memory c_memory;
     struct IP ip;
 };

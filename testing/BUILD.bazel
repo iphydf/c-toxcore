@@ -9,7 +9,7 @@ CIMPLE_FILES = [
 
 sh_test(
     name = "cimple_test",
-    size = "small",
+    size = "medium",
     srcs = ["//hs-tokstyle/tools:check-cimple"],
     args = ["$(locations %s)" % f for f in CIMPLE_FILES] + [
         "-Wno-boolean-return",
@@ -29,7 +29,7 @@ sh_test(
 
 sh_test(
     name = "c_test",
-    size = "small",
+    size = "medium",
     srcs = ["//hs-tokstyle/tools:check-c"],
     args = [
         "--cc=$(CC)",
@@ -57,7 +57,7 @@ sh_test(
 
 sh_test(
     name = "cimplefmt_test",
-    size = "small",
+    size = "medium",
     srcs = ["//hs-cimple/tools:cimplefmt"],
     args = ["--reparse"] + ["$(locations %s)" % f for f in CIMPLE_FILES],
     data = CIMPLE_FILES,

@@ -18,6 +18,7 @@
 #include "mem.h"
 #include "mono_time.h"
 #include "network.h"
+#include "rng.h"
 #include "shared_key_cache.h"
 
 #ifdef __cplusplus
