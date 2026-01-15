@@ -74,6 +74,8 @@ typedef struct Messenger_State_Plugin {
 } Messenger_State_Plugin;
 
 typedef struct Messenger_Options {
+    Logger *_Nonnull log;
+
     bool ipv6enabled;
     bool udp_disabled;
     TCP_Proxy_Info proxy_info;
@@ -84,10 +86,6 @@ typedef struct Messenger_Options {
     bool local_discovery_enabled;
     bool dht_announcements_enabled;
     bool groups_persistence_enabled;
-
-    logger_cb *_Nullable log_callback;
-    void *_Nullable log_context;
-    void *_Nullable log_user_data;
 
     Messenger_State_Plugin *_Nullable state_plugins;
     uint8_t state_plugins_length;

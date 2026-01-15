@@ -674,7 +674,7 @@ static Tox *tox_new_system(const struct Tox_Options *_Nullable options, Tox_Err_
     const Network *const ns = sys->ns;
     const Memory *const mem = sys->mem;
 
-    Messenger_Options m_options = {false};
+    Messenger_Options m_options = {nullptr};
 
     m_options.dns_enabled = !tox_options_get_experimental_disable_dns(opts);
 
@@ -736,9 +736,21 @@ static Tox *tox_new_system(const struct Tox_Options *_Nullable options, Tox_Err_
     }
 
     tox->log_callback = tox_options_get_log_callback(opts);
-    m_options.log_callback = tox_log_handler;
-    m_options.log_context = tox;
-    m_options.log_user_data = tox_options_get_log_user_data(opts);
+
+    Logger *log = logger_new(mem);
+
+    if (log == nullptr) {
+        SET_ERROR_PARAMETER(error, TOX_ERR_NEW_MALLOC);
+        mem_delete(mem, tox);
+        tox_options_free(default_options);
+        return nullptr;
+    }
+
+    tox->log = log;
+
+    m_options.log = tox->log;
+
+    logger_callback_log(tox->log, tox_log_handler, tox, tox_options_get_log_user_data(opts));
 
     switch (tox_options_get_proxy_type(opts)) {
         case TOX_PROXY_TYPE_HTTP: {
@@ -758,6 +770,7 @@ static Tox *tox_new_system(const struct Tox_Options *_Nullable options, Tox_Err_
 
         default: {
             SET_ERROR_PARAMETER(error, TOX_ERR_NEW_PROXY_BAD_TYPE);
+            logger_kill(tox->log);
             mem_delete(mem, tox);
             tox_options_free(default_options);
             return nullptr;
@@ -769,6 +782,7 @@ static Tox *tox_new_system(const struct Tox_Options *_Nullable options, Tox_Err_
     if (m_options.proxy_info.proxy_type != TCP_PROXY_NONE) {
         if (tox_options_get_proxy_port(opts) == 0) {
             SET_ERROR_PARAMETER(error, TOX_ERR_NEW_PROXY_BAD_PORT);
+            logger_kill(tox->log);
             mem_delete(mem, tox);
             tox_options_free(default_options);
             return nullptr;
@@ -787,6 +801,7 @@ static Tox *tox_new_system(const struct Tox_Options *_Nullable options, Tox_Err_
                 || !addr_resolve_or_parse_ip(ns, mem, proxy_host, &m_options.proxy_info.ip_port.ip, nullptr, dns_enabled)) {
             SET_ERROR_PARAMETER(error, TOX_ERR_NEW_PROXY_BAD_HOST);
             // TODO(irungentoo): TOX_ERR_NEW_PROXY_NOT_FOUND if domain.
+            logger_kill(tox->log);
             mem_delete(mem, tox);
             tox_options_free(default_options);
             return nullptr;
@@ -799,6 +814,7 @@ static Tox *tox_new_system(const struct Tox_Options *_Nullable options, Tox_Err_
 
     if (temp_mono_time == nullptr) {
         SET_ERROR_PARAMETER(error, TOX_ERR_NEW_MALLOC);
+        logger_kill(tox->log);
         mem_delete(mem, tox);
         tox_options_free(default_options);
         return nullptr;
@@ -810,6 +826,8 @@ static Tox *tox_new_system(const struct Tox_Options *_Nullable options, Tox_Err_
 
         if (mutex == nullptr) {
             SET_ERROR_PARAMETER(error, TOX_ERR_NEW_MALLOC);
+            mono_time_free(mem, tox->mono_time);
+            logger_kill(tox->log);
             mem_delete(mem, tox);
             tox_options_free(default_options);
             return nullptr;
@@ -849,6 +867,7 @@ static Tox *tox_new_system(const struct Tox_Options *_Nullable options, Tox_Err_
         }
 
         mem_delete(mem, tox->mutex);
+        logger_kill(tox->log);
         mem_delete(mem, tox);
         tox_options_free(default_options);
         return nullptr;
@@ -868,6 +887,7 @@ static Tox *tox_new_system(const struct Tox_Options *_Nullable options, Tox_Err_
         }
 
         mem_delete(mem, tox->mutex);
+        logger_kill(tox->log);
         mem_delete(mem, tox);
 
         SET_ERROR_PARAMETER(error, TOX_ERR_NEW_MALLOC);
@@ -888,6 +908,7 @@ static Tox *tox_new_system(const struct Tox_Options *_Nullable options, Tox_Err_
         }
 
         mem_delete(mem, tox->mutex);
+        logger_kill(tox->log);
         mem_delete(mem, tox);
 
         SET_ERROR_PARAMETER(error, TOX_ERR_NEW_LOAD_BAD_FORMAT);
@@ -990,6 +1011,7 @@ void tox_kill(Tox *tox)
     LOGGER_ASSERT(tox->m->log, tox->toxav_object == nullptr, "Attempted to kill tox while toxav is still alive");
     kill_groupchats(tox->m->conferences_object);
     kill_messenger(tox->m);
+    logger_kill(tox->log);
     mono_time_free(tox->sys.mem, tox->mono_time);
     tox_unlock(tox);
 

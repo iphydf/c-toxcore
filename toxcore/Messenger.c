@@ -3394,6 +3394,7 @@ Messenger *new_messenger(Mono_Time *mono_time, const Memory *mem, const Random *
         return nullptr;
     }
 
+    m->log = options->log;
     m->mono_time = mono_time;
     m->mem = mem;
     m->rng = rng;
@@ -3408,16 +3409,6 @@ Messenger *new_messenger(Mono_Time *mono_time, const Memory *mem, const Random *
         return nullptr;
     }
     m->fr = fr;
-
-    Logger *log = logger_new(mem);
-    if (log == nullptr) {
-        friendreq_kill(m->fr);
-        mem_delete(mem, m);
-        return nullptr;
-    }
-    m->log = log;
-
-    logger_callback_log(m->log, options->log_callback, options->log_context, options->log_user_data);
 
     unsigned int net_err = 0;
 
@@ -3444,7 +3435,6 @@ Messenger *new_messenger(Mono_Time *mono_time, const Memory *mem, const Random *
             *error = MESSENGER_ERROR_PORT;
         }
 
-        logger_kill(m->log);
         mem_delete(mem, m);
         return nullptr;
     }
@@ -3454,7 +3444,6 @@ Messenger *new_messenger(Mono_Time *mono_time, const Memory *mem, const Random *
     if (dht == nullptr) {
         kill_networking(m->net);
         friendreq_kill(m->fr);
-        logger_kill(m->log);
         mem_delete(mem, m);
         return nullptr;
     }
@@ -3466,7 +3455,6 @@ Messenger *new_messenger(Mono_Time *mono_time, const Memory *mem, const Random *
         kill_dht(m->dht);
         kill_networking(m->net);
         friendreq_kill(m->fr);
-        logger_kill(m->log);
         mem_delete(mem, m);
         return nullptr;
     }
@@ -3481,7 +3469,6 @@ Messenger *new_messenger(Mono_Time *mono_time, const Memory *mem, const Random *
         kill_dht(m->dht);
         kill_networking(m->net);
         friendreq_kill(m->fr);
-        logger_kill(m->log);
         mem_delete(mem, m);
         return nullptr;
     }
@@ -3496,7 +3483,6 @@ Messenger *new_messenger(Mono_Time *mono_time, const Memory *mem, const Random *
         kill_dht(m->dht);
         kill_networking(m->net);
         friendreq_kill(m->fr);
-        logger_kill(m->log);
         mem_delete(mem, m);
         return nullptr;
     }
@@ -3534,7 +3520,6 @@ Messenger *new_messenger(Mono_Time *mono_time, const Memory *mem, const Random *
         kill_dht(m->dht);
         kill_networking(m->net);
         friendreq_kill(m->fr);
-        logger_kill(m->log);
         mem_delete(mem, m);
         return nullptr;
     }
@@ -3561,7 +3546,6 @@ Messenger *new_messenger(Mono_Time *mono_time, const Memory *mem, const Random *
         kill_dht(m->dht);
         kill_networking(m->net);
         friendreq_kill(m->fr);
-        logger_kill(m->log);
         mem_delete(mem, m);
         return nullptr;
     }
@@ -3588,7 +3572,6 @@ Messenger *new_messenger(Mono_Time *mono_time, const Memory *mem, const Random *
             kill_dht(m->dht);
             kill_networking(m->net);
             friendreq_kill(m->fr);
-            logger_kill(m->log);
             mem_delete(mem, m);
 
             if (error != nullptr) {
@@ -3652,7 +3635,6 @@ void kill_messenger(Messenger *m)
     friendreq_kill(m->fr);
 
     mem_delete(m->mem, m->options.state_plugins);
-    logger_kill(m->log);
     mem_delete(m->mem, m);
 }
 
