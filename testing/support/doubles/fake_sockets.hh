@@ -43,6 +43,8 @@ public:
     virtual int recv(uint8_t *_Nonnull buf, size_t len) = 0;
 
     virtual size_t recv_buffer_size() { return 0; }
+    virtual bool is_readable() { return recv_buffer_size() > 0; }
+    virtual bool is_writable() { return true; }
 
     virtual int sendto(const uint8_t *_Nonnull buf, size_t len, const IP_Port *_Nonnull addr) = 0;
     virtual int recvfrom(uint8_t *_Nonnull buf, size_t len, IP_Port *_Nonnull addr) = 0;
@@ -85,6 +87,7 @@ public:
 
     int send(const uint8_t *_Nonnull buf, size_t len) override;
     int recv(uint8_t *_Nonnull buf, size_t len) override;
+    size_t recv_buffer_size() override;
 
     int sendto(const uint8_t *_Nonnull buf, size_t len, const IP_Port *_Nonnull addr) override;
     int recvfrom(uint8_t *_Nonnull buf, size_t len, IP_Port *_Nonnull addr) override;
@@ -134,12 +137,16 @@ public:
     int send(const uint8_t *_Nonnull buf, size_t len) override;
     int recv(uint8_t *_Nonnull buf, size_t len) override;
     size_t recv_buffer_size() override;
+    bool is_readable() override;
+    bool is_writable() override;
 
     int sendto(const uint8_t *_Nonnull buf, size_t len, const IP_Port *_Nonnull addr) override;
     int recvfrom(uint8_t *_Nonnull buf, size_t len, IP_Port *_Nonnull addr) override;
 
+    int getsockopt(int level, int optname, void *_Nonnull optval, size_t *_Nonnull optlen) override;
+
     // Internal events
-    void handle_packet(const Packet &p);
+    bool handle_packet(const Packet &p);
 
     State state() const { return state_; }
     const IP_Port &remote_addr() const { return remote_addr_; }
@@ -160,6 +167,8 @@ private:
     uint32_t next_seq_ = 0;
     uint32_t last_ack_ = 0;
 };
+
+std::ostream &operator<<(std::ostream &os, FakeTcpSocket::State state);
 
 }  // namespace tox::test
 

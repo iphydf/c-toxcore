@@ -408,7 +408,13 @@ TEST_F(RtpPublicTest, MoreInvalidPackets)
     // Get a valid packet to start with
     std::uint8_t data[] = "test";
     rtp_send_data(log, session, data, sizeof(data), false);
-    std::vector<std::uint8_t> valid_pkt = sd.sent_packets[0];
+    ASSERT_FALSE(sd.sent_packets.empty());
+    if (sd.sent_packets.empty())
+        return;
+    const std::vector<std::uint8_t> &src_pkt = sd.sent_packets[0];
+    if (src_pkt.size() > 65536)
+        return;
+    std::vector<std::uint8_t> valid_pkt(src_pkt.begin(), src_pkt.end());
     sd.sent_packets.clear();
 
     // 1. RTPHeader packet type and Tox protocol packet type do not agree
@@ -444,7 +450,13 @@ TEST_F(RtpPublicTest, MoreInvalidPackets)
         nullptr, nullptr, nullptr, &sd, mock_m_cb);
 
     rtp_send_data(log, session_audio2, data, sizeof(data), false);
-    std::vector<std::uint8_t> audio_pkt = sd.sent_packets[0];
+    ASSERT_FALSE(sd.sent_packets.empty());
+    if (sd.sent_packets.empty())
+        return;
+    const std::vector<std::uint8_t> &src_audio = sd.sent_packets[0];
+    if (src_audio.size() > 65536)
+        return;
+    std::vector<std::uint8_t> audio_pkt(src_audio.begin(), src_audio.end());
     sd.sent_packets.clear();
 
     std::vector<std::uint8_t> bad_pkt_4 = audio_pkt;

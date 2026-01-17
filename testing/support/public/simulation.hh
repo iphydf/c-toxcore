@@ -16,6 +16,8 @@
 #include <sys/socket.h>
 #endif
 
+#include <string>
+
 #include "../../../toxcore/attributes.h"
 #include "../../../toxcore/mem.h"
 #include "../../../toxcore/rng.h"
@@ -32,6 +34,53 @@ namespace tox::test {
 
 class SimulatedNode;
 
+struct LogMetadata {
+    Tox_Log_Level level;
+    const char *_Nonnull file;
+    uint32_t line;
+    const char *_Nonnull func;
+    const char *_Nonnull message;
+    uint32_t node_id;
+};
+
+using LogPredicate = std::function<bool(const LogMetadata &)>;
+
+struct LogFilter {
+    LogPredicate pred;
+
+    LogFilter() = default;
+    explicit LogFilter(LogPredicate p)
+        : pred(std::move(p))
+    {
+    }
+
+    bool operator()(const LogMetadata &md) const { return !pred || pred(md); }
+};
+
+LogFilter operator&&(const LogFilter &lhs, const LogFilter &rhs);
+LogFilter operator||(const LogFilter &lhs, const LogFilter &rhs);
+LogFilter operator!(const LogFilter &target);
+
+namespace log_filter {
+    LogFilter level(Tox_Log_Level min_level);
+
+    struct LevelPlaceholder {
+        LogFilter operator>(Tox_Log_Level rhs) const;
+        LogFilter operator>=(Tox_Log_Level rhs) const;
+        LogFilter operator<(Tox_Log_Level rhs) const;
+        LogFilter operator<=(Tox_Log_Level rhs) const;
+        LogFilter operator==(Tox_Log_Level rhs) const;
+        LogFilter operator!=(Tox_Log_Level rhs) const;
+    };
+
+    LevelPlaceholder level();
+
+    LogFilter file(std::string pattern);
+    LogFilter func(std::string pattern);
+    LogFilter message(std::string pattern);
+    LogFilter node(uint32_t id);
+}  // namespace log_filter
+
 /**
  * @brief The Simulation World.
  * Holds the Clock and the Universe.
@@ -46,6 +95,10 @@ public:
     // Time Control
     void advance_time(uint64_t ms);
     void run_until(std::function<bool()> condition, uint64_t timeout_ms = 5000);
+
+    // Logging
+    void set_log_filter(LogFilter filter);
+    const LogFilter &log_filter() const { return log_filter_; }
 
     // Synchronization Barrier
     // These methods coordinate the lock-step execution of multiple Tox runners.
@@ -110,6 +163,7 @@ public:
 private:
     std::unique_ptr<FakeClock> clock_;
     std::unique_ptr<NetworkUniverse> net_;
+    LogFilter log_filter_;
     uint32_t node_count_ = 0;
 
     // Barrier State

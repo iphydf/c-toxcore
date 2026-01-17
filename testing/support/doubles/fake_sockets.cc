@@ -118,6 +118,12 @@ int FakeUdpSocket::recv(uint8_t *_Nonnull buf, size_t len)
     return -1;
 }
 
+size_t FakeUdpSocket::recv_buffer_size()
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    return recv_queue_.size();
+}
+
 int FakeUdpSocket::sendto(const uint8_t *_Nonnull buf, size_t len, const IP_Port *_Nonnull addr)
 {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -232,8 +238,8 @@ void FakeUdpSocket::set_recv_observer(RecvObserver observer)
 
 FakeTcpSocket::FakeTcpSocket(NetworkUniverse &universe)
     : FakeSocket(universe, SOCK_STREAM)
-    , remote_addr_{}
 {
+    ipport_reset(&remote_addr_);
 }
 
 FakeTcpSocket::~FakeTcpSocket() { close_impl(); }
@@ -241,6 +247,17 @@ FakeTcpSocket::~FakeTcpSocket() { close_impl(); }
 int FakeTcpSocket::close()
 {
     std::lock_guard<std::mutex> lock(mutex_);
+    if (state_ == ESTABLISHED || state_ == SYN_SENT || state_ == SYN_RECEIVED
+        || state_ == CLOSE_WAIT) {
+        // Send RST to peer
+        Packet p{};
+        p.from.ip = ip_;
+        p.from.port = net_htons(local_port_);
+        p.to = remote_addr_;
+        p.is_tcp = true;
+        p.tcp_flags = 0x04;  // RST
+        universe_.send_packet(p);
+    }
     close_impl();
     return 0;
 }
@@ -286,11 +303,22 @@ int FakeTcpSocket::listen(int backlog)
 int FakeTcpSocket::connect(const IP_Port *_Nonnull addr)
 {
     std::lock_guard<std::mutex> lock(mutex_);
+    if (universe_.is_verbose()) {
+        Ip_Ntoa ip_str, dest_str;
+        net_ip_ntoa(&ip_, &ip_str);
+        net_ip_ntoa(&addr->ip, &dest_str);
+        std::cerr << "[FakeTcpSocket] connect from " << ip_str.buf << " to " << dest_str.buf << ":"
+                  << net_ntohs(addr->port) << std::endl;
+    }
+
     if (local_port_ == 0) {
         // Implicit bind
         uint16_t p = universe_.find_free_port(ip_);
         if (universe_.bind_tcp(ip_, p, this)) {
             local_port_ = p;
+            if (universe_.is_verbose()) {
+                std::cerr << "[FakeTcpSocket] implicit bind to port " << local_port_ << std::endl;
+            }
         } else {
             errno = EADDRINUSE;
             return -1;
@@ -325,13 +353,16 @@ std::unique_ptr<FakeSocket> FakeTcpSocket::accept(IP_Port *_Nullable addr)
         return nullptr;
     }
 
-    if (pending_connections_.empty()) {
+    auto it = std::find_if(pending_connections_.begin(), pending_connections_.end(),
+        [](const std::unique_ptr<FakeTcpSocket> &s) { return s->state() == ESTABLISHED; });
+
+    if (it == pending_connections_.end()) {
         errno = EWOULDBLOCK;
         return nullptr;
     }
 
-    auto client = std::move(pending_connections_.front());
-    pending_connections_.pop_front();
+    auto client = std::move(*it);
+    pending_connections_.erase(it);
 
     if (addr) {
         *addr = client->remote_addr();
@@ -343,7 +374,15 @@ int FakeTcpSocket::send(const uint8_t *_Nonnull buf, size_t len)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (state_ != ESTABLISHED) {
-        errno = ENOTCONN;
+        if (universe_.is_verbose()) {
+            std::cerr << "[FakeTcpSocket] send failed: state " << state_ << " port " << local_port_
+                      << std::endl;
+        }
+        if (state_ == SYN_SENT || state_ == SYN_RECEIVED) {
+            errno = EWOULDBLOCK;
+        } else {
+            errno = ENOTCONN;
+        }
         return -1;
     }
 
@@ -375,6 +414,13 @@ int FakeTcpSocket::recv(uint8_t *_Nonnull buf, size_t len)
     }
 
     size_t actual = std::min(len, recv_buffer_.size());
+    if (universe_.is_verbose() && actual > 0) {
+        char remote_ip_str[TOX_INET_ADDRSTRLEN];
+        ip_parse_addr(&remote_addr_.ip, remote_ip_str, sizeof(remote_ip_str));
+        std::cerr << "[FakeTcpSocket] Port " << local_port_ << " (Peer: " << remote_ip_str << ":"
+                  << net_ntohs(remote_addr_.port) << ") recv requested " << len << " got " << actual
+                  << " (remaining " << recv_buffer_.size() - actual << ")" << std::endl;
+    }
     for (size_t i = 0; i < actual; ++i) {
         buf[i] = recv_buffer_.front();
         recv_buffer_.pop_front();
@@ -388,6 +434,22 @@ size_t FakeTcpSocket::recv_buffer_size()
     return recv_buffer_.size();
 }
 
+bool FakeTcpSocket::is_readable()
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (state_ == LISTEN) {
+        return std::any_of(pending_connections_.begin(), pending_connections_.end(),
+            [](const std::unique_ptr<FakeTcpSocket> &s) { return s->state() == ESTABLISHED; });
+    }
+    return !recv_buffer_.empty() || state_ == CLOSED || state_ == CLOSE_WAIT;
+}
+
+bool FakeTcpSocket::is_writable()
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    return state_ == ESTABLISHED;
+}
+
 int FakeTcpSocket::sendto(const uint8_t *_Nonnull buf, size_t len, const IP_Port *_Nonnull addr)
 {
     errno = EOPNOTSUPP;
@@ -399,26 +461,82 @@ int FakeTcpSocket::recvfrom(uint8_t *_Nonnull buf, size_t len, IP_Port *_Nonnull
     return -1;
 }
 
-void FakeTcpSocket::handle_packet(const Packet &p)
+int FakeTcpSocket::getsockopt(
+    int level, int optname, void *_Nonnull optval, size_t *_Nonnull optlen)
+{
+    if (universe_.is_verbose()) {
+        std::cerr << "[FakeTcpSocket] getsockopt level=" << level << " optname=" << optname
+                  << " state=" << state_ << std::endl;
+    }
+    if (level == SOL_SOCKET && optname == SO_ERROR) {
+        int error = 0;
+        if (state_ == SYN_SENT || state_ == SYN_RECEIVED) {
+            error = EINPROGRESS;
+        } else if (state_ == CLOSED) {
+            error = ECONNREFUSED;
+        }
+
+        if (*optlen >= sizeof(int)) {
+            *static_cast<int *>(optval) = error;
+            *optlen = sizeof(int);
+        }
+        if (universe_.is_verbose()) {
+            std::cerr << "[FakeTcpSocket] getsockopt SO_ERROR returning error=" << error
+                      << std::endl;
+        }
+        return 0;
+    }
+    return 0;
+}
+
+bool FakeTcpSocket::handle_packet(const Packet &p)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     if (universe_.is_verbose()) {
-        std::cerr << "Handle Packet: Port " << local_port_ << " Flags "
-                  << static_cast<int>(p.tcp_flags) << " State " << state_ << std::endl;
+        char remote_ip_str[TOX_INET_ADDRSTRLEN];
+        ip_parse_addr(&remote_addr_.ip, remote_ip_str, sizeof(remote_ip_str));
+        std::cerr << "Handle Packet: Port " << local_port_ << " (Peer: " << remote_ip_str << ":"
+                  << net_ntohs(remote_addr_.port) << ") Flags " << TcpFlags{p.tcp_flags}
+                  << " State " << state_ << " From " << net_ntohs(p.from.port) << std::endl;
+    }
+
+    if (state_ != LISTEN) {
+        // Filter packets not from our peer
+        bool port_match = net_ntohs(p.from.port) == net_ntohs(remote_addr_.port);
+        bool ip_match = ip_equal(&p.from.ip, &remote_addr_.ip)
+            || (is_loopback(p.from.ip) && ip_equal(&remote_addr_.ip, &ip_))
+            || (is_loopback(remote_addr_.ip) && ip_equal(&p.from.ip, &ip_));
+
+        if (!port_match || !ip_match) {
+            return false;
+        }
+
+        if (p.tcp_flags & 0x04) {  // RST
+            state_ = CLOSED;
+            if (local_port_ != 0) {
+                universe_.unbind_tcp(ip_, local_port_, this);
+                local_port_ = 0;
+            }
+            return true;
+        }
     }
 
     if (state_ == LISTEN) {
         if (p.tcp_flags & 0x02) {  // SYN
+            // Check for duplicate SYN from same peer
+            for (const auto &pending : pending_connections_) {
+                if (ipport_equal(&p.from, &pending->remote_addr_)) {
+                    return true;
+                }
+            }
+
             // Create new socket for connection
             auto new_sock = std::make_unique<FakeTcpSocket>(universe_);
-            // Bind to ephemeral? No, it's accepted on the same port but distinct 4-tuple.
-            // In our simplified model, the new socket is not bound to the global map
-            // until accepted? Or effectively bound to the 4-tuple.
-            // For now, let's just create it and queue it.
 
             new_sock->state_ = SYN_RECEIVED;
             new_sock->remote_addr_ = p.from;
             new_sock->local_port_ = local_port_;
+            new_sock->set_ip(ip_);  // Inherit IP from listening socket
             new_sock->last_ack_ = p.seq + 1;
             new_sock->next_seq_ = 1000;  // Random ISN
 
@@ -435,13 +553,9 @@ void FakeTcpSocket::handle_packet(const Packet &p)
 
             universe_.send_packet(resp);
 
-            // In real TCP, we wait for ACK to move to ESTABLISHED and accept queue.
-            // Here we cheat and move to ESTABLISHED immediately or wait for ACK?
-            // Let's wait for ACK.
-            // But where do we store this half-open socket?
-            // For simplicity: auto-transition to ESTABLISHED and queue it.
-            new_sock->state_ = ESTABLISHED;
+            // Add to pending, but it's still SYN_RECEIVED
             pending_connections_.push_back(std::move(new_sock));
+            return true;
         }
     } else if (state_ == SYN_SENT) {
         if ((p.tcp_flags & 0x12) == 0x12) {  // SYN | ACK
@@ -458,8 +572,31 @@ void FakeTcpSocket::handle_packet(const Packet &p)
             ack.seq = next_seq_;
             ack.ack = last_ack_;
             universe_.send_packet(ack);
+            return true;
+        } else if (p.tcp_flags & 0x02) {  // SYN (Simultaneous Open)
+            state_ = SYN_RECEIVED;
+            last_ack_ = p.seq + 1;
+
+            // Send SYN-ACK
+            Packet resp{};
+            resp.from = p.to;
+            resp.to = p.from;
+            resp.is_tcp = true;
+            resp.tcp_flags = 0x12;  // SYN | ACK
+            resp.seq = next_seq_++;
+            resp.ack = last_ack_;
+            universe_.send_packet(resp);
+            return true;
         }
-    } else if (state_ == ESTABLISHED) {
+    } else if (state_ == SYN_RECEIVED) {
+        if (p.tcp_flags & 0x10) {  // ACK
+            state_ = ESTABLISHED;
+        } else {
+            return false;
+        }
+    }
+
+    if (state_ == ESTABLISHED) {
         if (p.tcp_flags & 0x01) {  // FIN
             state_ = CLOSE_WAIT;
             // Send ACK
@@ -471,12 +608,23 @@ void FakeTcpSocket::handle_packet(const Packet &p)
             ack.seq = next_seq_;
             ack.ack = p.seq + 1;  // Consume FIN
             universe_.send_packet(ack);
-        } else if (!p.data.empty()) {
-            recv_buffer_.insert(recv_buffer_.end(), p.data.begin(), p.data.end());
-            last_ack_ += p.data.size();
-            // Should send ACK?
+            return true;
+        } else {
+            if (!p.data.empty()) {
+                if (universe_.is_verbose()) {
+                    char remote_ip_str[TOX_INET_ADDRSTRLEN];
+                    ip_parse_addr(&remote_addr_.ip, remote_ip_str, sizeof(remote_ip_str));
+                    std::cerr << "[FakeTcpSocket] Port " << local_port_
+                              << " (Peer: " << remote_ip_str << ":" << net_ntohs(remote_addr_.port)
+                              << ") adding " << p.data.size() << " bytes to buffer (currently "
+                              << recv_buffer_.size() << ")" << std::endl;
+                }
+                recv_buffer_.insert(recv_buffer_.end(), p.data.begin(), p.data.end());
+            }
+            return true;
         }
     }
+    return false;
 }
 
 std::unique_ptr<FakeTcpSocket> FakeTcpSocket::create_connected(
@@ -487,6 +635,25 @@ std::unique_ptr<FakeTcpSocket> FakeTcpSocket::create_connected(
     s->remote_addr_ = remote;
     s->local_port_ = local_port;
     return s;
+}
+
+std::ostream &operator<<(std::ostream &os, FakeTcpSocket::State state)
+{
+    switch (state) {
+    case FakeTcpSocket::CLOSED:
+        return os << "CLOSED";
+    case FakeTcpSocket::LISTEN:
+        return os << "LISTEN";
+    case FakeTcpSocket::SYN_SENT:
+        return os << "SYN_SENT";
+    case FakeTcpSocket::SYN_RECEIVED:
+        return os << "SYN_RECEIVED";
+    case FakeTcpSocket::ESTABLISHED:
+        return os << "ESTABLISHED";
+    case FakeTcpSocket::CLOSE_WAIT:
+        return os << "CLOSE_WAIT";
+    }
+    return os << "UNKNOWN(" << static_cast<int>(state) << ")";
 }
 
 }  // namespace tox::test

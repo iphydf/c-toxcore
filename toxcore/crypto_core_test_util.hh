@@ -56,4 +56,6 @@ std::ostream &operator<<(std::ostream &out, PublicKey const &pk);
 
 PublicKey random_pk(const Random *_Nonnull rng);
 
+std::array<std::uint8_t, CRYPTO_SECRET_KEY_SIZE> random_sk(const Random *_Nonnull rng);
+
 #endif  // C_TOXCORE_TOXCORE_CRYPTO_CORE_TEST_UTIL_H

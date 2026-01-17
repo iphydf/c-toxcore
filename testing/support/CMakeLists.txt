@@ -69,6 +69,8 @@ if(TARGET GTest::gtest_main)
 
   support_test(fake_sockets_test doubles/fake_sockets_test.cc)
   support_test(fake_network_stack_test doubles/fake_network_stack_test.cc)
+  support_test(fake_network_udp_test doubles/fake_network_udp_test.cc)
+  support_test(fake_network_tcp_test doubles/fake_network_tcp_test.cc)
   support_test(network_universe_test doubles/network_universe_test.cc)
   support_test(bootstrap_scaling_test bootstrap_scaling_test.cc)
   support_test(tox_network_test tox_network_test.cc)

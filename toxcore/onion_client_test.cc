@@ -645,7 +645,7 @@ TEST_F(OnionClientTest, SharedKeyCacheUseAfterFreeRegression)
     const Memory *mem = &mem_struct;
 
     int total_decryption_failures = 0;
-    std::set<std::vector<std::uint8_t>> seen_announcements;
+    std::set<std::array<std::uint8_t, CRYPTO_PUBLIC_KEY_SIZE>> seen_announcements;
 
     auto observer
         = [&](OnionNode *node, const std::vector<std::uint8_t> &data, const IP_Port &from) {
@@ -674,8 +674,9 @@ TEST_F(OnionClientTest, SharedKeyCacheUseAfterFreeRegression)
                       // The real PK (client_id) is in the payload at offset ONION_PING_ID_SIZE
                       // (32).
                       const std::uint8_t *real_pk = plain.data() + 32;
-                      seen_announcements.insert(
-                          std::vector<std::uint8_t>(real_pk, real_pk + CRYPTO_PUBLIC_KEY_SIZE));
+                      std::array<std::uint8_t, CRYPTO_PUBLIC_KEY_SIZE> real_pk_arr;
+                      std::memcpy(real_pk_arr.data(), real_pk, CRYPTO_PUBLIC_KEY_SIZE);
+                      seen_announcements.insert(real_pk_arr);
                   } else {
                       total_decryption_failures++;
 #if 0
@@ -714,13 +715,15 @@ TEST_F(OnionClientTest, SharedKeyCacheUseAfterFreeRegression)
     ASSERT_NE(onion_connection_status(alice.get_onion_client()), ONION_CONNECTION_STATUS_NONE);
 
     const int kNumFriends = 2;
-    std::vector<std::vector<std::uint8_t>> friend_pks;
+    std::vector<std::array<std::uint8_t, CRYPTO_PUBLIC_KEY_SIZE>> friend_pks;
 
     for (int i = 0; i < kNumFriends; ++i) {
         std::uint8_t pk[CRYPTO_PUBLIC_KEY_SIZE], sk[CRYPTO_SECRET_KEY_SIZE];
         crypto_new_keypair(alice.get_random(), pk, sk);
         onion_addfriend(alice.get_onion_client(), pk);
-        friend_pks.push_back(std::vector<std::uint8_t>(pk, pk + CRYPTO_PUBLIC_KEY_SIZE));
+        std::array<std::uint8_t, CRYPTO_PUBLIC_KEY_SIZE> pk_arr;
+        std::memcpy(pk_arr.data(), pk, CRYPTO_PUBLIC_KEY_SIZE);
+        friend_pks.push_back(pk_arr);
     }
 
     // Wait for announcements.

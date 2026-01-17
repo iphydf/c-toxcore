@@ -34,7 +34,7 @@ TEST(MergeSort, BehavesLikeStdSort)
         // If vec was accidentally sorted, add another larger element that almost definitely makes
         // it not sorted.
         if (vec == sorted) {
-            int const largest = *std::prev(sorted.end()) + 1;
+            int const largest = sorted.empty() ? 0 : sorted.back() + 1;
             sorted.push_back(largest);
             vec.insert(vec.begin(), largest);
         }
@@ -67,7 +67,11 @@ TEST(MergeSort, WorksWithNonTrivialTypes)
         if (vec == sorted) {
             std::string const largest = "larger than largest int";
             sorted.push_back(largest);
-            vec.insert(vec.begin(), largest);
+            vec.push_back(largest);
+            // Swap the last two elements. Since i >= 1, vec has at least 2 elements now.
+            // This guarantees the vector is not sorted because 'largest' is now before the last
+            // element (which is smaller than 'largest').
+            std::iter_swap(vec.end() - 2, vec.end() - 1);
         }
         ASSERT_NE(vec, sorted);
 

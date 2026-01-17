@@ -17,11 +17,17 @@ namespace tox::test {
 class FakeUdpSocket;
 class FakeTcpSocket;
 
+struct TcpFlags {
+    uint8_t value;
+};
+std::ostream &operator<<(std::ostream &os, TcpFlags flags);
+
 struct Packet {
     IP_Port from;
     IP_Port to;
     std::vector<uint8_t> data;
     uint64_t delivery_time;
+    uint64_t sequence_number = 0;
     bool is_tcp = false;
 
     // TCP Simulation Fields
@@ -29,8 +35,16 @@ struct Packet {
     uint32_t seq = 0;
     uint32_t ack = 0;
 
-    bool operator>(const Packet &other) const { return delivery_time > other.delivery_time; }
+    bool operator>(const Packet &other) const
+    {
+        if (delivery_time != other.delivery_time) {
+            return delivery_time > other.delivery_time;
+        }
+        return sequence_number > other.sequence_number;
+    }
 };
+
+bool is_loopback(const IP &ip);
 
 /**
  * @brief The God Object for the network simulation.
@@ -82,6 +96,7 @@ private:
     std::vector<PacketSink> observers_;
 
     uint64_t global_latency_ms_ = 0;
+    uint64_t next_packet_id_ = 0;
     bool verbose_ = false;
     std::recursive_mutex mutex_;
 };

@@ -804,10 +804,6 @@ cc_library(
     name = "TCP_server",
     srcs = ["TCP_server.c"],
     hdrs = ["TCP_server.h"],
-    copts = select({
-        "//tools/config:linux": ["-DTCP_SERVER_USE_EPOLL=1"],
-        "//conditions:default": [],
-    }),
     visibility = [
         "//c-toxcore/auto_tests:__pkg__",
         "//c-toxcore/other:__pkg__",

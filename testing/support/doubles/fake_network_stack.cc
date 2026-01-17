@@ -8,7 +8,7 @@
 
 namespace tox::test {
 
-static const Network_Funcs kVtable = {
+static const Network_Funcs kNetworkVtable = {
     .close = [](void *_Nonnull obj,
                  Socket sock) { return static_cast<FakeNetworkStack *>(obj)->close(sock); },
     .accept = [](void *_Nonnull obj,
@@ -102,7 +102,7 @@ FakeNetworkStack::FakeNetworkStack(NetworkUniverse &universe, const IP &node_ip)
 
 FakeNetworkStack::~FakeNetworkStack() = default;
 
-struct Network FakeNetworkStack::c_network() { return Network{&kVtable, this}; }
+struct Network FakeNetworkStack::c_network() { return Network{&kNetworkVtable, this}; }
 
 Socket FakeNetworkStack::socket(int domain, int type, int protocol)
 {

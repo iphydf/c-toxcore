@@ -519,7 +519,7 @@ TEST_F(NetCryptoTest, HandleRequestPacketOOB)
     ASSERT_EQ(len, plaintext_len + CRYPTO_MAC_SIZE);
 
     // 4. Inject the packet
-    tox::test::Packet p;
+    tox::test::Packet p{};
     p.to = alice.get_ip_port();
     p.data = malicious_packet;
     p.from = bob.get_ip_port();

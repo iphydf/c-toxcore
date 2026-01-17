@@ -45,14 +45,13 @@ public:
     struct Network c_network() override;
 
     // For testing/fuzzing introspection
+    FakeSocket *_Nullable get_sock(Socket sock);
     FakeUdpSocket *_Nullable get_udp_socket(Socket sock);
     std::vector<FakeUdpSocket *> get_bound_udp_sockets();
 
     NetworkUniverse &universe() { return universe_; }
 
 private:
-    FakeSocket *_Nullable get_sock(Socket sock);
-
     NetworkUniverse &universe_;
     std::map<int, std::unique_ptr<FakeSocket>> sockets_;
     int next_fd_ = 100;

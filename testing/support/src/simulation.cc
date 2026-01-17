@@ -7,6 +7,90 @@
 
 namespace tox::test {
 
+// --- LogFilter ---
+
+LogFilter operator&&(const LogFilter &lhs, const LogFilter &rhs)
+{
+    return LogFilter([=](const LogMetadata &md) { return lhs(md) && rhs(md); });
+}
+
+LogFilter operator||(const LogFilter &lhs, const LogFilter &rhs)
+{
+    return LogFilter([=](const LogMetadata &md) { return lhs(md) || rhs(md); });
+}
+
+LogFilter operator!(const LogFilter &target)
+{
+    return LogFilter([=](const LogMetadata &md) { return !target(md); });
+}
+
+namespace log_filter {
+
+    LogFilter level(Tox_Log_Level min_level)
+    {
+        return LogFilter([=](const LogMetadata &md) { return md.level >= min_level; });
+    }
+
+    LevelPlaceholder level() { return {}; }
+
+    LogFilter LevelPlaceholder::operator>(Tox_Log_Level rhs) const
+    {
+        return LogFilter([=](const LogMetadata &md) { return md.level > rhs; });
+    }
+
+    LogFilter LevelPlaceholder::operator>=(Tox_Log_Level rhs) const
+    {
+        return LogFilter([=](const LogMetadata &md) { return md.level >= rhs; });
+    }
+
+    LogFilter LevelPlaceholder::operator<(Tox_Log_Level rhs) const
+    {
+        return LogFilter([=](const LogMetadata &md) { return md.level < rhs; });
+    }
+
+    LogFilter LevelPlaceholder::operator<=(Tox_Log_Level rhs) const
+    {
+        return LogFilter([=](const LogMetadata &md) { return md.level <= rhs; });
+    }
+
+    LogFilter LevelPlaceholder::operator==(Tox_Log_Level rhs) const
+    {
+        return LogFilter([=](const LogMetadata &md) { return md.level == rhs; });
+    }
+
+    LogFilter LevelPlaceholder::operator!=(Tox_Log_Level rhs) const
+    {
+        return LogFilter([=](const LogMetadata &md) { return md.level != rhs; });
+    }
+
+    LogFilter file(std::string pattern)
+    {
+        return LogFilter([p = std::move(pattern)](const LogMetadata &md) {
+            return std::string(md.file).find(p) != std::string::npos;
+        });
+    }
+
+    LogFilter func(std::string pattern)
+    {
+        return LogFilter([p = std::move(pattern)](const LogMetadata &md) {
+            return std::string(md.func).find(p) != std::string::npos;
+        });
+    }
+
+    LogFilter message(std::string pattern)
+    {
+        return LogFilter([p = std::move(pattern)](const LogMetadata &md) {
+            return std::string(md.message).find(p) != std::string::npos;
+        });
+    }
+
+    LogFilter node(uint32_t id)
+    {
+        return LogFilter([=](const LogMetadata &md) { return md.node_id == id; });
+    }
+
+}  // namespace log_filter
+
 // --- Simulation ---
 
 Simulation::Simulation()
@@ -72,6 +156,8 @@ void Simulation::run_until(std::function<bool()> condition, uint64_t timeout_ms)
             return;
     }
 }
+
+void Simulation::set_log_filter(LogFilter filter) { log_filter_ = std::move(filter); }
 
 Simulation::TickListenerId Simulation::register_tick_listener(
     std::function<void(uint64_t)> listener)
@@ -181,17 +267,40 @@ MemorySystem &SimulatedNode::memory() { return *memory_; }
 
 SimulatedNode::ToxPtr SimulatedNode::create_tox(const Tox_Options *_Nullable options)
 {
-    std::unique_ptr<Tox_Options, decltype(&tox_options_free)> default_options(
-        nullptr, tox_options_free);
+    std::unique_ptr<Tox_Options, decltype(&tox_options_free)> local_opts(
+        tox_options_new(nullptr), tox_options_free);
+    assert(local_opts != nullptr);
 
-    if (options == nullptr) {
-        default_options.reset(tox_options_new(nullptr));
-        assert(default_options != nullptr);
-        tox_options_set_ipv6_enabled(default_options.get(), false);
-        tox_options_set_start_port(default_options.get(), 33445);
-        tox_options_set_end_port(default_options.get(), 55555);
-        options = default_options.get();
+    if (options != nullptr) {
+        tox_options_copy(local_opts.get(), options);
+    } else {
+        tox_options_set_ipv6_enabled(local_opts.get(), false);
+        tox_options_set_start_port(local_opts.get(), 33445);
+        tox_options_set_end_port(local_opts.get(), 55555);
     }
+
+    tox_options_set_log_callback(local_opts.get(),
+        [](Tox *tox, Tox_Log_Level level, const char *file, uint32_t line, const char *func,
+            const char *message, void *user_data) {
+            SimulatedNode *node = static_cast<SimulatedNode *>(user_data);
+            uint32_t ip4 = net_ntohl(node->ip.ip.v4.uint32);
+
+            LogMetadata md{level, file, line, func, message, ip4 & 0xFF};
+            const auto &filter = node->simulation().log_filter();
+
+            bool allow = false;
+            if (filter.pred) {
+                allow = filter(md);
+            } else {
+                allow = node->simulation().net().is_verbose() && level >= TOX_LOG_LEVEL_TRACE;
+            }
+
+            if (allow) {
+                std::cerr << "[Tox Log] [Node " << (ip4 & 0xFF) << "] " << file << ":" << line
+                          << " (" << func << "): " << message << std::endl;
+            }
+        });
+    tox_options_set_log_user_data(local_opts.get(), this);
 
     Tox_Options_Testing opts_testing;
     Tox_System system;
@@ -208,7 +317,7 @@ SimulatedNode::ToxPtr SimulatedNode::create_tox(const Tox_Options *_Nullable opt
     Tox_Err_New err;
     Tox_Err_New_Testing err_testing;
 
-    Tox *t = tox_new_testing(options, &err, &opts_testing, &err_testing);
+    Tox *t = tox_new_testing(local_opts.get(), &err, &opts_testing, &err_testing);
 
     if (!t) {
         std::cerr << "tox_new_testing failed: " << err << " (testing err: " << err_testing << ")"
