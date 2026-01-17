@@ -5483,7 +5483,7 @@ static int make_gc_handshake_packet(const GC_Chat *_Nonnull chat, const GC_Conne
 
     uint8_t data[GC_MIN_HS_PACKET_PAYLOAD_SIZE + sizeof(Node_format)];
 
-    uint16_t length = sizeof(uint8_t);
+    uint32_t length = sizeof(uint8_t);
 
     data[0] = handshake_type;
     memcpy(data + length, gconn->session_public_key, ENC_PUBLIC_KEY_SIZE);
@@ -5505,7 +5505,7 @@ static int make_gc_handshake_packet(const GC_Chat *_Nonnull chat, const GC_Conne
 
     const int enc_len = wrap_group_handshake_packet(
                             chat->log, chat->mem, chat->rng, chat->self_public_key.enc, chat->self_secret_key.enc,
-                            gconn->addr.public_key.enc, packet, (uint16_t)packet_size, data, length);
+                            gconn->addr.public_key.enc, packet, (uint16_t)packet_size, data, (uint16_t)length);
 
     if (enc_len != GC_MIN_ENCRYPTED_HS_PAYLOAD_SIZE + nodes_size) {
         LOGGER_WARNING(chat->log, "Failed to wrap handshake packet: %d", enc_len);
