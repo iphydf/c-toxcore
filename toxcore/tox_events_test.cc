@@ -31,7 +31,7 @@ TEST(ToxEvents, UnpackEmptyDataFails)
     SimulatedEnvironment env;
     auto node = env.create_node(33445);
     std::array<std::uint8_t, 1> data;
-    Tox_Events *events = tox_events_load(&node->system, data.end(), 0);
+    Tox_Events *events = tox_events_load(&node->system, data.data(), 0);
     EXPECT_EQ(events, nullptr);
 }
 

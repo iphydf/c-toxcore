@@ -380,8 +380,8 @@ TEST_F(NetCryptoTest, CookieRequestCPUExhaustion)
     const int NUM_PACKETS = 50;
 
     std::minstd_rand rng(42);
-    std::uniform_int_distribution<std::uint8_t> dist;
-    auto gen = [&]() { return dist(rng); };
+    std::uniform_int_distribution<unsigned int> dist(0, 255);
+    auto gen = [&]() { return static_cast<std::uint8_t>(dist(rng)); };
 
     for (int i = 0; i < NUM_PACKETS; ++i) {
         std::vector<std::uint8_t> packet(TEST_COOKIE_REQUEST_LENGTH);
@@ -415,8 +415,8 @@ TEST_F(NetCryptoTest, CookieRequestRateLimiting)
 
     const int TEST_COOKIE_REQUEST_LENGTH = 145;
     std::minstd_rand rng(42);
-    std::uniform_int_distribution<std::uint8_t> dist;
-    auto gen = [&]() { return dist(rng); };
+    std::uniform_int_distribution<unsigned int> dist(0, 255);
+    auto gen = [&]() { return static_cast<std::uint8_t>(dist(rng)); };
 
     auto send_packet = [&]() {
         std::vector<std::uint8_t> packet(TEST_COOKIE_REQUEST_LENGTH);
