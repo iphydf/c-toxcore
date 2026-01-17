@@ -161,6 +161,8 @@ Family net_family_tcp_ipv6(void);
 Family net_family_tox_tcp_ipv4(void);
 Family net_family_tox_tcp_ipv6(void);
 
+const char *_Nonnull net_family_to_string(Family family);
+
 uint32_t net_htonl(uint32_t hostlong);
 uint16_t net_htons(uint16_t hostshort);
 uint32_t net_ntohl(uint32_t hostlong);

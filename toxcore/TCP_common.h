@@ -45,6 +45,9 @@ typedef enum Tcp_Packet {
     TCP_PACKET_FORWARDING               = 11,
 } Tcp_Packet;
 
+const char *_Nonnull tcp_packet_type_to_string(Tcp_Packet type);
+bool tcp_packet_from_int(uint32_t value, Tcp_Packet *_Nonnull out_enum);
+
 #define TCP_HANDSHAKE_PLAIN_SIZE (CRYPTO_PUBLIC_KEY_SIZE + CRYPTO_NONCE_SIZE)
 #define TCP_SERVER_HANDSHAKE_SIZE (CRYPTO_NONCE_SIZE + TCP_HANDSHAKE_PLAIN_SIZE + CRYPTO_MAC_SIZE)
 #define TCP_CLIENT_HANDSHAKE_SIZE (CRYPTO_PUBLIC_KEY_SIZE + TCP_SERVER_HANDSHAKE_SIZE)

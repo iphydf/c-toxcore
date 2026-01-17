@@ -260,3 +260,44 @@ bool net_family_is_tox_tcp_ipv6(Family family)
 {
     return family.value == family_tox_tcp_ipv6.value;
 }
+
+const char *net_family_to_string(Family family)
+{
+    if (net_family_is_unspec(family)) {
+        return "TOX_AF_UNSPEC";
+    }
+
+    if (net_family_is_ipv4(family)) {
+        return "TOX_AF_INET";
+    }
+
+    if (net_family_is_ipv6(family)) {
+        return "TOX_AF_INET6";
+    }
+
+    if (net_family_is_tcp_server(family)) {
+        return "TCP_SERVER_FAMILY";
+    }
+
+    if (net_family_is_tcp_client(family)) {
+        return "TCP_CLIENT_FAMILY";
+    }
+
+    if (net_family_is_tcp_ipv4(family)) {
+        return "TCP_INET";
+    }
+
+    if (net_family_is_tcp_ipv6(family)) {
+        return "TCP_INET6";
+    }
+
+    if (net_family_is_tox_tcp_ipv4(family)) {
+        return "TOX_TCP_INET";
+    }
+
+    if (net_family_is_tox_tcp_ipv6(family)) {
+        return "TOX_TCP_INET6";
+    }
+
+    return "<invalid Family>";
+}
