@@ -44,8 +44,7 @@ struct VCSession {
     vc_video_receive_frame_cb *vcb;
     void *user_data;
 
-    pthread_mutex_t queue_mutex[1];
-    pthread_mutex_t *mutable_queue_mutex;
+    pthread_mutex_t *queue_mutex;
     const Logger *log;
 
     vpx_codec_iter_t iter;
@@ -177,12 +176,19 @@ VCSession *vc_new(const Logger *log, const Mono_Time *mono_time, uint32_t friend
         return nullptr;
     }
 
-    if (create_recursive_mutex(vc->queue_mutex) != 0) {
-        LOGGER_WARNING(log, "Failed to create recursive mutex!");
+    vc->queue_mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
+    if (vc->queue_mutex == nullptr) {
+        LOGGER_WARNING(log, "Allocation failed! Application might misbehave!");
         free(vc);
         return nullptr;
     }
-    vc->mutable_queue_mutex = vc->queue_mutex;
+
+    if (create_recursive_mutex(vc->queue_mutex) != 0) {
+        LOGGER_WARNING(log, "Failed to create recursive mutex!");
+        free(vc->queue_mutex);
+        free(vc);
+        return nullptr;
+    }
 
     const int cpu_used_value = VP8E_SET_CPUUSED_VALUE;
 
@@ -287,6 +293,7 @@ BASE_CLEANUP_1:
     vpx_codec_destroy(vc->decoder);
 BASE_CLEANUP:
     pthread_mutex_destroy(vc->queue_mutex);
+    free(vc->queue_mutex);
     rb_kill(vc->vbuf_raw);
     free(vc);
 
@@ -313,6 +320,7 @@ void vc_kill(VCSession *vc)
 
     rb_kill(vc->vbuf_raw);
     pthread_mutex_destroy(vc->queue_mutex);
+    free(vc->queue_mutex);
     LOGGER_DEBUG(vc->log, "Terminated video handler: %p", (void *)vc);
     free(vc);
 }
@@ -560,15 +568,15 @@ int vc_get_cx_data(VCSession *vc, uint8_t **data, uint32_t *size, bool *is_keyfr
 uint32_t vc_get_lcfd(const VCSession *vc)
 {
     uint32_t lcfd;
-    pthread_mutex_lock(vc->mutable_queue_mutex);
+    pthread_mutex_lock(vc->queue_mutex);
     lcfd = vc->lcfd;
-    pthread_mutex_unlock(vc->mutable_queue_mutex);
+    pthread_mutex_unlock(vc->queue_mutex);
     return lcfd;
 }
 
 pthread_mutex_t *vc_get_queue_mutex(VCSession *vc)
 {
-    return &vc->queue_mutex[0];
+    return vc->queue_mutex;
 }
 
 void vc_increment_frame_counter(VCSession *vc)
