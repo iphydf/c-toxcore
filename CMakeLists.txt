@@ -29,7 +29,8 @@ endif()
 
 set_source_files_properties(
   toxcore/mono_time.c
-  toxcore/network.c
+  toxcore/os_event.c
+  toxcore/os_network.c
   toxcore/tox.c
   toxcore/util.c
   PROPERTIES SKIP_UNITY_BUILD_INCLUSION TRUE)
@@ -70,9 +71,22 @@ include(CTest)
 include(ModulePackage)
 include(StrictAbi)
 include(GNUInstallDirs)
+include(CheckIncludeFile)
+include(CheckSymbolExists)
 
 if(APPLE)
   include(MacRpath)
+endif()
+
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+  check_include_file(sys/epoll.h HAVE_SYS_EPOLL_H)
+  if(HAVE_SYS_EPOLL_H)
+    check_symbol_exists(epoll_create "sys/epoll.h" HAVE_EPOLL_CREATE)
+    if(HAVE_EPOLL_CREATE)
+      add_definitions(-DEV_USE_EPOLL=1)
+      add_definitions(-DTCP_SERVER_USE_EPOLL=1)
+    endif()
+  endif()
 endif()
 
 enable_testing()
@@ -233,6 +247,8 @@ set(toxcore_SOURCES
   toxcore/crypto_core_pack.h
   toxcore/DHT.c
   toxcore/DHT.h
+  toxcore/ev.c
+  toxcore/ev.h
   toxcore/events/conference_connected.c
   toxcore/events/conference_invite.c
   toxcore/events/conference_message.c
@@ -324,6 +340,8 @@ set(toxcore_SOURCES
   toxcore/onion_client.c
   toxcore/onion_client.h
   toxcore/onion.h
+  toxcore/os_event.c
+  toxcore/os_event.h
   toxcore/os_memory.c
   toxcore/os_memory.h
   toxcore/os_network.c
@@ -548,6 +566,8 @@ if(UNITTEST)
     toxcore/DHT_test_util.hh
     toxcore/crypto_core_test_util.cc
     toxcore/crypto_core_test_util.hh
+    toxcore/ev_test_util.cc
+    toxcore/ev_test_util.hh
     toxcore/mono_time_test_util.cc
     toxcore/mono_time_test_util.hh
     toxcore/network_test_util.cc
@@ -571,6 +591,9 @@ function(unit_test subdir target)
     target_link_libraries(unit_${target}_test PRIVATE toxcore_static)
   else()
     target_link_libraries(unit_${target}_test PRIVATE toxcore_shared)
+  endif()
+  if(WIN32)
+    target_link_libraries(unit_${target}_test PRIVATE ws2_32)
   endif()
   target_link_libraries(unit_${target}_test PRIVATE GTest::gtest GTest::gtest_main GTest::gmock)
   set_target_properties(unit_${target}_test PROPERTIES COMPILE_FLAGS "${TEST_CXX_FLAGS}")
@@ -608,6 +631,7 @@ if(UNITTEST AND TARGET GTest::gtest AND TARGET GTest::gmock)
   unit_test(toxcore TCP_connection)
   unit_test(toxcore bin_pack)
   unit_test(toxcore crypto_core)
+  unit_test(toxcore ev)
   unit_test(toxcore friend_connection)
   unit_test(toxcore group_announce)
   unit_test(toxcore group_moderation)
@@ -713,6 +737,15 @@ if(UNITTEST AND benchmark_FOUND)
     toxcore/sort_test_util.hh
   )
   target_link_libraries(sort_bench PRIVATE
+    toxcore_static
+    benchmark::benchmark
+  )
+
+  add_executable(ev_bench
+    toxcore/ev_bench.cc
+  )
+  target_link_libraries(ev_bench PRIVATE
+    test_util
     toxcore_static
     benchmark::benchmark
   )
