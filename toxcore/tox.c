@@ -174,7 +174,7 @@ static void tox_friend_read_receipt_handler(Messenger *_Nonnull m, uint32_t frie
 }
 
 static m_friend_request_cb tox_friend_request_handler;
-static void tox_friend_request_handler(Messenger *_Nonnull m, const uint8_t public_key[TOX_PUBLIC_KEY_SIZE], const uint8_t *_Nonnull message, size_t length,
+static void tox_friend_request_handler(Messenger *_Nonnull m, const Tox_Public_Key public_key, const uint8_t *_Nonnull message, size_t length,
                                        void *_Nullable user_data)
 {
     struct Tox_Userdata *tox_data = (struct Tox_Userdata *)user_data;
@@ -1072,7 +1072,7 @@ void tox_get_savedata(const Tox *tox, uint8_t *savedata)
     tox_unlock(tox);
 }
 
-static int32_t resolve_bootstrap_node(Tox *_Nullable tox, const char *_Nullable host, uint16_t port, const uint8_t public_key[TOX_PUBLIC_KEY_SIZE],
+static int32_t resolve_bootstrap_node(Tox *_Nullable tox, const char *_Nullable host, uint16_t port, const Tox_Dht_Id public_key,
                                       IP_Port *_Nonnull *root, Tox_Err_Bootstrap *_Nullable error)
 {
     assert(tox != nullptr);
@@ -1101,7 +1101,7 @@ static int32_t resolve_bootstrap_node(Tox *_Nullable tox, const char *_Nullable 
     return count;
 }
 
-bool tox_bootstrap(Tox *tox, const char *host, uint16_t port, const uint8_t public_key[TOX_PUBLIC_KEY_SIZE], Tox_Err_Bootstrap *error)
+bool tox_bootstrap(Tox *tox, const char *host, uint16_t port, const Tox_Dht_Id public_key, Tox_Err_Bootstrap *error)
 {
     IP_Port *root;
     const int32_t count = resolve_bootstrap_node(tox, host, port, public_key, &root, error);
@@ -1157,7 +1157,7 @@ bool tox_bootstrap(Tox *tox, const char *host, uint16_t port, const uint8_t publ
     return true;
 }
 
-bool tox_add_tcp_relay(Tox *tox, const char *host, uint16_t port, const uint8_t public_key[TOX_PUBLIC_KEY_SIZE],
+bool tox_add_tcp_relay(Tox *tox, const char *host, uint16_t port, const Tox_Dht_Id public_key,
                        Tox_Err_Bootstrap *error)
 {
     IP_Port *root;
@@ -1245,7 +1245,7 @@ void tox_iterate(Tox *tox, void *user_data)
     tox_unlock(tox);
 }
 
-void tox_self_get_address(const Tox *tox, uint8_t address[TOX_ADDRESS_SIZE])
+void tox_self_get_address(const Tox *tox, Tox_Address address)
 {
     assert(tox != nullptr);
 
@@ -1273,7 +1273,7 @@ uint32_t tox_self_get_nospam(const Tox *tox)
     return ret;
 }
 
-void tox_self_get_public_key(const Tox *tox, uint8_t public_key[TOX_PUBLIC_KEY_SIZE])
+void tox_self_get_public_key(const Tox *tox, Tox_Public_Key public_key)
 {
     assert(tox != nullptr);
 
@@ -1284,7 +1284,7 @@ void tox_self_get_public_key(const Tox *tox, uint8_t public_key[TOX_PUBLIC_KEY_S
     }
 }
 
-void tox_self_get_secret_key(const Tox *tox, uint8_t secret_key[TOX_SECRET_KEY_SIZE])
+void tox_self_get_secret_key(const Tox *tox, Tox_Secret_Key secret_key)
 {
     assert(tox != nullptr);
 
@@ -1444,7 +1444,7 @@ static void set_friend_error(const Logger *_Nonnull log, int32_t ret, Tox_Err_Fr
     }
 }
 
-uint32_t tox_friend_add(Tox *tox, const uint8_t address[TOX_ADDRESS_SIZE], const uint8_t *message, size_t length,
+uint32_t tox_friend_add(Tox *tox, const Tox_Address address, const uint8_t *message, size_t length,
                         Tox_Err_Friend_Add *error)
 {
     assert(tox != nullptr);
@@ -1468,7 +1468,7 @@ uint32_t tox_friend_add(Tox *tox, const uint8_t address[TOX_ADDRESS_SIZE], const
     return UINT32_MAX;
 }
 
-uint32_t tox_friend_add_norequest(Tox *tox, const uint8_t public_key[TOX_PUBLIC_KEY_SIZE], Tox_Err_Friend_Add *error)
+uint32_t tox_friend_add_norequest(Tox *tox, const Tox_Public_Key public_key, Tox_Err_Friend_Add *error)
 {
     assert(tox != nullptr);
 
@@ -1508,7 +1508,7 @@ bool tox_friend_delete(Tox *tox, uint32_t friend_number, Tox_Err_Friend_Delete *
     return true;
 }
 
-uint32_t tox_friend_by_public_key(const Tox *tox, const uint8_t public_key[TOX_PUBLIC_KEY_SIZE], Tox_Err_Friend_By_Public_Key *error)
+uint32_t tox_friend_by_public_key(const Tox *tox, const Tox_Public_Key public_key, Tox_Err_Friend_By_Public_Key *error)
 {
     assert(tox != nullptr);
 
@@ -1531,7 +1531,7 @@ uint32_t tox_friend_by_public_key(const Tox *tox, const uint8_t public_key[TOX_P
     return (uint32_t)ret;
 }
 
-bool tox_friend_get_public_key(const Tox *tox, uint32_t friend_number, uint8_t public_key[TOX_PUBLIC_KEY_SIZE],
+bool tox_friend_get_public_key(const Tox *tox, uint32_t friend_number, Tox_Public_Key public_key,
                                Tox_Err_Friend_Get_Public_Key *error)
 {
     assert(tox != nullptr);
@@ -1856,7 +1856,7 @@ void tox_callback_friend_message(Tox *tox, tox_friend_message_cb *callback)
     tox->friend_message_callback = callback;
 }
 
-bool tox_hash(uint8_t hash[TOX_HASH_LENGTH], const uint8_t *data, size_t length)
+bool tox_hash(Tox_Hash hash, const uint8_t *data, size_t length)
 {
     if (hash == nullptr || (data == nullptr && length != 0)) {
         return false;
@@ -1986,7 +1986,7 @@ void tox_callback_file_recv_control(Tox *tox, tox_file_recv_control_cb *callback
     tox->file_recv_control_callback = callback;
 }
 
-bool tox_file_get_file_id(const Tox *tox, uint32_t friend_number, uint32_t file_number, uint8_t file_id[TOX_FILE_ID_LENGTH],
+bool tox_file_get_file_id(const Tox *tox, uint32_t friend_number, uint32_t file_number, Tox_File_Id file_id,
                           Tox_Err_File_Get *error)
 {
     assert(tox != nullptr);
@@ -2014,7 +2014,7 @@ bool tox_file_get_file_id(const Tox *tox, uint32_t friend_number, uint32_t file_
     return false;
 }
 
-uint32_t tox_file_send(Tox *tox, uint32_t friend_number, uint32_t kind, uint64_t file_size, const uint8_t file_id[TOX_FILE_ID_LENGTH],
+uint32_t tox_file_send(Tox *tox, uint32_t friend_number, uint32_t kind, uint64_t file_size, const Tox_File_Id file_id,
                        const uint8_t *filename, size_t filename_length, Tox_Err_File_Send *error)
 {
     assert(tox != nullptr);
@@ -2696,7 +2696,7 @@ Tox_Conference_Type tox_conference_get_type(const Tox *tox, uint32_t conference_
     return (Tox_Conference_Type)ret;
 }
 
-bool tox_conference_get_id(const Tox *tox, uint32_t conference_number, uint8_t id[TOX_CONFERENCE_ID_SIZE])
+bool tox_conference_get_id(const Tox *tox, uint32_t conference_number, Tox_Conference_Id id)
 {
     assert(tox != nullptr);
     tox_lock(tox);
@@ -2706,13 +2706,13 @@ bool tox_conference_get_id(const Tox *tox, uint32_t conference_number, uint8_t i
 }
 
 // TODO(iphydf): Delete in 0.3.0.
-bool tox_conference_get_uid(const Tox *tox, uint32_t conference_number, uint8_t uid[TOX_CONFERENCE_UID_SIZE])
+bool tox_conference_get_uid(const Tox *tox, uint32_t conference_number, Tox_Conference_Uid uid)
 {
     assert(tox != nullptr);
     return tox_conference_get_id(tox, conference_number, uid);
 }
 
-uint32_t tox_conference_by_id(const Tox *tox, const uint8_t id[TOX_CONFERENCE_ID_SIZE], Tox_Err_Conference_By_Id *error)
+uint32_t tox_conference_by_id(const Tox *tox, const Tox_Conference_Id id, Tox_Err_Conference_By_Id *error)
 {
     assert(tox != nullptr);
 
@@ -2736,7 +2736,7 @@ uint32_t tox_conference_by_id(const Tox *tox, const uint8_t id[TOX_CONFERENCE_ID
 }
 
 // TODO(iphydf): Delete in 0.3.0.
-uint32_t tox_conference_by_uid(const Tox *tox, const uint8_t uid[TOX_CONFERENCE_UID_SIZE], Tox_Err_Conference_By_Uid *error)
+uint32_t tox_conference_by_uid(const Tox *tox, const Tox_Conference_Uid uid, Tox_Err_Conference_By_Uid *error)
 {
     assert(tox != nullptr);
     Tox_Err_Conference_By_Id id_error;
@@ -2871,7 +2871,7 @@ void tox_callback_friend_lossless_packet(Tox *tox, tox_friend_lossless_packet_cb
     }
 }
 
-void tox_self_get_dht_id(const Tox *tox, uint8_t dht_id[TOX_PUBLIC_KEY_SIZE])
+void tox_self_get_dht_id(const Tox *tox, Tox_Dht_Id dht_id)
 {
     assert(tox != nullptr);
 
@@ -3073,7 +3073,7 @@ uint32_t tox_group_new(Tox *tox, Tox_Group_Privacy_State privacy_state, const ui
     return UINT32_MAX;
 }
 
-uint32_t tox_group_join(Tox *tox, const uint8_t chat_id[TOX_GROUP_CHAT_ID_SIZE], const uint8_t *name, size_t name_length,
+uint32_t tox_group_join(Tox *tox, const Tox_Group_Chat_Id chat_id, const uint8_t *name, size_t name_length,
                         const uint8_t *password, size_t password_length, Tox_Err_Group_Join *error)
 {
     assert(tox != nullptr);
@@ -3437,7 +3437,7 @@ uint32_t tox_group_self_get_peer_id(const Tox *tox, uint32_t group_number, Tox_E
     return gc_peer_id_to_int(ret);
 }
 
-bool tox_group_self_get_public_key(const Tox *tox, uint32_t group_number, uint8_t public_key[TOX_PUBLIC_KEY_SIZE],
+bool tox_group_self_get_public_key(const Tox *tox, uint32_t group_number, Tox_Public_Key public_key,
                                    Tox_Err_Group_Self_Query *error)
 {
     assert(tox != nullptr);
@@ -3563,7 +3563,7 @@ Tox_Group_Role tox_group_peer_get_role(const Tox *tox, uint32_t group_number, ui
     return (Tox_Group_Role)ret;
 }
 
-bool tox_group_peer_get_public_key(const Tox *tox, uint32_t group_number, uint32_t peer_id, uint8_t public_key[TOX_PUBLIC_KEY_SIZE],
+bool tox_group_peer_get_public_key(const Tox *tox, uint32_t group_number, uint32_t peer_id, Tox_Public_Key public_key,
                                    Tox_Err_Group_Peer_Query *error)
 {
     assert(tox != nullptr);
@@ -3754,7 +3754,7 @@ bool tox_group_get_name(const Tox *tox, uint32_t group_number, uint8_t *name, To
     return true;
 }
 
-bool tox_group_get_chat_id(const Tox *tox, uint32_t group_number, uint8_t chat_id[TOX_GROUP_CHAT_ID_SIZE], Tox_Err_Group_State_Query *error)
+bool tox_group_get_chat_id(const Tox *tox, uint32_t group_number, Tox_Group_Chat_Id chat_id, Tox_Err_Group_State_Query *error)
 {
     assert(tox != nullptr);
 

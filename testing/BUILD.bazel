@@ -1,4 +1,5 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("//hs-tokstyle/tools:tokstyle.bzl", "tokstyle_c_test")
 
 CIMPLE_FILES = [
     "//c-toxcore/toxav:cimple_files",
@@ -30,35 +31,25 @@ sh_test(
     ],
 )
 
-sh_test(
+tokstyle_c_test(
     name = "c_test",
     size = "medium",
-    srcs = ["//hs-tokstyle/tools:check-c"],
+    srcs = CIMPLE_FILES,
     args = [
         "-Wno-borrow-check",
         "-Wno-callback-discipline",
         "-Wno-strict-typedef",
-        "--cc=$(CC)",
-        "-Iexternal/libsodium/include",
-        "-Iexternal/libvpx",
-        "-Iexternal/opus/include",
-        "-Ihs-tokstyle/include",
-    ] + ["$(locations %s)" % f for f in CIMPLE_FILES] + [
-        "+RTS",
-        "-N4",
-        "-RTS",
-    ],
-    data = CIMPLE_FILES + [
-        "//hs-tokstyle:headers",
-        "@libsodium//:headers",
-        "@libvpx//:headers",
-        "@opus//:headers",
     ],
     tags = [
         "haskell",
         "no-cross",
     ],
-    toolchains = ["@rules_cc//cc:current_cc_toolchain"],
+    deps = [
+        "//hs-tokstyle:headers",
+        "@libsodium",
+        "@libvpx",
+        "@opus",
+    ],
 )
 
 sh_test(

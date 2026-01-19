@@ -26,6 +26,10 @@ uint32_t tox_secret_key_size(void)
 {
     return TOX_SECRET_KEY_SIZE;
 }
+uint32_t tox_dht_id_size(void)
+{
+    return TOX_DHT_ID_SIZE;
+}
 uint32_t tox_conference_uid_size(void)
 {
     return TOX_CONFERENCE_UID_SIZE;
