@@ -887,6 +887,21 @@ const char *tox_err_group_new_to_string(Tox_Err_Group_New value)
 
     return "<invalid Tox_Err_Group_New>";
 }
+const char *tox_err_group_by_id_to_string(Tox_Err_Group_By_Id value)
+{
+    switch (value) {
+        case TOX_ERR_GROUP_BY_ID_OK:
+            return "TOX_ERR_GROUP_BY_ID_OK";
+
+        case TOX_ERR_GROUP_BY_ID_NULL:
+            return "TOX_ERR_GROUP_BY_ID_NULL";
+
+        case TOX_ERR_GROUP_BY_ID_NOT_FOUND:
+            return "TOX_ERR_GROUP_BY_ID_NOT_FOUND";
+    }
+
+    return "<invalid Tox_Err_Group_By_Id>";
+}
 const char *tox_err_group_join_to_string(Tox_Err_Group_Join value)
 {
     switch (value) {

@@ -3774,6 +3774,31 @@ bool tox_group_get_chat_id(const Tox *tox, uint32_t group_number, Tox_Group_Chat
     return true;
 }
 
+Tox_Group_Number tox_group_by_id(const Tox *tox, const Tox_Group_Chat_Id chat_id, Tox_Err_Group_By_Id *error)
+{
+    assert(tox != nullptr);
+
+    if (chat_id == nullptr) {
+        SET_ERROR_PARAMETER(error, TOX_ERR_GROUP_BY_ID_NULL);
+        return UINT32_MAX;
+    }
+
+    tox_lock(tox);
+    const GC_Chat *chat = gc_get_group_by_public_key(tox->m->group_handler, chat_id);
+
+    if (chat == nullptr) {
+        SET_ERROR_PARAMETER(error, TOX_ERR_GROUP_BY_ID_NOT_FOUND);
+        tox_unlock(tox);
+        return UINT32_MAX;
+    }
+
+    SET_ERROR_PARAMETER(error, TOX_ERR_GROUP_BY_ID_OK);
+    const uint32_t ret = chat->group_number;
+    tox_unlock(tox);
+
+    return ret;
+}
+
 uint32_t tox_group_get_number_groups(const Tox *tox)
 {
     assert(tox != nullptr);

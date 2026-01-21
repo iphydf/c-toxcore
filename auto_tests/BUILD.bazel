@@ -4,6 +4,7 @@ cc_library(
     name = "check_compat",
     testonly = True,
     hdrs = ["check_compat.h"],
+    visibility = ["//c-toxcore/auto_tests:__subpackages__"],
     deps = ["//c-toxcore/toxcore:ccompat"],
 )
 

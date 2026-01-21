@@ -3991,6 +3991,36 @@ bool tox_group_get_chat_id(
     const Tox *tox, Tox_Group_Number group_number, Tox_Group_Chat_Id chat_id,
     Tox_Err_Group_State_Query *error);
 
+typedef enum Tox_Err_Group_By_Id {
+    /**
+     * The function returned successfully.
+     */
+    TOX_ERR_GROUP_BY_ID_OK,
+
+    /**
+     * One of the arguments to the function was NULL when it was not expected.
+     */
+    TOX_ERR_GROUP_BY_ID_NULL,
+
+    /**
+     * No group with the given ID exists on the group list.
+     */
+    TOX_ERR_GROUP_BY_ID_NOT_FOUND,
+
+} Tox_Err_Group_By_Id;
+
+const char *tox_err_group_by_id_to_string(Tox_Err_Group_By_Id value);
+
+/**
+ * Return the group number associated with the specified Chat ID.
+ *
+ * @param chat_id A byte array containing the Chat ID (TOX_GROUP_CHAT_ID_SIZE).
+ *
+ * @return the group number on success, UINT32_MAX on failure.
+ */
+Tox_Group_Number tox_group_by_id(
+    const Tox *tox, const Tox_Group_Chat_Id chat_id, Tox_Err_Group_By_Id *error);
+
 /**
  * Return the number of groups in the Tox chats array.
  */
