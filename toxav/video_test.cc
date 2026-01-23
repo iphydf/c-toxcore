@@ -24,7 +24,7 @@ using VideoTest = AvTest;
 TEST_F(VideoTest, BasicNewKill)
 {
     VideoTestData data;
-    VCSession *vc = vc_new(log, mono_time, 123, VideoTestData::receive_frame, &data);
+    VCSession *vc = vc_new(mem, log, mono_time, 123, VideoTestData::receive_frame, &data);
     ASSERT_NE(vc, nullptr);
     vc_kill(vc);
 }
@@ -32,7 +32,7 @@ TEST_F(VideoTest, BasicNewKill)
 TEST_F(VideoTest, EncodeDecodeLoop)
 {
     VideoTestData data;
-    VCSession *vc = vc_new(log, mono_time, 123, VideoTestData::receive_frame, &data);
+    VCSession *vc = vc_new(mem, log, mono_time, 123, VideoTestData::receive_frame, &data);
     ASSERT_NE(vc, nullptr);
 
     RtpMock rtp_mock;
@@ -79,7 +79,7 @@ TEST_F(VideoTest, EncodeDecodeLoop)
 TEST_F(VideoTest, EncodeDecodeSequence)
 {
     VideoTestData data;
-    VCSession *vc = vc_new(log, mono_time, 123, VideoTestData::receive_frame, &data);
+    VCSession *vc = vc_new(mem, log, mono_time, 123, VideoTestData::receive_frame, &data);
     ASSERT_NE(vc, nullptr);
 
     RtpMock rtp_mock;
@@ -146,7 +146,7 @@ TEST_F(VideoTest, EncodeDecodeSequence)
 TEST_F(VideoTest, EncodeDecodeResolutionChange)
 {
     VideoTestData data;
-    VCSession *vc = vc_new(log, mono_time, 123, VideoTestData::receive_frame, &data);
+    VCSession *vc = vc_new(mem, log, mono_time, 123, VideoTestData::receive_frame, &data);
     ASSERT_NE(vc, nullptr);
 
     RtpMock rtp_mock;
@@ -211,7 +211,7 @@ TEST_F(VideoTest, EncodeDecodeBitrateImpact)
 
     for (int b = 0; b < 3; ++b) {
         VideoTestData data;
-        VCSession *vc = vc_new(log, mono_time, 123, VideoTestData::receive_frame, &data);
+        VCSession *vc = vc_new(mem, log, mono_time, 123, VideoTestData::receive_frame, &data);
         ASSERT_NE(vc, nullptr);
 
         RtpMock rtp_mock;
@@ -270,7 +270,7 @@ TEST_F(VideoTest, EncodeDecodeBitrateImpact)
 TEST_F(VideoTest, ReconfigureEncoder)
 {
     VideoTestData data;
-    VCSession *vc = vc_new(log, mono_time, 123, VideoTestData::receive_frame, &data);
+    VCSession *vc = vc_new(mem, log, mono_time, 123, VideoTestData::receive_frame, &data);
     ASSERT_NE(vc, nullptr);
 
     // Initial reconfigure
@@ -291,7 +291,7 @@ TEST_F(VideoTest, ReconfigureEncoder)
 TEST_F(VideoTest, GetLcfd)
 {
     VideoTestData data;
-    VCSession *vc = vc_new(log, mono_time, 123, VideoTestData::receive_frame, &data);
+    VCSession *vc = vc_new(mem, log, mono_time, 123, VideoTestData::receive_frame, &data);
     ASSERT_NE(vc, nullptr);
 
     // Default lcfd is 60 in video.c
@@ -303,7 +303,7 @@ TEST_F(VideoTest, GetLcfd)
 TEST_F(VideoTest, QueueInvalidMessage)
 {
     VideoTestData data;
-    VCSession *vc = vc_new(log, mono_time, 123, VideoTestData::receive_frame, &data);
+    VCSession *vc = vc_new(mem, log, mono_time, 123, VideoTestData::receive_frame, &data);
     ASSERT_NE(vc, nullptr);
 
     RtpMock rtp_mock;
@@ -331,7 +331,7 @@ TEST_F(VideoTest, QueueInvalidMessage)
 TEST_F(VideoTest, ReconfigureOptimizations)
 {
     VideoTestData data;
-    VCSession *vc = vc_new(log, mono_time, 123, VideoTestData::receive_frame, &data);
+    VCSession *vc = vc_new(mem, log, mono_time, 123, VideoTestData::receive_frame, &data);
     ASSERT_NE(vc, nullptr);
 
     // 1. Reconfigure with same values (should do nothing)
@@ -350,7 +350,7 @@ TEST_F(VideoTest, ReconfigureOptimizations)
 TEST_F(VideoTest, LcfdAndSpecialPackets)
 {
     VideoTestData data;
-    VCSession *vc = vc_new(log, mono_time, 123, VideoTestData::receive_frame, &data);
+    VCSession *vc = vc_new(mem, log, mono_time, 123, VideoTestData::receive_frame, &data);
     ASSERT_NE(vc, nullptr);
 
     RtpMock rtp_mock;
@@ -395,7 +395,7 @@ TEST_F(VideoTest, LcfdAndSpecialPackets)
 TEST_F(VideoTest, MultiReconfigureEncode)
 {
     VideoTestData data;
-    VCSession *vc = vc_new(log, mono_time, 123, VideoTestData::receive_frame, &data);
+    VCSession *vc = vc_new(mem, log, mono_time, 123, VideoTestData::receive_frame, &data);
     ASSERT_NE(vc, nullptr);
 
     for (int i = 0; i < 5; ++i) {
@@ -415,7 +415,7 @@ TEST_F(VideoTest, MultiReconfigureEncode)
 TEST_F(VideoTest, ReconfigureFailDoS)
 {
     VideoTestData data;
-    VCSession *vc = vc_new(log, mono_time, 123, VideoTestData::receive_frame, &data);
+    VCSession *vc = vc_new(mem, log, mono_time, 123, VideoTestData::receive_frame, &data);
     ASSERT_NE(vc, nullptr);
 
     // Trigger failure by passing invalid resolution (0)
@@ -435,7 +435,7 @@ TEST_F(VideoTest, ReconfigureFailDoS)
 TEST_F(VideoTest, LyingLengthOOB)
 {
     VideoTestData data;
-    VCSession *vc = vc_new(log, mono_time, 123, VideoTestData::receive_frame, &data);
+    VCSession *vc = vc_new(mem, log, mono_time, 123, VideoTestData::receive_frame, &data);
     ASSERT_NE(vc, nullptr);
 
     RtpMock rtp_mock;

@@ -165,7 +165,7 @@ double VideoTestData::calculate_mse(const std::vector<std::uint8_t> &y_orig) con
 // Common Test Fixture
 void AvTest::SetUp()
 {
-    const Memory *mem = os_memory();
+    mem = os_memory();
     log = logger_new(mem);
     tm.t = 1000;
     mono_time = mono_time_new(mem, mock_time_cb, &tm);
@@ -174,7 +174,6 @@ void AvTest::SetUp()
 
 void AvTest::TearDown()
 {
-    const Memory *_Nonnull mem = os_memory();
     mono_time_free(mem, mono_time);
     logger_kill(log);
 }

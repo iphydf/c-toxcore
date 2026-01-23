@@ -344,14 +344,14 @@ ToxAV *toxav_new(Tox *tox, Toxav_Err_New *error)
         goto RETURN;
     }
 
-    av->mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
+    av->mutex = (pthread_mutex_t *)mem_alloc(tox->sys.mem, sizeof(pthread_mutex_t));
     if (av->mutex == nullptr) {
         rc = TOXAV_ERR_NEW_MALLOC;
         goto RETURN;
     }
 
     if (create_recursive_mutex(av->mutex) != 0) {
-        free(av->mutex);
+        mem_delete(tox->sys.mem, av->mutex);
         rc = TOXAV_ERR_NEW_MALLOC;
         goto RETURN;
     }
@@ -378,7 +378,7 @@ ToxAV *toxav_new(Tox *tox, Toxav_Err_New *error)
         mono_time_free(tox->sys.mem, av->toxav_mono_time);
 
         pthread_mutex_destroy(av->mutex);
-        free(av->mutex);
+        mem_delete(tox->sys.mem, av->mutex);
         rc = TOXAV_ERR_NEW_MALLOC;
         goto RETURN;
     }
@@ -444,7 +444,7 @@ void toxav_kill(ToxAV *av)
 
     pthread_mutex_unlock(av->mutex);
     pthread_mutex_destroy(av->mutex);
-    free(av->mutex);
+    mem_delete(av->tox->sys.mem, av->mutex);
 
     // set ToxAV object to NULL in toxcore, to signal ToxAV has been shutdown
     tox_set_av_object(av->tox, nullptr);
@@ -1657,7 +1657,7 @@ static bool call_prepare_transmission(ToxAVCall *_Nullable call)
     { /* Prepare video */
         call->vcb = av->vcb;
         call->vcb_user_data = av->vcb_user_data;
-        call->video = vc_new(av->log, av->toxav_mono_time, call->friend_number, handle_video_frame, call);
+        call->video = vc_new(av->mem, av->log, av->toxav_mono_time, call->friend_number, handle_video_frame, call);
 
         if (call->video == nullptr) {
             LOGGER_ERROR(av->log, "Failed to create video codec session");

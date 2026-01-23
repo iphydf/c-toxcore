@@ -46,6 +46,7 @@ struct VCSession {
 
     pthread_mutex_t *queue_mutex;
     const Logger *log;
+    const Memory *mem;
 
     vpx_codec_iter_t iter;
 };
@@ -161,7 +162,7 @@ static void vc_init_encoder_cfg(const Logger *_Nonnull log, vpx_codec_enc_cfg_t 
 #endif /* 0 */
 }
 
-VCSession *vc_new(const Logger *log, const Mono_Time *mono_time, uint32_t friend_number,
+VCSession *vc_new(const Memory *mem, const Logger *log, const Mono_Time *mono_time, uint32_t friend_number,
                   vc_video_receive_frame_cb *cb, void *user_data)
 {
     if (mono_time == nullptr) {
@@ -176,7 +177,9 @@ VCSession *vc_new(const Logger *log, const Mono_Time *mono_time, uint32_t friend
         return nullptr;
     }
 
-    vc->queue_mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
+    vc->mem = mem;
+
+    vc->queue_mutex = (pthread_mutex_t *)mem_alloc(mem, sizeof(pthread_mutex_t));
     if (vc->queue_mutex == nullptr) {
         LOGGER_WARNING(log, "Allocation failed! Application might misbehave!");
         free(vc);
@@ -185,7 +188,7 @@ VCSession *vc_new(const Logger *log, const Mono_Time *mono_time, uint32_t friend
 
     if (create_recursive_mutex(vc->queue_mutex) != 0) {
         LOGGER_WARNING(log, "Failed to create recursive mutex!");
-        free(vc->queue_mutex);
+        mem_delete(mem, vc->queue_mutex);
         free(vc);
         return nullptr;
     }
@@ -293,7 +296,7 @@ BASE_CLEANUP_1:
     vpx_codec_destroy(vc->decoder);
 BASE_CLEANUP:
     pthread_mutex_destroy(vc->queue_mutex);
-    free(vc->queue_mutex);
+    mem_delete(vc->mem, vc->queue_mutex);
     rb_kill(vc->vbuf_raw);
     free(vc);
 
@@ -320,7 +323,7 @@ void vc_kill(VCSession *vc)
 
     rb_kill(vc->vbuf_raw);
     pthread_mutex_destroy(vc->queue_mutex);
-    free(vc->queue_mutex);
+    mem_delete(vc->mem, vc->queue_mutex);
     LOGGER_DEBUG(vc->log, "Terminated video handler: %p", (void *)vc);
     free(vc);
 }

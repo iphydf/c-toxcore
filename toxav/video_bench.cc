@@ -27,7 +27,7 @@ public:
         log = logger_new(mem);
         tm.t = 1000;
         mono_time = mono_time_new(mem, mock_time_cb, &tm);
-        vc = vc_new(log, mono_time, 123, nullptr, nullptr);
+        vc = vc_new(mem, log, mono_time, 123, nullptr, nullptr);
 
         width = static_cast<std::uint16_t>(state.range(0));
         height = static_cast<std::uint16_t>(state.range(1));

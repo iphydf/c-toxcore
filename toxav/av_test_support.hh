@@ -92,6 +92,7 @@ protected:
 
     Logger *_Nullable log = nullptr;
     Mono_Time *_Nullable mono_time = nullptr;
+    const Memory *_Nullable mem = nullptr;
     MockTime tm;
 };
 
