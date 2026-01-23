@@ -181,4 +181,259 @@ TEST(BinPack, OversizedArrayFailsUnpack)
         &size, buf.data(), buf.size()));
 }
 
+TEST(BinPack, StringCanBePackedAndUnpacked)
+{
+    const Memory *mem = os_memory();
+    const char *orig = "hello world";
+    const uint32_t orig_len = strlen(orig);
+
+    std::array<std::uint8_t, 13> buf;
+    EXPECT_TRUE(bin_pack_obj(
+        [](const void *obj, const Logger *logger, Bin_Pack *bp) {
+            const char *str = static_cast<const char *>(obj);
+            return bin_pack_str(bp, str, strlen(str));
+        },
+        orig, nullptr, buf.data(), buf.size()));
+
+    struct {
+        char *str;
+        uint32_t len;
+    } unpacked = {nullptr, 0};
+
+    EXPECT_TRUE(bin_unpack_obj(
+        mem,
+        [](void *obj, Bin_Unpack *bu) {
+            auto *res = static_cast<decltype(unpacked) *>(obj);
+            return bin_unpack_str(bu, &res->str, &res->len);
+        },
+        &unpacked, buf.data(), buf.size()));
+
+    EXPECT_EQ(unpacked.len, orig_len);
+    EXPECT_STREQ(unpacked.str, orig);
+    mem_delete(mem, unpacked.str);
+}
+
+TEST(BinPack, EmptyStringCanBePackedAndUnpacked)
+{
+    const Memory *mem = os_memory();
+    const char *orig = "";
+    const uint32_t orig_len = 0;
+
+    std::array<std::uint8_t, 1> buf;
+    EXPECT_TRUE(bin_pack_obj(
+        [](const void *obj, const Logger *logger, Bin_Pack *bp) {
+            const char *str = static_cast<const char *>(obj);
+            return bin_pack_str(bp, str, 0);
+        },
+        orig, nullptr, buf.data(), buf.size()));
+
+    struct {
+        char *str;
+        uint32_t len;
+    } unpacked = {nullptr, 0};
+
+    EXPECT_TRUE(bin_unpack_obj(
+        mem,
+        [](void *obj, Bin_Unpack *bu) {
+            auto *res = static_cast<decltype(unpacked) *>(obj);
+            return bin_unpack_str(bu, &res->str, &res->len);
+        },
+        &unpacked, buf.data(), buf.size()));
+
+    EXPECT_EQ(unpacked.len, orig_len);
+    EXPECT_STREQ(unpacked.str, orig);
+    mem_delete(mem, unpacked.str);
+}
+
+TEST(BinPack, EmptyBinCanBePackedAndUnpacked)
+{
+    const Memory *mem = os_memory();
+
+    std::array<std::uint8_t, 2> buf;
+    EXPECT_TRUE(bin_pack_obj(
+        [](const void *obj, const Logger *logger, Bin_Pack *bp) {
+            uint8_t dummy = 0;
+            return bin_pack_bin(bp, &dummy, 0);
+        },
+        nullptr, nullptr, buf.data(), buf.size()));
+
+    struct {
+        uint8_t *data;
+        uint32_t len;
+    } unpacked = {reinterpret_cast<uint8_t *>(1),
+        1};  // Initialize with non-null to check it gets set to null
+
+    EXPECT_TRUE(bin_unpack_obj(
+        mem,
+        [](void *obj, Bin_Unpack *bu) {
+            auto *res = static_cast<decltype(unpacked) *>(obj);
+            return bin_unpack_bin(bu, &res->data, &res->len);
+        },
+        &unpacked, buf.data(), buf.size()));
+
+    EXPECT_EQ(unpacked.len, 0);
+    EXPECT_EQ(unpacked.data, nullptr);
+}
+
+TEST(BinPack, NullStringWithZeroLengthCanBePackedAndUnpacked)
+{
+    const Memory *mem = os_memory();
+
+    std::array<std::uint8_t, 1> buf;
+    EXPECT_TRUE(bin_pack_obj([](const void *obj, const Logger *logger,
+                                 Bin_Pack *bp) { return bin_pack_str(bp, nullptr, 0); },
+        nullptr, nullptr, buf.data(), buf.size()));
+
+    struct {
+        char *str;
+        uint32_t len;
+    } unpacked = {nullptr, 0};
+
+    EXPECT_TRUE(bin_unpack_obj(
+        mem,
+        [](void *obj, Bin_Unpack *bu) {
+            auto *res = static_cast<decltype(unpacked) *>(obj);
+            return bin_unpack_str(bu, &res->str, &res->len);
+        },
+        &unpacked, buf.data(), buf.size()));
+
+    EXPECT_EQ(unpacked.len, 0);
+    ASSERT_NE(unpacked.str, nullptr);
+    EXPECT_EQ(unpacked.str[0], '\0');
+    mem_delete(mem, unpacked.str);
+}
+
+TEST(BinPack, NullBinWithZeroLengthCanBePackedAndUnpacked)
+{
+    const Memory *mem = os_memory();
+
+    std::array<std::uint8_t, 2> buf;
+    EXPECT_TRUE(bin_pack_obj([](const void *obj, const Logger *logger,
+                                 Bin_Pack *bp) { return bin_pack_bin(bp, nullptr, 0); },
+        nullptr, nullptr, buf.data(), buf.size()));
+
+    struct {
+        uint8_t *data;
+        uint32_t len;
+    } unpacked = {reinterpret_cast<uint8_t *>(1), 1};
+
+    EXPECT_TRUE(bin_unpack_obj(
+        mem,
+        [](void *obj, Bin_Unpack *bu) {
+            auto *res = static_cast<decltype(unpacked) *>(obj);
+            return bin_unpack_bin(bu, &res->data, &res->len);
+        },
+        &unpacked, buf.data(), buf.size()));
+
+    EXPECT_EQ(unpacked.len, 0);
+    EXPECT_EQ(unpacked.data, nullptr);
+}
+
+TEST(BinPack, PackFailsWithNullAndNonZeroLength)
+{
+    std::array<std::uint8_t, 10> buf;
+    // bin_pack_str
+    EXPECT_FALSE(bin_pack_obj([](const void *obj, const Logger *logger,
+                                  Bin_Pack *bp) { return bin_pack_str(bp, nullptr, 1); },
+        nullptr, nullptr, buf.data(), buf.size()));
+
+    // bin_pack_bin
+    EXPECT_FALSE(bin_pack_obj([](const void *obj, const Logger *logger,
+                                  Bin_Pack *bp) { return bin_pack_bin(bp, nullptr, 1); },
+        nullptr, nullptr, buf.data(), buf.size()));
+
+    // bin_pack_bin_b
+    EXPECT_FALSE(bin_pack_obj([](const void *obj, const Logger *logger,
+                                  Bin_Pack *bp) { return bin_pack_bin_b(bp, nullptr, 1); },
+        nullptr, nullptr, buf.data(), buf.size()));
+}
+
+TEST(BinPack, PlainBinaryZeroLengthCanBePackedAndUnpacked)
+{
+    const Memory *mem = os_memory();
+
+    std::array<std::uint8_t, 1> buf = {0xAA};  // Canary
+    EXPECT_TRUE(bin_pack_obj([](const void *obj, const Logger *logger,
+                                 Bin_Pack *bp) { return bin_pack_bin_b(bp, nullptr, 0); },
+        nullptr, nullptr, buf.data(), buf.size()));
+
+    // pos should not have advanced
+    EXPECT_EQ(buf[0], 0xAA);
+
+    std::uint8_t dummy = 0xBB;
+    EXPECT_TRUE(bin_unpack_obj(
+        mem,
+        [](void *obj, Bin_Unpack *bu) {
+            return bin_unpack_bin_b(bu, static_cast<std::uint8_t *>(obj), 0);
+        },
+        &dummy, buf.data(), 0));
+
+    EXPECT_EQ(dummy, 0xBB);
+}
+
+TEST(BinPack, StringUnpackGuaranteesNonNull)
+{
+    const Memory *mem = os_memory();
+    std::array<std::uint8_t, 1> buf;
+
+    // Pack empty string
+    bin_pack_obj(
+        [](const void *obj, const Logger *logger, Bin_Pack *bp) { return bin_pack_str(bp, "", 0); },
+        nullptr, nullptr, buf.data(), buf.size());
+
+    char *res = nullptr;
+    EXPECT_TRUE(bin_unpack_obj(
+        mem,
+        [](void *obj, Bin_Unpack *bu) {
+            auto **ptr = static_cast<char **>(obj);
+            uint32_t dummy_len;
+            return bin_unpack_str(bu, ptr, &dummy_len);
+        },
+        &res, buf.data(), buf.size()));
+
+    ASSERT_NE(res, nullptr);
+    EXPECT_EQ(res[0], '\0');
+    mem_delete(mem, res);
+}
+
+TEST(BinPack, UnpackFailsOnBufferOverrun)
+{
+    const Memory *mem = os_memory();
+
+    // 1. String claiming to be 100 bytes in a 5 byte buffer
+    std::array<std::uint8_t, 5> buf;
+    buf[0] = 0xD9;  // str 8
+    buf[1] = 100;
+
+    struct StrRes {
+        char *s;
+        uint32_t l;
+    } res_str = {nullptr, 0};
+
+    EXPECT_FALSE(bin_unpack_obj(
+        mem,
+        [](void *obj, Bin_Unpack *bu) {
+            auto *res = static_cast<StrRes *>(obj);
+            return bin_unpack_str(bu, &res->s, &res->l);
+        },
+        &res_str, buf.data(), buf.size()));
+
+    // 2. Bin claiming to be 100 bytes
+    buf[0] = 0xC4;  // bin 8
+    buf[1] = 100;
+
+    struct BinRes {
+        uint8_t *b;
+        uint32_t l;
+    } res_bin = {nullptr, 0};
+
+    EXPECT_FALSE(bin_unpack_obj(
+        mem,
+        [](void *obj, Bin_Unpack *bu) {
+            auto *res = static_cast<BinRes *>(obj);
+            return bin_unpack_bin(bu, &res->b, &res->l);
+        },
+        &res_bin, buf.data(), buf.size()));
+}
+
 }  // namespace
