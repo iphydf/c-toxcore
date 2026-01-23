@@ -512,6 +512,24 @@ const char *tox_err_file_get_to_string(Tox_Err_File_Get value)
 
     return "<invalid Tox_Err_File_Get>";
 }
+const char *tox_err_file_by_id_to_string(Tox_Err_File_By_Id value)
+{
+    switch (value) {
+        case TOX_ERR_FILE_BY_ID_OK:
+            return "TOX_ERR_FILE_BY_ID_OK";
+
+        case TOX_ERR_FILE_BY_ID_NULL:
+            return "TOX_ERR_FILE_BY_ID_NULL";
+
+        case TOX_ERR_FILE_BY_ID_FRIEND_NOT_FOUND:
+            return "TOX_ERR_FILE_BY_ID_FRIEND_NOT_FOUND";
+
+        case TOX_ERR_FILE_BY_ID_NOT_FOUND:
+            return "TOX_ERR_FILE_BY_ID_NOT_FOUND";
+    }
+
+    return "<invalid Tox_Err_File_By_Id>";
+}
 const char *tox_err_file_send_to_string(Tox_Err_File_Send value)
 {
     switch (value) {

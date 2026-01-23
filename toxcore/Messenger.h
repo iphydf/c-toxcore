@@ -628,6 +628,7 @@ void callback_file_reqchunk(Messenger *_Nonnull m, m_file_chunk_request_cb *_Non
  * @retval -2 if filenumber not valid
  */
 int file_get_id(const Messenger *_Nonnull m, int32_t friendnumber, uint32_t filenumber, uint8_t *_Nonnull file_id);
+int32_t file_by_id(const Messenger *_Nonnull m, uint32_t friendnumber, const uint8_t *_Nonnull file_id);
 
 /** @brief Send a file send request.
  *

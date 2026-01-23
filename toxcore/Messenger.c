@@ -1184,6 +1184,29 @@ int file_get_id(const Messenger *m, int32_t friendnumber, uint32_t filenumber, u
     return 0;
 }
 
+int32_t file_by_id(const Messenger *m, uint32_t friendnumber, const uint8_t *file_id)
+{
+    if (friendnumber >= m->numfriends || m->friendlist[friendnumber].status == 0) {
+        return -1;
+    }
+
+    for (uint32_t j = 0; j < MAX_CONCURRENT_FILE_PIPES; ++j) {
+        if (m->friendlist[friendnumber].file_sending[j].status != FILESTATUS_NONE) {
+            if (memcmp(m->friendlist[friendnumber].file_sending[j].id, file_id, FILE_ID_LENGTH) == 0) {
+                return (int32_t)j;
+            }
+        }
+
+        if (m->friendlist[friendnumber].file_receiving[j].status != FILESTATUS_NONE) {
+            if (memcmp(m->friendlist[friendnumber].file_receiving[j].id, file_id, FILE_ID_LENGTH) == 0) {
+                return (int32_t)((j + 1) << 16);
+            }
+        }
+    }
+
+    return -2;
+}
+
 /** @brief Send a file send request.
  * Maximum filename length is 255 bytes.
  * @retval 1 on success

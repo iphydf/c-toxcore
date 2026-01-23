@@ -2014,6 +2014,34 @@ bool tox_file_get_file_id(const Tox *tox, uint32_t friend_number, uint32_t file_
     return false;
 }
 
+Tox_File_Number tox_file_by_id(const Tox *tox, Tox_Friend_Number friend_number, const Tox_File_Id file_id,
+                               Tox_Err_File_By_Id *error)
+{
+    assert(tox != nullptr);
+
+    if (file_id == nullptr) {
+        SET_ERROR_PARAMETER(error, TOX_ERR_FILE_BY_ID_NULL);
+        return UINT32_MAX;
+    }
+
+    tox_lock(tox);
+    const int32_t ret = file_by_id(tox->m, friend_number, file_id);
+    tox_unlock(tox);
+
+    if (ret >= 0) {
+        SET_ERROR_PARAMETER(error, TOX_ERR_FILE_BY_ID_OK);
+        return (Tox_File_Number)ret;
+    }
+
+    if (ret == -1) {
+        SET_ERROR_PARAMETER(error, TOX_ERR_FILE_BY_ID_FRIEND_NOT_FOUND);
+    } else {
+        SET_ERROR_PARAMETER(error, TOX_ERR_FILE_BY_ID_NOT_FOUND);
+    }
+
+    return UINT32_MAX;
+}
+
 uint32_t tox_file_send(Tox *tox, uint32_t friend_number, uint32_t kind, uint64_t file_size, const Tox_File_Id file_id,
                        const uint8_t *filename, size_t filename_length, Tox_Err_File_Send *error)
 {

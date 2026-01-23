@@ -1789,6 +1789,44 @@ bool tox_file_get_file_id(
     Tox_File_Id file_id,
     Tox_Err_File_Get *error);
 
+typedef enum Tox_Err_File_By_Id {
+
+    /**
+     * The function returned successfully.
+     */
+    TOX_ERR_FILE_BY_ID_OK,
+
+    /**
+     * One of the arguments to the function was NULL when it was not expected.
+     */
+    TOX_ERR_FILE_BY_ID_NULL,
+
+    /**
+     * The friend_number passed did not designate a valid friend.
+     */
+    TOX_ERR_FILE_BY_ID_FRIEND_NOT_FOUND,
+
+    /**
+     * No file transfer with the given ID exists.
+     */
+    TOX_ERR_FILE_BY_ID_NOT_FOUND,
+
+} Tox_Err_File_By_Id;
+
+const char *tox_err_file_by_id_to_string(Tox_Err_File_By_Id value);
+
+/**
+ * Return the file number associated with the specified friend number and File ID.
+ *
+ * @param friend_number The friend number of the friend the file is being sent to or received from.
+ * @param file_id A memory region of at least TOX_FILE_ID_LENGTH bytes.
+ *
+ * @return the file number on success, UINT32_MAX on failure.
+ */
+Tox_File_Number tox_file_by_id(
+    const Tox *tox, Tox_Friend_Number friend_number, const Tox_File_Id file_id,
+    Tox_Err_File_By_Id *error);
+
 /** @} */
 
 /** @{
