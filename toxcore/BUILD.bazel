@@ -1588,6 +1588,7 @@ cc_library(
         ":logger",
         ":mem",
         ":tox",
+        ":tox_attributes",
         ":tox_pack",
         ":tox_unpack",
         "//c-toxcore/third_party:cmp",

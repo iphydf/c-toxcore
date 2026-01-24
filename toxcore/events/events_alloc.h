@@ -20,7 +20,7 @@ extern "C" {
 struct Memory;
 
 struct Tox_Events {
-    Tox_Event *_Nonnull events;
+    Tox_Event *_Nullable events;
     uint32_t events_size;
     uint32_t events_capacity;
 
@@ -30,7 +30,7 @@ struct Tox_Events {
 typedef struct Tox_Events_State {
     Tox_Err_Events_Iterate error;
     const struct Memory *_Nonnull mem;
-    Tox_Events *_Nonnull events;
+    Tox_Events *_Nullable events;
 } Tox_Events_State;
 
 tox_conference_connected_cb tox_events_handle_conference_connected;
