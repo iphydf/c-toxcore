@@ -15,6 +15,7 @@
 #include "../tox.h"
 #include "../tox_event.h"
 #include "../tox_events.h"
+#include "../tox_struct.h"
 
 /*****************************************************
  *
@@ -27,7 +28,7 @@ struct Tox_Event_File_Recv {
     uint32_t file_number;
     uint32_t kind;
     uint64_t file_size;
-    uint8_t *filename;
+    uint8_t *_Nullable filename;
     uint32_t filename_length;
 };
 
@@ -87,6 +88,12 @@ static bool tox_event_file_recv_set_filename(Tox_Event_File_Recv *_Nonnull file_
 
     if (filename == nullptr) {
         assert(filename_length == 0);
+        return true;
+    }
+
+    if (filename_length == 0) {
+        file_recv->filename = nullptr;
+        file_recv->filename_length = 0;
         return true;
     }
 
@@ -175,7 +182,7 @@ Tox_Event_File_Recv *tox_event_file_recv_new(const Memory *mem)
 void tox_event_file_recv_free(Tox_Event_File_Recv *file_recv, const Memory *mem)
 {
     if (file_recv != nullptr) {
-        tox_event_file_recv_destruct((Tox_Event_File_Recv * _Nonnull)file_recv, mem);
+        tox_event_file_recv_destruct(file_recv, mem);
     }
     mem_delete(mem, file_recv);
 }
@@ -250,5 +257,7 @@ void tox_events_handle_file_recv(
     tox_event_file_recv_set_file_number(file_recv, file_number);
     tox_event_file_recv_set_kind(file_recv, kind);
     tox_event_file_recv_set_file_size(file_recv, file_size);
-    tox_event_file_recv_set_filename(file_recv, state->mem, filename, filename_length);
+    if (!tox_event_file_recv_set_filename(file_recv, state->mem, filename, filename_length)) {
+        state->error = TOX_ERR_EVENTS_ITERATE_MALLOC;
+    }
 }

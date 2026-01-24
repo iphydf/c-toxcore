@@ -15,6 +15,7 @@
 #include "../tox.h"
 #include "../tox_event.h"
 #include "../tox_events.h"
+#include "../tox_struct.h"
 
 /*****************************************************
  *
@@ -25,7 +26,7 @@
 struct Tox_Event_Group_Peer_Name {
     uint32_t group_number;
     uint32_t peer_id;
-    uint8_t *name;
+    uint8_t *_Nullable name;
     uint32_t name_length;
 };
 
@@ -63,6 +64,12 @@ static bool tox_event_group_peer_name_set_name(Tox_Event_Group_Peer_Name *_Nonnu
 
     if (name == nullptr) {
         assert(name_length == 0);
+        return true;
+    }
+
+    if (name_length == 0) {
+        group_peer_name->name = nullptr;
+        group_peer_name->name_length = 0;
         return true;
     }
 
@@ -147,7 +154,7 @@ Tox_Event_Group_Peer_Name *tox_event_group_peer_name_new(const Memory *mem)
 void tox_event_group_peer_name_free(Tox_Event_Group_Peer_Name *group_peer_name, const Memory *mem)
 {
     if (group_peer_name != nullptr) {
-        tox_event_group_peer_name_destruct((Tox_Event_Group_Peer_Name * _Nonnull)group_peer_name, mem);
+        tox_event_group_peer_name_destruct(group_peer_name, mem);
     }
     mem_delete(mem, group_peer_name);
 }
@@ -220,5 +227,7 @@ void tox_events_handle_group_peer_name(
 
     tox_event_group_peer_name_set_group_number(group_peer_name, group_number);
     tox_event_group_peer_name_set_peer_id(group_peer_name, peer_id);
-    tox_event_group_peer_name_set_name(group_peer_name, state->mem, name, name_length);
+    if (!tox_event_group_peer_name_set_name(group_peer_name, state->mem, name, name_length)) {
+        state->error = TOX_ERR_EVENTS_ITERATE_MALLOC;
+    }
 }

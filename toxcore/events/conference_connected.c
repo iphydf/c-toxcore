@@ -14,6 +14,7 @@
 #include "../tox.h"
 #include "../tox_event.h"
 #include "../tox_events.h"
+#include "../tox_struct.h"
 
 /*****************************************************
  *
@@ -86,7 +87,7 @@ Tox_Event_Conference_Connected *tox_event_conference_connected_new(const Memory 
 void tox_event_conference_connected_free(Tox_Event_Conference_Connected *conference_connected, const Memory *mem)
 {
     if (conference_connected != nullptr) {
-        tox_event_conference_connected_destruct((Tox_Event_Conference_Connected * _Nonnull)conference_connected, mem);
+        tox_event_conference_connected_destruct(conference_connected, mem);
     }
     mem_delete(mem, conference_connected);
 }

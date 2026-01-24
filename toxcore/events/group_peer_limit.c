@@ -14,6 +14,7 @@
 #include "../tox.h"
 #include "../tox_event.h"
 #include "../tox_events.h"
+#include "../tox_struct.h"
 
 /*****************************************************
  *
@@ -105,7 +106,7 @@ Tox_Event_Group_Peer_Limit *tox_event_group_peer_limit_new(const Memory *mem)
 void tox_event_group_peer_limit_free(Tox_Event_Group_Peer_Limit *group_peer_limit, const Memory *mem)
 {
     if (group_peer_limit != nullptr) {
-        tox_event_group_peer_limit_destruct((Tox_Event_Group_Peer_Limit * _Nonnull)group_peer_limit, mem);
+        tox_event_group_peer_limit_destruct(group_peer_limit, mem);
     }
     mem_delete(mem, group_peer_limit);
 }

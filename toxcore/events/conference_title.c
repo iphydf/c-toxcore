@@ -15,6 +15,7 @@
 #include "../tox.h"
 #include "../tox_event.h"
 #include "../tox_events.h"
+#include "../tox_struct.h"
 
 /*****************************************************
  *
@@ -25,7 +26,7 @@
 struct Tox_Event_Conference_Title {
     uint32_t conference_number;
     uint32_t peer_number;
-    uint8_t *title;
+    uint8_t *_Nullable title;
     uint32_t title_length;
 };
 
@@ -63,6 +64,12 @@ static bool tox_event_conference_title_set_title(Tox_Event_Conference_Title *_No
 
     if (title == nullptr) {
         assert(title_length == 0);
+        return true;
+    }
+
+    if (title_length == 0) {
+        conference_title->title = nullptr;
+        conference_title->title_length = 0;
         return true;
     }
 
@@ -147,7 +154,7 @@ Tox_Event_Conference_Title *tox_event_conference_title_new(const Memory *mem)
 void tox_event_conference_title_free(Tox_Event_Conference_Title *conference_title, const Memory *mem)
 {
     if (conference_title != nullptr) {
-        tox_event_conference_title_destruct((Tox_Event_Conference_Title * _Nonnull)conference_title, mem);
+        tox_event_conference_title_destruct(conference_title, mem);
     }
     mem_delete(mem, conference_title);
 }
@@ -220,5 +227,7 @@ void tox_events_handle_conference_title(
 
     tox_event_conference_title_set_conference_number(conference_title, conference_number);
     tox_event_conference_title_set_peer_number(conference_title, peer_number);
-    tox_event_conference_title_set_title(conference_title, state->mem, title, length);
+    if (!tox_event_conference_title_set_title(conference_title, state->mem, title, length)) {
+        state->error = TOX_ERR_EVENTS_ITERATE_MALLOC;
+    }
 }

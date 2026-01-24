@@ -15,6 +15,7 @@
 #include "../tox_event.h"
 #include "../tox_events.h"
 #include "../tox_pack.h"
+#include "../tox_struct.h"
 #include "../tox_unpack.h"
 
 /*****************************************************
@@ -107,7 +108,7 @@ Tox_Event_Friend_Connection_Status *tox_event_friend_connection_status_new(const
 void tox_event_friend_connection_status_free(Tox_Event_Friend_Connection_Status *friend_connection_status, const Memory *mem)
 {
     if (friend_connection_status != nullptr) {
-        tox_event_friend_connection_status_destruct((Tox_Event_Friend_Connection_Status * _Nonnull)friend_connection_status, mem);
+        tox_event_friend_connection_status_destruct(friend_connection_status, mem);
     }
     mem_delete(mem, friend_connection_status);
 }

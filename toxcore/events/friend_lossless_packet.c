@@ -15,6 +15,7 @@
 #include "../tox.h"
 #include "../tox_event.h"
 #include "../tox_events.h"
+#include "../tox_struct.h"
 
 /*****************************************************
  *
@@ -24,7 +25,7 @@
 
 struct Tox_Event_Friend_Lossless_Packet {
     uint32_t friend_number;
-    uint8_t *data;
+    uint8_t *_Nullable data;
     uint32_t data_length;
 };
 
@@ -51,6 +52,12 @@ static bool tox_event_friend_lossless_packet_set_data(Tox_Event_Friend_Lossless_
 
     if (data == nullptr) {
         assert(data_length == 0);
+        return true;
+    }
+
+    if (data_length == 0) {
+        friend_lossless_packet->data = nullptr;
+        friend_lossless_packet->data_length = 0;
         return true;
     }
 
@@ -133,7 +140,7 @@ Tox_Event_Friend_Lossless_Packet *tox_event_friend_lossless_packet_new(const Mem
 void tox_event_friend_lossless_packet_free(Tox_Event_Friend_Lossless_Packet *friend_lossless_packet, const Memory *mem)
 {
     if (friend_lossless_packet != nullptr) {
-        tox_event_friend_lossless_packet_destruct((Tox_Event_Friend_Lossless_Packet * _Nonnull)friend_lossless_packet, mem);
+        tox_event_friend_lossless_packet_destruct(friend_lossless_packet, mem);
     }
     mem_delete(mem, friend_lossless_packet);
 }
@@ -205,5 +212,7 @@ void tox_events_handle_friend_lossless_packet(
     }
 
     tox_event_friend_lossless_packet_set_friend_number(friend_lossless_packet, friend_number);
-    tox_event_friend_lossless_packet_set_data(friend_lossless_packet, state->mem, data, length);
+    if (!tox_event_friend_lossless_packet_set_data(friend_lossless_packet, state->mem, data, length)) {
+        state->error = TOX_ERR_EVENTS_ITERATE_MALLOC;
+    }
 }

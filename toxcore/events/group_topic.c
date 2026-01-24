@@ -15,6 +15,7 @@
 #include "../tox.h"
 #include "../tox_event.h"
 #include "../tox_events.h"
+#include "../tox_struct.h"
 
 /*****************************************************
  *
@@ -25,7 +26,7 @@
 struct Tox_Event_Group_Topic {
     uint32_t group_number;
     uint32_t peer_id;
-    uint8_t *topic;
+    uint8_t *_Nullable topic;
     uint32_t topic_length;
 };
 
@@ -63,6 +64,12 @@ static bool tox_event_group_topic_set_topic(Tox_Event_Group_Topic *_Nonnull grou
 
     if (topic == nullptr) {
         assert(topic_length == 0);
+        return true;
+    }
+
+    if (topic_length == 0) {
+        group_topic->topic = nullptr;
+        group_topic->topic_length = 0;
         return true;
     }
 
@@ -147,7 +154,7 @@ Tox_Event_Group_Topic *tox_event_group_topic_new(const Memory *mem)
 void tox_event_group_topic_free(Tox_Event_Group_Topic *group_topic, const Memory *mem)
 {
     if (group_topic != nullptr) {
-        tox_event_group_topic_destruct((Tox_Event_Group_Topic * _Nonnull)group_topic, mem);
+        tox_event_group_topic_destruct(group_topic, mem);
     }
     mem_delete(mem, group_topic);
 }
@@ -220,5 +227,7 @@ void tox_events_handle_group_topic(
 
     tox_event_group_topic_set_group_number(group_topic, group_number);
     tox_event_group_topic_set_peer_id(group_topic, peer_id);
-    tox_event_group_topic_set_topic(group_topic, state->mem, topic, topic_length);
+    if (!tox_event_group_topic_set_topic(group_topic, state->mem, topic, topic_length)) {
+        state->error = TOX_ERR_EVENTS_ITERATE_MALLOC;
+    }
 }

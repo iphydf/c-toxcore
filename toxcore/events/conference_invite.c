@@ -16,6 +16,7 @@
 #include "../tox_event.h"
 #include "../tox_events.h"
 #include "../tox_pack.h"
+#include "../tox_struct.h"
 #include "../tox_unpack.h"
 
 /*****************************************************
@@ -27,7 +28,7 @@
 struct Tox_Event_Conference_Invite {
     uint32_t friend_number;
     Tox_Conference_Type type;
-    uint8_t *cookie;
+    uint8_t *_Nullable cookie;
     uint32_t cookie_length;
 };
 
@@ -65,6 +66,12 @@ static bool tox_event_conference_invite_set_cookie(Tox_Event_Conference_Invite *
 
     if (cookie == nullptr) {
         assert(cookie_length == 0);
+        return true;
+    }
+
+    if (cookie_length == 0) {
+        conference_invite->cookie = nullptr;
+        conference_invite->cookie_length = 0;
         return true;
     }
 
@@ -149,7 +156,7 @@ Tox_Event_Conference_Invite *tox_event_conference_invite_new(const Memory *mem)
 void tox_event_conference_invite_free(Tox_Event_Conference_Invite *conference_invite, const Memory *mem)
 {
     if (conference_invite != nullptr) {
-        tox_event_conference_invite_destruct((Tox_Event_Conference_Invite * _Nonnull)conference_invite, mem);
+        tox_event_conference_invite_destruct(conference_invite, mem);
     }
     mem_delete(mem, conference_invite);
 }
@@ -222,5 +229,7 @@ void tox_events_handle_conference_invite(
 
     tox_event_conference_invite_set_friend_number(conference_invite, friend_number);
     tox_event_conference_invite_set_type(conference_invite, type);
-    tox_event_conference_invite_set_cookie(conference_invite, state->mem, cookie, length);
+    if (!tox_event_conference_invite_set_cookie(conference_invite, state->mem, cookie, length)) {
+        state->error = TOX_ERR_EVENTS_ITERATE_MALLOC;
+    }
 }

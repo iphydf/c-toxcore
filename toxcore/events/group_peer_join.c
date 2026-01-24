@@ -14,6 +14,7 @@
 #include "../tox.h"
 #include "../tox_event.h"
 #include "../tox_events.h"
+#include "../tox_struct.h"
 
 /*****************************************************
  *
@@ -105,7 +106,7 @@ Tox_Event_Group_Peer_Join *tox_event_group_peer_join_new(const Memory *mem)
 void tox_event_group_peer_join_free(Tox_Event_Group_Peer_Join *group_peer_join, const Memory *mem)
 {
     if (group_peer_join != nullptr) {
-        tox_event_group_peer_join_destruct((Tox_Event_Group_Peer_Join * _Nonnull)group_peer_join, mem);
+        tox_event_group_peer_join_destruct(group_peer_join, mem);
     }
     mem_delete(mem, group_peer_join);
 }

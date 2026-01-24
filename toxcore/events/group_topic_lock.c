@@ -15,6 +15,7 @@
 #include "../tox_event.h"
 #include "../tox_events.h"
 #include "../tox_pack.h"
+#include "../tox_struct.h"
 #include "../tox_unpack.h"
 
 /*****************************************************
@@ -107,7 +108,7 @@ Tox_Event_Group_Topic_Lock *tox_event_group_topic_lock_new(const Memory *mem)
 void tox_event_group_topic_lock_free(Tox_Event_Group_Topic_Lock *group_topic_lock, const Memory *mem)
 {
     if (group_topic_lock != nullptr) {
-        tox_event_group_topic_lock_destruct((Tox_Event_Group_Topic_Lock * _Nonnull)group_topic_lock, mem);
+        tox_event_group_topic_lock_destruct(group_topic_lock, mem);
     }
     mem_delete(mem, group_topic_lock);
 }

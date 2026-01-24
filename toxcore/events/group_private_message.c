@@ -16,6 +16,7 @@
 #include "../tox_event.h"
 #include "../tox_events.h"
 #include "../tox_pack.h"
+#include "../tox_struct.h"
 #include "../tox_unpack.h"
 
 /*****************************************************
@@ -28,7 +29,7 @@ struct Tox_Event_Group_Private_Message {
     uint32_t group_number;
     uint32_t peer_id;
     Tox_Message_Type message_type;
-    uint8_t *message;
+    uint8_t *_Nullable message;
     uint32_t message_length;
     uint32_t message_id;
 };
@@ -78,6 +79,12 @@ static bool tox_event_group_private_message_set_message(Tox_Event_Group_Private_
 
     if (message == nullptr) {
         assert(message_length == 0);
+        return true;
+    }
+
+    if (message_length == 0) {
+        group_private_message->message = nullptr;
+        group_private_message->message_length = 0;
         return true;
     }
 
@@ -177,7 +184,7 @@ Tox_Event_Group_Private_Message *tox_event_group_private_message_new(const Memor
 void tox_event_group_private_message_free(Tox_Event_Group_Private_Message *group_private_message, const Memory *mem)
 {
     if (group_private_message != nullptr) {
-        tox_event_group_private_message_destruct((Tox_Event_Group_Private_Message * _Nonnull)group_private_message, mem);
+        tox_event_group_private_message_destruct(group_private_message, mem);
     }
     mem_delete(mem, group_private_message);
 }
@@ -251,6 +258,8 @@ void tox_events_handle_group_private_message(
     tox_event_group_private_message_set_group_number(group_private_message, group_number);
     tox_event_group_private_message_set_peer_id(group_private_message, peer_id);
     tox_event_group_private_message_set_message_type(group_private_message, message_type);
-    tox_event_group_private_message_set_message(group_private_message, state->mem, message, message_length);
+    if (!tox_event_group_private_message_set_message(group_private_message, state->mem, message, message_length)) {
+        state->error = TOX_ERR_EVENTS_ITERATE_MALLOC;
+    }
     tox_event_group_private_message_set_message_id(group_private_message, message_id);
 }

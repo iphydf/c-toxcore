@@ -15,6 +15,7 @@
 #include "../tox.h"
 #include "../tox_event.h"
 #include "../tox_events.h"
+#include "../tox_struct.h"
 
 /*****************************************************
  *
@@ -25,7 +26,7 @@
 struct Tox_Event_Group_Custom_Packet {
     uint32_t group_number;
     uint32_t peer_id;
-    uint8_t *data;
+    uint8_t *_Nullable data;
     uint32_t data_length;
 };
 
@@ -63,6 +64,12 @@ static bool tox_event_group_custom_packet_set_data(Tox_Event_Group_Custom_Packet
 
     if (data == nullptr) {
         assert(data_length == 0);
+        return true;
+    }
+
+    if (data_length == 0) {
+        group_custom_packet->data = nullptr;
+        group_custom_packet->data_length = 0;
         return true;
     }
 
@@ -147,7 +154,7 @@ Tox_Event_Group_Custom_Packet *tox_event_group_custom_packet_new(const Memory *m
 void tox_event_group_custom_packet_free(Tox_Event_Group_Custom_Packet *group_custom_packet, const Memory *mem)
 {
     if (group_custom_packet != nullptr) {
-        tox_event_group_custom_packet_destruct((Tox_Event_Group_Custom_Packet * _Nonnull)group_custom_packet, mem);
+        tox_event_group_custom_packet_destruct(group_custom_packet, mem);
     }
     mem_delete(mem, group_custom_packet);
 }
@@ -220,5 +227,7 @@ void tox_events_handle_group_custom_packet(
 
     tox_event_group_custom_packet_set_group_number(group_custom_packet, group_number);
     tox_event_group_custom_packet_set_peer_id(group_custom_packet, peer_id);
-    tox_event_group_custom_packet_set_data(group_custom_packet, state->mem, data, data_length);
+    if (!tox_event_group_custom_packet_set_data(group_custom_packet, state->mem, data, data_length)) {
+        state->error = TOX_ERR_EVENTS_ITERATE_MALLOC;
+    }
 }

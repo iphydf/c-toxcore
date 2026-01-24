@@ -15,6 +15,7 @@
 #include "../tox.h"
 #include "../tox_event.h"
 #include "../tox_events.h"
+#include "../tox_struct.h"
 
 /*****************************************************
  *
@@ -25,7 +26,7 @@
 struct Tox_Event_Conference_Peer_Name {
     uint32_t conference_number;
     uint32_t peer_number;
-    uint8_t *name;
+    uint8_t *_Nullable name;
     uint32_t name_length;
 };
 
@@ -63,6 +64,12 @@ static bool tox_event_conference_peer_name_set_name(Tox_Event_Conference_Peer_Na
 
     if (name == nullptr) {
         assert(name_length == 0);
+        return true;
+    }
+
+    if (name_length == 0) {
+        conference_peer_name->name = nullptr;
+        conference_peer_name->name_length = 0;
         return true;
     }
 
@@ -147,7 +154,7 @@ Tox_Event_Conference_Peer_Name *tox_event_conference_peer_name_new(const Memory 
 void tox_event_conference_peer_name_free(Tox_Event_Conference_Peer_Name *conference_peer_name, const Memory *mem)
 {
     if (conference_peer_name != nullptr) {
-        tox_event_conference_peer_name_destruct((Tox_Event_Conference_Peer_Name * _Nonnull)conference_peer_name, mem);
+        tox_event_conference_peer_name_destruct(conference_peer_name, mem);
     }
     mem_delete(mem, conference_peer_name);
 }
@@ -220,5 +227,7 @@ void tox_events_handle_conference_peer_name(
 
     tox_event_conference_peer_name_set_conference_number(conference_peer_name, conference_number);
     tox_event_conference_peer_name_set_peer_number(conference_peer_name, peer_number);
-    tox_event_conference_peer_name_set_name(conference_peer_name, state->mem, name, length);
+    if (!tox_event_conference_peer_name_set_name(conference_peer_name, state->mem, name, length)) {
+        state->error = TOX_ERR_EVENTS_ITERATE_MALLOC;
+    }
 }
