@@ -234,3 +234,14 @@ void tox_events_handle_conference_peer_name(
         state->error = TOX_ERR_EVENTS_ITERATE_MALLOC;
     }
 }
+
+void tox_events_handle_conference_peer_name_dispatch(Tox *tox, const Tox_Event_Conference_Peer_Name *event, void *user_data)
+{
+    if (tox->conference_peer_name_callback == nullptr) {
+        return;
+    }
+
+    tox_unlock(tox);
+    tox->conference_peer_name_callback(tox, event->conference_number, event->peer_number, event->name, event->name_length, user_data);
+    tox_lock(tox);
+}

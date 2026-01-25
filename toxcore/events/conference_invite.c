@@ -236,3 +236,14 @@ void tox_events_handle_conference_invite(
         state->error = TOX_ERR_EVENTS_ITERATE_MALLOC;
     }
 }
+
+void tox_events_handle_conference_invite_dispatch(Tox *tox, const Tox_Event_Conference_Invite *event, void *user_data)
+{
+    if (tox->conference_invite_callback == nullptr) {
+        return;
+    }
+
+    tox_unlock(tox);
+    tox->conference_invite_callback(tox, event->friend_number, event->type, event->cookie, event->cookie_length, user_data);
+    tox_lock(tox);
+}

@@ -266,3 +266,14 @@ void tox_events_handle_file_recv(
         state->error = TOX_ERR_EVENTS_ITERATE_MALLOC;
     }
 }
+
+void tox_events_handle_file_recv_dispatch(Tox *tox, const Tox_Event_File_Recv *event, void *user_data)
+{
+    if (tox->file_recv_callback == nullptr) {
+        return;
+    }
+
+    tox_unlock(tox);
+    tox->file_recv_callback(tox, event->friend_number, event->file_number, event->kind, event->file_size, event->filename, event->filename_length, user_data);
+    tox_lock(tox);
+}

@@ -182,3 +182,14 @@ void tox_events_handle_friend_typing(
     tox_event_friend_typing_set_friend_number(friend_typing, friend_number);
     tox_event_friend_typing_set_typing(friend_typing, typing);
 }
+
+void tox_events_handle_friend_typing_dispatch(Tox *tox, const Tox_Event_Friend_Typing *event, void *user_data)
+{
+    if (tox->friend_typing_callback == nullptr) {
+        return;
+    }
+
+    tox_unlock(tox);
+    tox->friend_typing_callback(tox, event->friend_number, event->typing, user_data);
+    tox_lock(tox);
+}

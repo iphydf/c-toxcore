@@ -184,3 +184,14 @@ void tox_events_handle_friend_connection_status(
     tox_event_friend_connection_status_set_friend_number(friend_connection_status, friend_number);
     tox_event_friend_connection_status_set_connection_status(friend_connection_status, connection_status);
 }
+
+void tox_events_handle_friend_connection_status_dispatch(Tox *tox, const Tox_Event_Friend_Connection_Status *event, void *user_data)
+{
+    if (tox->friend_connection_status_callback == nullptr) {
+        return;
+    }
+
+    tox_unlock(tox);
+    tox->friend_connection_status_callback(tox, event->friend_number, event->connection_status, user_data);
+    tox_lock(tox);
+}

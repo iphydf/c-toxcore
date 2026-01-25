@@ -200,3 +200,14 @@ void tox_events_handle_file_recv_control(
     tox_event_file_recv_control_set_file_number(file_recv_control, file_number);
     tox_event_file_recv_control_set_control(file_recv_control, control);
 }
+
+void tox_events_handle_file_recv_control_dispatch(Tox *tox, const Tox_Event_File_Recv_Control *event, void *user_data)
+{
+    if (tox->file_recv_control_callback == nullptr) {
+        return;
+    }
+
+    tox_unlock(tox);
+    tox->file_recv_control_callback(tox, event->friend_number, event->file_number, event->control, user_data);
+    tox_lock(tox);
+}

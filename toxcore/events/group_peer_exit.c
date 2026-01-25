@@ -304,3 +304,14 @@ void tox_events_handle_group_peer_exit(
         state->error = TOX_ERR_EVENTS_ITERATE_MALLOC;
     }
 }
+
+void tox_events_handle_group_peer_exit_dispatch(Tox *tox, const Tox_Event_Group_Peer_Exit *event, void *user_data)
+{
+    if (tox->group_peer_exit_callback == nullptr) {
+        return;
+    }
+
+    tox_unlock(tox);
+    tox->group_peer_exit_callback(tox, event->group_number, event->peer_id, event->exit_type, event->name, event->name_length, event->part_message, event->part_message_length, user_data);
+    tox_lock(tox);
+}

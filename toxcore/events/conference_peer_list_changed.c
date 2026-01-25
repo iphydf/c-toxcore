@@ -161,3 +161,14 @@ void tox_events_handle_conference_peer_list_changed(
 
     tox_event_conference_peer_list_changed_set_conference_number(conference_peer_list_changed, conference_number);
 }
+
+void tox_events_handle_conference_peer_list_changed_dispatch(Tox *tox, const Tox_Event_Conference_Peer_List_Changed *event, void *user_data)
+{
+    if (tox->conference_peer_list_changed_callback == nullptr) {
+        return;
+    }
+
+    tox_unlock(tox);
+    tox->conference_peer_list_changed_callback(tox, event->conference_number, user_data);
+    tox_lock(tox);
+}

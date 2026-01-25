@@ -218,3 +218,14 @@ void tox_events_handle_friend_lossless_packet(
         state->error = TOX_ERR_EVENTS_ITERATE_MALLOC;
     }
 }
+
+void tox_events_handle_friend_lossless_packet_dispatch(Tox *tox, const Tox_Event_Friend_Lossless_Packet *event, void *user_data)
+{
+    if (event->data_length == 0 || tox->friend_lossless_packet_callback_per_pktid[event->data[0]] == nullptr) {
+        return;
+    }
+
+    tox_unlock(tox);
+    tox->friend_lossless_packet_callback_per_pktid[event->data[0]](tox, event->friend_number, event->data, event->data_length, user_data);
+    tox_lock(tox);
+}

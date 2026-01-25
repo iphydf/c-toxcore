@@ -163,3 +163,14 @@ void tox_events_handle_self_connection_status(
 
     tox_event_self_connection_status_set_connection_status(self_connection_status, connection_status);
 }
+
+void tox_events_handle_self_connection_status_dispatch(Tox *tox, const Tox_Event_Self_Connection_Status *event, void *user_data)
+{
+    if (tox->self_connection_status_callback == nullptr) {
+        return;
+    }
+
+    tox_unlock(tox);
+    tox->self_connection_status_callback(tox, event->connection_status, user_data);
+    tox_lock(tox);
+}

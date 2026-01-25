@@ -214,3 +214,14 @@ void tox_events_handle_file_chunk_request(
     tox_event_file_chunk_request_set_position(file_chunk_request, position);
     tox_event_file_chunk_request_set_length(file_chunk_request, length);
 }
+
+void tox_events_handle_file_chunk_request_dispatch(Tox *tox, const Tox_Event_File_Chunk_Request *event, void *user_data)
+{
+    if (tox->file_chunk_request_callback == nullptr) {
+        return;
+    }
+
+    tox_unlock(tox);
+    tox->file_chunk_request_callback(tox, event->friend_number, event->file_number, event->position, event->length, user_data);
+    tox_lock(tox);
+}

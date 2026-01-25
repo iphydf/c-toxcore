@@ -268,3 +268,14 @@ void tox_events_handle_group_message(
     }
     tox_event_group_message_set_message_id(group_message, message_id);
 }
+
+void tox_events_handle_group_message_dispatch(Tox *tox, const Tox_Event_Group_Message *event, void *user_data)
+{
+    if (tox->group_message_callback == nullptr) {
+        return;
+    }
+
+    tox_unlock(tox);
+    tox->group_message_callback(tox, event->group_number, event->peer_id, event->message_type, event->message, event->message_length, event->message_id, user_data);
+    tox_lock(tox);
+}

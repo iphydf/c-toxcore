@@ -184,3 +184,14 @@ void tox_events_handle_group_join_fail(
     tox_event_group_join_fail_set_group_number(group_join_fail, group_number);
     tox_event_group_join_fail_set_fail_type(group_join_fail, fail_type);
 }
+
+void tox_events_handle_group_join_fail_dispatch(Tox *tox, const Tox_Event_Group_Join_Fail *event, void *user_data)
+{
+    if (tox->group_join_fail_callback == nullptr) {
+        return;
+    }
+
+    tox_unlock(tox);
+    tox->group_join_fail_callback(tox, event->group_number, event->fail_type, user_data);
+    tox_lock(tox);
+}
