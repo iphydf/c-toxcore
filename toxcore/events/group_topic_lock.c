@@ -169,7 +169,9 @@ static Tox_Event_Group_Topic_Lock *tox_event_group_topic_lock_alloc(Tox_Events_S
  *****************************************************/
 
 void tox_events_handle_group_topic_lock(
-    Tox *tox, uint32_t group_number, Tox_Group_Topic_Lock topic_lock,
+    Tox *tox,
+    uint32_t group_number,
+    Tox_Group_Topic_Lock topic_lock,
     void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);

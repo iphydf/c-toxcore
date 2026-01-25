@@ -217,7 +217,10 @@ static Tox_Event_Dht_Nodes_Response *tox_event_dht_nodes_response_alloc(Tox_Even
  *****************************************************/
 
 void tox_events_handle_dht_nodes_response(
-    Tox *tox, const uint8_t *public_key, const char *ip, uint32_t ip_length, uint16_t port,
+    Tox *tox,
+    const uint8_t *public_key,
+    const char *ip, uint32_t ip_length,
+    uint16_t port,
     void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);

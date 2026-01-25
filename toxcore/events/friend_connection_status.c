@@ -169,7 +169,9 @@ static Tox_Event_Friend_Connection_Status *tox_event_friend_connection_status_al
  *****************************************************/
 
 void tox_events_handle_friend_connection_status(
-    Tox *tox, uint32_t friend_number, Tox_Connection connection_status,
+    Tox *tox,
+    uint32_t friend_number,
+    Tox_Connection connection_status,
     void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);

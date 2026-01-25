@@ -585,16 +585,17 @@ void generate_event_impl(const std::string& event_name, const std::vector<EventT
     f << "    Tox *tox";
 
     for (const auto& t : event_types) {
+        f << ",\n    ";
         std::visit(
             overloaded{
                 [&](const EventTypeTrivial& t) {
-                    f << ", " << (t.cb_type.empty() ? t.type : t.cb_type) << " " << t.name;
+                    f << (t.cb_type.empty() ? t.type : t.cb_type) << " " << t.name;
                 },
                 [&](const EventTypeByteRange& t) {
-                    f << ", const " << t.type_c_arg << " *" << t.name_data << ", " << t.type_length_cb << " " << t.name_length_cb;
+                    f << "const " << t.type_c_arg << " *" << t.name_data << ", " << t.type_length_cb << " " << t.name_length_cb;
                 },
                 [&](const EventTypeByteArray& t) {
-                    f << ", const uint8_t *" << t.name;
+                    f << "const uint8_t *" << t.name;
                 }
             },
             t

@@ -215,7 +215,10 @@ static Tox_Event_Group_Topic *tox_event_group_topic_alloc(Tox_Events_State *_Non
  *****************************************************/
 
 void tox_events_handle_group_topic(
-    Tox *tox, uint32_t group_number, uint32_t peer_id, const uint8_t *topic, size_t topic_length,
+    Tox *tox,
+    uint32_t group_number,
+    uint32_t peer_id,
+    const uint8_t *topic, size_t topic_length,
     void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);

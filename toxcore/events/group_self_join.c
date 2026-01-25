@@ -148,7 +148,8 @@ static Tox_Event_Group_Self_Join *tox_event_group_self_join_alloc(Tox_Events_Sta
  *****************************************************/
 
 void tox_events_handle_group_self_join(
-    Tox *tox, uint32_t group_number,
+    Tox *tox,
+    uint32_t group_number,
     void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);

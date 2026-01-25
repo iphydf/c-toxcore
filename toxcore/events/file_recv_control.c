@@ -183,7 +183,10 @@ static Tox_Event_File_Recv_Control *tox_event_file_recv_control_alloc(Tox_Events
  *****************************************************/
 
 void tox_events_handle_file_recv_control(
-    Tox *tox, uint32_t friend_number, uint32_t file_number, Tox_File_Control control,
+    Tox *tox,
+    uint32_t friend_number,
+    uint32_t file_number,
+    Tox_File_Control control,
     void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);

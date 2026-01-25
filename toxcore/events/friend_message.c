@@ -217,7 +217,10 @@ static Tox_Event_Friend_Message *tox_event_friend_message_alloc(Tox_Events_State
  *****************************************************/
 
 void tox_events_handle_friend_message(
-    Tox *tox, uint32_t friend_number, Tox_Message_Type type, const uint8_t *message, size_t length,
+    Tox *tox,
+    uint32_t friend_number,
+    Tox_Message_Type type,
+    const uint8_t *message, size_t length,
     void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);

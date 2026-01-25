@@ -217,7 +217,10 @@ static Tox_Event_Conference_Invite *tox_event_conference_invite_alloc(Tox_Events
  *****************************************************/
 
 void tox_events_handle_conference_invite(
-    Tox *tox, uint32_t friend_number, Tox_Conference_Type type, const uint8_t *cookie, size_t length,
+    Tox *tox,
+    uint32_t friend_number,
+    Tox_Conference_Type type,
+    const uint8_t *cookie, size_t length,
     void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);

@@ -167,7 +167,9 @@ static Tox_Event_Friend_Read_Receipt *tox_event_friend_read_receipt_alloc(Tox_Ev
  *****************************************************/
 
 void tox_events_handle_friend_read_receipt(
-    Tox *tox, uint32_t friend_number, uint32_t message_id,
+    Tox *tox,
+    uint32_t friend_number,
+    uint32_t message_id,
     void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);

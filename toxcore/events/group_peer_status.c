@@ -183,7 +183,10 @@ static Tox_Event_Group_Peer_Status *tox_event_group_peer_status_alloc(Tox_Events
  *****************************************************/
 
 void tox_events_handle_group_peer_status(
-    Tox *tox, uint32_t group_number, uint32_t peer_id, Tox_User_Status status,
+    Tox *tox,
+    uint32_t group_number,
+    uint32_t peer_id,
+    Tox_User_Status status,
     void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);

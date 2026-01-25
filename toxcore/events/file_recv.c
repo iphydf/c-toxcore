@@ -243,7 +243,12 @@ static Tox_Event_File_Recv *tox_event_file_recv_alloc(Tox_Events_State *_Nonnull
  *****************************************************/
 
 void tox_events_handle_file_recv(
-    Tox *tox, uint32_t friend_number, uint32_t file_number, uint32_t kind, uint64_t file_size, const uint8_t *filename, size_t filename_length,
+    Tox *tox,
+    uint32_t friend_number,
+    uint32_t file_number,
+    uint32_t kind,
+    uint64_t file_size,
+    const uint8_t *filename, size_t filename_length,
     void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);

@@ -148,7 +148,8 @@ static Tox_Event_Conference_Peer_List_Changed *tox_event_conference_peer_list_ch
  *****************************************************/
 
 void tox_events_handle_conference_peer_list_changed(
-    Tox *tox, uint32_t conference_number,
+    Tox *tox,
+    uint32_t conference_number,
     void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);

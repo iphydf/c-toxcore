@@ -204,7 +204,9 @@ static Tox_Event_Friend_Request *tox_event_friend_request_alloc(Tox_Events_State
  *****************************************************/
 
 void tox_events_handle_friend_request(
-    Tox *tox, const uint8_t *public_key, const uint8_t *message, size_t length,
+    Tox *tox,
+    const uint8_t *public_key,
+    const uint8_t *message, size_t length,
     void *user_data)
 {
     Tox_Events_State *state = tox_events_alloc(user_data);
