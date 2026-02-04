@@ -8264,6 +8264,20 @@ uint32_t gc_count_groups(const GC_Session *c)
     return count;
 }
 
+uint32_t gc_get_group_list(const GC_Session *c, uint32_t *group_list)
+{
+    uint32_t count = 0;
+
+    for (uint32_t i = 0; i < c->chats_index; ++i) {
+        if (gc_group_is_valid(&c->chats[i])) {
+            group_list[count] = i;
+            ++count;
+        }
+    }
+
+    return count;
+}
+
 GC_Chat *gc_get_group(const GC_Session *c, int group_number)
 {
     if (!group_number_valid(c, group_number)) {

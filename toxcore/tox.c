@@ -3827,7 +3827,7 @@ Tox_Group_Number tox_group_by_id(const Tox *tox, const Tox_Group_Chat_Id chat_id
     return ret;
 }
 
-uint32_t tox_group_get_number_groups(const Tox *tox)
+uint32_t tox_group_get_group_list_size(const Tox *tox)
 {
     assert(tox != nullptr);
 
@@ -3836,6 +3836,22 @@ uint32_t tox_group_get_number_groups(const Tox *tox)
     tox_unlock(tox);
 
     return ret;
+}
+
+uint32_t tox_group_get_number_groups(const Tox *tox)
+{
+    return tox_group_get_group_list_size(tox);
+}
+
+void tox_group_get_group_list(const Tox *tox, Tox_Group_Number group_list[])
+{
+    assert(tox != nullptr);
+
+    if (group_list != nullptr) {
+        tox_lock(tox);
+        gc_get_group_list(tox->m->group_handler, group_list);
+        tox_unlock(tox);
+    }
 }
 
 Tox_Group_Privacy_State tox_group_get_privacy_state(const Tox *tox, uint32_t group_number,

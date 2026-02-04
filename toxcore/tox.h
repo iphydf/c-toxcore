@@ -4074,7 +4074,27 @@ Tox_Group_Number tox_group_by_id(
 /**
  * Return the number of groups in the Tox chats array.
  */
+uint32_t tox_group_get_group_list_size(const Tox *tox);
+
+#ifndef TOX_HIDE_DEPRECATED
+/**
+ * Return the number of groups in the Tox chats array.
+ *
+ * @deprecated Use tox_group_get_group_list_size instead.
+ */
 uint32_t tox_group_get_number_groups(const Tox *tox);
+#endif
+
+/**
+ * Copy a list of valid group numbers into the array group_list.
+ *
+ * The array must be large enough to hold the number of groups returned by the
+ * `tox_group_get_group_list_size` function.
+ *
+ * @param group_list A valid memory region large enough to store the group list.
+ *   If this parameter is NULL, this function has no effect.
+ */
+void tox_group_get_group_list(const Tox *tox, Tox_Group_Number group_list[]);
 
 /**
  * Return the privacy state of the group designated by the given group number.
