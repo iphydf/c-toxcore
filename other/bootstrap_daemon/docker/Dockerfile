@@ -42,6 +42,8 @@ RUN CC=clang cmake -B_build -H. \
   -DMIN_LOGGER_LEVEL=TRACE \
   -DBUILD_TOXAV=OFF \
   -DBOOTSTRAP_DAEMON=ON \
+  -DDHT_BOOTSTRAP=OFF \
+  -DUNITTEST=OFF \
   && cmake --build _build --target install
 
 # Verify checksum from dev-built binary, so we can be sure Docker Hub doesn't
