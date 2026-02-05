@@ -26,12 +26,16 @@
 
 static int compare_signatures(const void *a, const void *b)
 {
-    return memcmp(a, b, SIGNATURE_SIZE);
+    const uint8_t *sig_a = (const uint8_t *)a;
+    const uint8_t *sig_b = (const uint8_t *)b;
+    return memcmp(sig_a, sig_b, SIGNATURE_SIZE);
 }
 
 static int compare_sig_pks(const void *a, const void *b)
 {
-    return memcmp(a, b, SIG_PUBLIC_KEY_SIZE);
+    const uint8_t *pk_a = (const uint8_t *)a;
+    const uint8_t *pk_b = (const uint8_t *)b;
+    return memcmp(pk_a, pk_b, SIG_PUBLIC_KEY_SIZE);
 }
 
 static int compare_sanctions(const void *a, const void *b)
