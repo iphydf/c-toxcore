@@ -1,3 +1,43 @@
+<a name="v0.2.22-rc.1"></a>
+
+## v0.2.22-rc.1 (2026-02-05)
+
+### Release notes
+
+This release focuses on hardening, architectural refinement, and better testing capabilities.
+
+On the Hardening front, the ToxAV module has undergone significant security improvements. We have addressed a heap buffer overflow in RTP packet handling and fixed several logic bugs in the bandwidth controller and audio modules that could affect stability.
+
+Architectural Refactoring continues with the internalization of core system dependencies. The system clock, random number generation, and memory management are now accessed through abstract interfaces, further decoupling the core from OS-specific implementations and making the codebase more portable and testable.
+
+#### Bug Fixes
+
+- Prevent potential integer overflow in group chat handshake. ([8b467cc9](https://github.com/TokTok/c-toxcore/commit/8b467cc9634e97fdef2035f729756d45b93b9b1f))
+- potential division by zero in toxav and unsafe hex parsing ([fc4396ce](https://github.com/TokTok/c-toxcore/commit/fc4396cef61f4a5c277aa9f944766150a29f09cb))
+- correct printf format specifiers for unsigned integers ([46bfdc2d](https://github.com/TokTok/c-toxcore/commit/46bfdc2df769e9da8c6e1377493266fc70078e3e))
+- **DHT:** Correct node skipping logic timed out nodes. ([d5b5e879](https://github.com/TokTok/c-toxcore/commit/d5b5e879d0d57ecb5de91b8520461e7fd79c3ac1))
+- **autotools:** add `tox_log_level.h` to public headers list ([b79b7d43](https://github.com/TokTok/c-toxcore/commit/b79b7d4365c5835aafe2eb85b396440aa9d35911))
+- **group_chats:** fix sync packets reverting topics ([e206bffa](https://github.com/TokTok/c-toxcore/commit/e206bffa2dd25bffee1689a1605d4a78723f5eea))
+- **group_moderation:** allow validating unsorted sanction list signatures ([ece0e898](https://github.com/TokTok/c-toxcore/commit/ece0e89801282011397cb11b500670a016fb4284))
+- **toxav:**
+  - fix heap buffer overflow in RTP video packet handling ([4fbd7c10](https://github.com/TokTok/c-toxcore/commit/4fbd7c10a97eadbcf97b149e954cba5a92237381))
+  - harden video processing and fix large frame handling ([da1c13a2](https://github.com/TokTok/c-toxcore/commit/da1c13a2f90d86d4f9a1692f9ffb8112db48cb69))
+  - fix multiple logic bugs in audio module ([47282528](https://github.com/TokTok/c-toxcore/commit/47282528883d7b2474b82bf1a5f977dc2c0aa6c4))
+  - fix multiple bugs in bandwidth controller and add tests ([dc963d9a](https://github.com/TokTok/c-toxcore/commit/dc963d9a9904d0f3c459604065669a2d8e2bc522))
+  - handle `vpx_image_alloc` failure ([3e22fd5c](https://github.com/TokTok/c-toxcore/commit/3e22fd5cc418153571cb9ce5947701dabd061cce))
+- **toxencryptsave:** Wipe salt and passkey after usage. ([7cefa93c](https://github.com/TokTok/c-toxcore/commit/7cefa93cf2974a47f43c068d47ed8a198781ec48))
+
+#### Features
+
+- Add a way to look up a file number by ID. ([b144e8db](https://github.com/TokTok/c-toxcore/commit/b144e8db10292d1016dfc2014a91a0eb03b49b8e))
+- Add a way to fetch groups by chat ID. ([849281ea](https://github.com/TokTok/c-toxcore/commit/849281ea08e764c63dad626abcc68ff583d24530))
+- Add Event Loop abstraction (Ev). ([2f87ac67](https://github.com/TokTok/c-toxcore/commit/2f87ac67b0b1ecaa8275e8c6d0f4cc97ca63c0c4))
+
+#### Performance
+
+- Add a timed limit of number of cookie requests. ([8f92e710](https://github.com/TokTok/c-toxcore/commit/8f92e710f30b55ec0c21152624301d22a8e98d0b))
+- **toxav:** optimize audio and video intermediate buffers by keeping them around ([d68d1d09](https://github.com/TokTok/c-toxcore/commit/d68d1d0950487815f7a0069107dfdc518735c1a6))
+
 <a name="v0.2.21"></a>
 
 ## v0.2.21 (2025-05-15)
