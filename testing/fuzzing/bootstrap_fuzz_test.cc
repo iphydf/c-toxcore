@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cstddef>
 #include <cstdio>
 #include <functional>
 #include <memory>
@@ -196,7 +197,7 @@ void TestBootstrap(Fuzz_Data &input)
     assert(dispatch != nullptr);
     setup_callbacks(dispatch);
 
-    size_t input_size = input.size();
+    std::size_t input_size = input.size();
     while (!input.empty()) {
         Tox_Err_Events_Iterate error_iterate;
         Tox_Events *events = tox_events_iterate(tox, true, &error_iterate);
@@ -221,8 +222,8 @@ void TestBootstrap(Fuzz_Data &input)
 
 }
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size);
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, std::size_t size);
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, std::size_t size)
 {
     Fuzz_Data input{data, size};
     TestBootstrap(input);

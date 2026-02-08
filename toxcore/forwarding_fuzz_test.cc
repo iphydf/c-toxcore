@@ -1,6 +1,7 @@
 #include "forwarding.h"
 
 #include <cassert>
+#include <cstddef>
 #include <cstring>
 #include <memory>
 #include <optional>

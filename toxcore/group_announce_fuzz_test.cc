@@ -1,6 +1,7 @@
 #include "group_announce.h"
 
 #include <cassert>
+#include <cstddef>
 #include <functional>
 #include <memory>
 #include <vector>

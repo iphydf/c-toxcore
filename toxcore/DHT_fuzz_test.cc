@@ -1,6 +1,7 @@
 #include "DHT.h"
 
 #include <cassert>
+#include <cstddef>
 #include <cstdlib>
 #include <cstring>
 #include <vector>

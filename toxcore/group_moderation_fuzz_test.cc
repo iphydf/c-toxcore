@@ -1,5 +1,7 @@
 #include "group_moderation.h"
 
+#include <cstddef>
+
 #include "../testing/support/public/fuzz_data.hh"
 #include "../testing/support/public/simulated_environment.hh"
 

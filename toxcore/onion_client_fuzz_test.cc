@@ -1,6 +1,7 @@
 #include "onion_client.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <cstring>
 #include <map>
 #include <memory>

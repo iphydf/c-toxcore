@@ -1,6 +1,7 @@
 #include "net_crypto.h"
 
 #include <cassert>
+#include <cstddef>
 #include <cstring>
 #include <functional>
 #include <memory>

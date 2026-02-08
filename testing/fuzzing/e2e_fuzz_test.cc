@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 #include <cassert>
+#include <cstddef>
 #include <cstdio>
 #include <functional>
 #include <vector>
@@ -244,8 +245,8 @@ const std::vector<uint8_t> startup_data = [] {
 
 }
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size);
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, std::size_t size);
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, std::size_t size)
 {
     std::vector<uint8_t> full_data(startup_data.size() + size);
     std::copy(startup_data.begin(), startup_data.end(), full_data.begin());

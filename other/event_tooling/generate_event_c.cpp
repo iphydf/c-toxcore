@@ -5,6 +5,7 @@
 // requires c++17
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <fstream>
 #include <iostream>
@@ -410,7 +411,7 @@ void generate_event_impl(const std::string& event_name, const std::vector<EventT
 
     // gen destruct
     f << "static void tox_event_" << event_name_l << "_destruct(Tox_Event_" << event_name << " *_Nonnull " << event_name_l << ", const Memory *_Nonnull mem)\n{\n";
-    size_t data_count = 0;
+    std::size_t data_count = 0;
     for (const auto& t : event_types) {
         std::visit(
             overloaded{

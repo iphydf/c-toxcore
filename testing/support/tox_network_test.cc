@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 
 #include <atomic>
+#include <cstddef>
 #include <iomanip>
 #include <sstream>
 
@@ -42,7 +43,7 @@ namespace {
         } ctx;
 
         tox_callback_friend_message(main_tox.get(),
-            [](Tox *_Nonnull, uint32_t, Tox_Message_Type, const uint8_t *_Nonnull, size_t,
+            [](Tox *_Nonnull, uint32_t, Tox_Message_Type, const uint8_t *_Nonnull, std::size_t,
                 void *_Nullable user_data) { static_cast<Context *>(user_data)->count++; });
 
         for (const auto &f : friends) {
@@ -78,7 +79,7 @@ namespace {
         } ctx;
 
         tox_callback_friend_message(main_tox.get(),
-            [](Tox *_Nonnull, uint32_t, Tox_Message_Type, const uint8_t *_Nonnull, size_t,
+            [](Tox *_Nonnull, uint32_t, Tox_Message_Type, const uint8_t *_Nonnull, std::size_t,
                 void *_Nullable user_data) { static_cast<Context *>(user_data)->count++; });
 
         for (const auto &f : friends) {
@@ -118,7 +119,7 @@ namespace {
         // Verify communication
         std::atomic<bool> received{false};
         tox_callback_friend_message(tox2.get(),
-            [](Tox *_Nonnull, uint32_t, Tox_Message_Type, const uint8_t *_Nonnull, size_t,
+            [](Tox *_Nonnull, uint32_t, Tox_Message_Type, const uint8_t *_Nonnull, std::size_t,
                 void *_Nullable user_data) {
                 *static_cast<std::atomic<bool> *>(user_data) = true;
             });
@@ -156,8 +157,8 @@ namespace {
         } ctx;
 
         tox_callback_group_message(main_tox.get(),
-            [](Tox *_Nonnull, uint32_t, uint32_t, Tox_Message_Type, const uint8_t *_Nonnull, size_t,
-                uint32_t,
+            [](Tox *_Nonnull, uint32_t, uint32_t, Tox_Message_Type, const uint8_t *_Nonnull,
+                std::size_t, uint32_t,
                 void *_Nullable user_data) { static_cast<Context *>(user_data)->count++; });
 
         for (const auto &f : friends) {
@@ -200,8 +201,8 @@ namespace {
         } ctx;
 
         tox_callback_group_message(main_tox.get(),
-            [](Tox *_Nonnull, uint32_t, uint32_t, Tox_Message_Type, const uint8_t *_Nonnull, size_t,
-                uint32_t,
+            [](Tox *_Nonnull, uint32_t, uint32_t, Tox_Message_Type, const uint8_t *_Nonnull,
+                std::size_t, uint32_t,
                 void *_Nullable user_data) { static_cast<Context *>(user_data)->count++; });
 
         for (const auto &f : friends) {
@@ -349,7 +350,7 @@ namespace {
         } ctx;
 
         tox_callback_friend_message(toxF.get(),
-            [](Tox *, uint32_t, Tox_Message_Type, const uint8_t *, size_t, void *user_data) {
+            [](Tox *, uint32_t, Tox_Message_Type, const uint8_t *, std::size_t, void *user_data) {
                 static_cast<Context *>(user_data)->received = true;
             });
 

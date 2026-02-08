@@ -5,6 +5,8 @@
 
 #include <gtest/gtest.h>
 
+#include <cstddef>
+
 #include "DHT.h"
 #include "attributes.h"
 #include "crypto_core.h"
