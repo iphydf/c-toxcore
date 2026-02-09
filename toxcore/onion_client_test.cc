@@ -121,7 +121,7 @@ public:
     }
 
 protected:
-    SimulatedEnvironment env;
+    SimulatedEnvironment env{12345};
 };
 
 TEST_F(OnionClientTest, CreationAndDestruction)

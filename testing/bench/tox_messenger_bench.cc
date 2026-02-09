@@ -21,7 +21,7 @@ struct Context {
 
 void BM_ToxMessengerThroughput(benchmark::State &state)
 {
-    Simulation sim;
+    Simulation sim{12345};
     sim.net().set_latency(5);
     auto node1 = sim.create_node();
     auto node2 = sim.create_node();
@@ -117,7 +117,7 @@ BENCHMARK(BM_ToxMessengerThroughput);
 
 void BM_ToxMessengerBidirectional(benchmark::State &state)
 {
-    Simulation sim;
+    Simulation sim{12345};
     sim.net().set_latency(5);
     auto node1 = sim.create_node();
     auto node2 = sim.create_node();

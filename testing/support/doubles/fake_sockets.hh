@@ -79,6 +79,8 @@ protected:
  */
 class FakeUdpSocket : public FakeSocket {
 public:
+    static constexpr std::size_t kMaxQueueSize = 1024;
+
     explicit FakeUdpSocket(NetworkUniverse &universe);
     ~FakeUdpSocket() override;
 
@@ -127,6 +129,9 @@ private:
 class FakeTcpSocket : public FakeSocket {
 public:
     enum State { CLOSED, LISTEN, SYN_SENT, SYN_RECEIVED, ESTABLISHED, CLOSE_WAIT };
+
+    static constexpr std::size_t kMaxBufferSize = 1024 * 1024;
+    static constexpr std::size_t kMaxBacklog = 128;
 
     explicit FakeTcpSocket(NetworkUniverse &universe);
     ~FakeTcpSocket() override;
