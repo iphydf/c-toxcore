@@ -528,8 +528,9 @@ static void iterate_common(ToxAV *_Nonnull av, bool audio)
         const bool is_offline = tox_friend_get_connection_status(av->tox, fid, &f_con_query_error) == TOX_CONNECTION_NONE;
 
         if (is_offline) {
-            msi_call_timeout(i->msi_call->session, av->log, fid);
+            MSISession *session = i->msi_call->session;
             pthread_mutex_unlock(i->toxav_call_mutex);
+            msi_call_timeout(session, av->log, fid);
             pthread_mutex_lock(av->mutex);
             break;
         }
