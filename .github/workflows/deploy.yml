@@ -15,7 +15,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-
   ################################################################################################
   # Preparation jobs
   ################################################################################################
@@ -118,8 +117,15 @@ jobs:
     needs: [prepare]
     strategy:
       matrix:
-        target: [ios-arm64, ios-armv7, ios-armv7s, iphonesimulator-arm64, iphonesimulator-x86_64]
-    runs-on: 'macos-14'
+        target:
+          [
+            ios-arm64,
+            ios-armv7,
+            ios-armv7s,
+            iphonesimulator-arm64,
+            iphonesimulator-x86_64,
+          ]
+    runs-on: "macos-14"
     steps:
       - uses: actions/checkout@v6
         with:
@@ -141,7 +147,7 @@ jobs:
   build-xcode-framework:
     name: Xcode Framework
     needs: [build-ios, build-macos]
-    runs-on: 'macos-14'
+    runs-on: "macos-14"
     steps:
       - uses: actions/checkout@v6
         with:
