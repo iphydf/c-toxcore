@@ -968,7 +968,7 @@ static bool peer_is_founder(const GC_Chat *_Nonnull chat, uint32_t peer_number)
     return memcmp(chat->shared_state.founder_public_key.enc, gconn->addr.public_key.enc, ENC_PUBLIC_KEY_SIZE) == 0;
 }
 
-/** Returns true if peer designated by `peer_number` is in the moderator list or is the founder. */
+/** Returns true if peer designated by `peer_number` is in the moderator list. */
 static bool peer_is_moderator(const GC_Chat *_Nonnull chat, uint32_t peer_number)
 {
     const GC_Connection *gconn = get_gc_connection(chat, peer_number);
