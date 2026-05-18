@@ -258,7 +258,7 @@ Tox_Pass_Key *tox_pass_key_derive(
  *
  * @param passphrase The user-provided password. Can be empty.
  * @param passphrase_len The length of the password.
- * @param salt An array of at least TOX_PASS_SALT_LENGTH bytes.
+ * @param salt An array of exactly TOX_PASS_SALT_LENGTH bytes.
  *
  * @return new symmetric key on success, NULL on failure.
  */
@@ -336,6 +336,9 @@ const char *tox_err_get_salt_to_string(Tox_Err_Get_Salt error);
  * Success does not say anything about the validity of the data, only that
  * data of the appropriate size was copied.
  *
+ * @param ciphertext The encrypted data; at least TOX_PASS_ENCRYPTION_EXTRA_LENGTH bytes are read.
+ * @param salt An array of exactly TOX_PASS_SALT_LENGTH bytes to write the salt to.
+ *
  * @return true on success.
  */
 bool tox_get_salt(
@@ -353,6 +356,8 @@ bool tox_get_salt(
  * undefined.
  *
  * If the data pointer is NULL, the behaviour is undefined
+ *
+ * @param data The data to check; at least TOX_PASS_ENCRYPTION_EXTRA_LENGTH bytes are read.
  *
  * @return true if the data is encrypted by this module.
  */
