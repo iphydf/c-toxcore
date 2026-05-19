@@ -52,6 +52,8 @@ extern "C" {
 
 uint32_t tox_pass_salt_length(void);
 
+typedef uint8_t Tox_Pass_Salt[TOX_PASS_SALT_LENGTH];
+
 /**
  * The size of the key part of a pass-key.
  */
@@ -264,7 +266,7 @@ Tox_Pass_Key *tox_pass_key_derive(
  */
 Tox_Pass_Key *tox_pass_key_derive_with_salt(
     const uint8_t passphrase[], size_t passphrase_len,
-    const uint8_t salt[TOX_PASS_SALT_LENGTH], Tox_Err_Key_Derivation *error);
+    const Tox_Pass_Salt salt, Tox_Err_Key_Derivation *error);
 
 /**
  * Encrypt a plain text with a key produced by tox_pass_key_derive or
@@ -343,7 +345,7 @@ const char *tox_err_get_salt_to_string(Tox_Err_Get_Salt error);
  */
 bool tox_get_salt(
     const uint8_t ciphertext[TOX_PASS_ENCRYPTION_EXTRA_LENGTH],
-    uint8_t salt[TOX_PASS_SALT_LENGTH], Tox_Err_Get_Salt *error);
+    Tox_Pass_Salt salt, Tox_Err_Get_Salt *error);
 
 /**
  * Determines whether or not the given data is encrypted by this module.
