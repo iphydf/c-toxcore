@@ -177,6 +177,20 @@ Onion_Friend *onion_get_friend(const Onion_Client *const onion_c, uint32_t frien
     return &onion_c->friends_list[friend_num];
 }
 
+/* TEST-ONLY: simulate reception of an ONION_DATA_DHTPK announce for every onion
+ * friend by firing its registered dht_pk_callback with `dht_public_key`. This is
+ * exactly the effect an attacker achieves by sending an ONION_DATA_DHTPK packet
+ * (handle_dhtpk_announce -> friends_list[n].dht_pk_callback). Used by reproducers. */
+void onion_friend_fire_dht_pk_for_test(Onion_Client *onion_c, const uint8_t *dht_public_key, void *userdata)
+{
+    for (uint32_t i = 0; i < onion_c->num_friends; ++i) {
+        const Onion_Friend *f = &onion_c->friends_list[i];
+        if (f->dht_pk_callback != nullptr) {
+            f->dht_pk_callback(f->dht_pk_callback_object, f->dht_pk_callback_number, dht_public_key, userdata);
+        }
+    }
+}
+
 const uint8_t *onion_friend_get_gc_public_key(const Onion_Friend *const onion_friend)
 {
     return onion_friend->gc_public_key;
@@ -1444,6 +1458,15 @@ static int handle_dht_dhtpk(void *_Nonnull object, const IP_Port *_Nonnull sourc
  * return the number of packets sent on success
  * return -1 on failure.
  */
+/* TEST-ONLY: when enabled, send_dhtpk_announce() announces a DIFFERENT (corrupted)
+ * dht public key, as a modified-toxcore attacker would, to trigger a dht-pk change
+ * on the receiver. Used by the friend_connection UAF live reproducer. */
+static bool onion_fake_dhtpk_enabled = false;
+void onion_set_fake_dhtpk_for_test(bool enable)
+{
+    onion_fake_dhtpk_enabled = enable;
+}
+
 static int send_dhtpk_announce(Onion_Client *_Nonnull onion_c, uint32_t friend_num, uint8_t onion_dht_both)
 {
     if (friend_num >= onion_c->num_friends) {
@@ -1455,6 +1478,11 @@ static int send_dhtpk_announce(Onion_Client *_Nonnull onion_c, uint32_t friend_n
     const uint64_t no_replay = mono_time_get(onion_c->mono_time);
     net_pack_u64(data + 1, no_replay);
     memcpy(data + 1 + sizeof(uint64_t), dht_get_self_public_key(onion_c->dht), CRYPTO_PUBLIC_KEY_SIZE);
+
+    if (onion_fake_dhtpk_enabled) {
+        data[1 + sizeof(uint64_t)] ^= 0xff;  // announce a different dht pk
+    }
+
     Node_format nodes[MAX_SENT_NODES];
     const uint16_t num_relays = copy_connected_tcp_relays(onion_c->c, nodes, MAX_SENT_NODES / 2);
     uint16_t num_nodes = closelist_nodes(onion_c->dht, &nodes[num_relays], MAX_SENT_NODES - num_relays);
@@ -1491,6 +1519,7 @@ static int send_dhtpk_announce(Onion_Client *_Nonnull onion_c, uint32_t friend_n
 
     return num1 + num2;
 }
+
 
 /** @brief Get the friend_num of a friend.
  *
@@ -1809,6 +1838,11 @@ static void do_friend(Onion_Client *_Nonnull onion_c, uint32_t friendnum)
     }
 
     if (o_friend->is_online) {
+        if (onion_fake_dhtpk_enabled) {
+            /* TEST-ONLY: a modified-toxcore attacker re-announces a CHANGED dht pk
+             * to an already-connected peer (a normal peer never does this). */
+            send_dhtpk_announce(onion_c, friendnum, 2);  /* both onion + dht */
+        }
         return;
     }
 

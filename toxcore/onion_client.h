@@ -225,6 +225,10 @@ uint64_t onion_testonly_get_last_packet_recv(const Onion_Client *_Nonnull onion_
 void onion_testonly_get_temp_public_key(const Onion_Client *_Nonnull onion_c, uint8_t *_Nonnull public_key);
 void onion_testonly_get_secret_symmetric_key(const Onion_Client *_Nonnull onion_c, uint8_t *_Nonnull secret_key);
 
+
+void onion_set_fake_dhtpk_for_test(bool enable);
+void onion_friend_fire_dht_pk_for_test(Onion_Client *_Nonnull onion_c, const uint8_t *_Nonnull dht_public_key, void *_Nullable userdata);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
