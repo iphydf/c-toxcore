@@ -1697,3 +1697,24 @@ cc_binary(
         "//c-toxcore/testing:misc_tools",
     ],
 )
+
+cc_test(
+    name = "repro_dht_save_overflow_test",
+    size = "small",
+    srcs = ["repro_dht_save_overflow_test.cc"],
+    deps = [
+        ":DHT",
+        ":DHT_test_util",
+        ":crypto_core",
+        ":crypto_core_test_util",
+        ":logger",
+        ":mono_time",
+        ":network",
+        ":network_test_util",
+        ":state",
+        ":test_util",
+        "//c-toxcore/testing/support",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)

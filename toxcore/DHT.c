@@ -2713,10 +2713,14 @@ void dht_save(const DHT *dht, uint8_t *data)
     /* get right offset. we write the actual header later. */
     data = state_write_section_header(data, DHT_STATE_COOKIE_TYPE, 0, 0);
 
-    Node_format *clients = (Node_format *)mem_valloc(dht->mem, MAX_SAVED_DHT_NODES, sizeof(Node_format));
+    /* The loaded nodes are written before the close and fake-friend lists, so
+     * the temporary array must hold loaded_num_nodes in addition to the
+     * MAX_SAVED_DHT_NODES that cover those two lists (same count as dht_size). */
+    const uint32_t max_clients = MAX_SAVED_DHT_NODES + dht->loaded_num_nodes;
+    Node_format *clients = (Node_format *)mem_valloc(dht->mem, max_clients, sizeof(Node_format));
 
     if (clients == nullptr) {
-        LOGGER_ERROR(dht->log, "could not allocate %u nodes", (unsigned int)MAX_SAVED_DHT_NODES);
+        LOGGER_ERROR(dht->log, "could not allocate %u nodes", (unsigned int)max_clients);
         return;
     }
 
