@@ -33,7 +33,7 @@ jobs:
     strategy:
       matrix:
         arch: [aarch64, x86_64]
-    runs-on: ${{ matrix.arch == 'aarch64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
+    runs-on: ${{ matrix.arch == 'aarch64' && 'ubuntu-26.04-arm' || 'ubuntu-latest' }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -210,7 +210,7 @@ jobs:
     strategy:
       matrix:
         arch: [armeabi-v7a, arm64-v8a, x86, x86_64]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
@@ -315,7 +315,7 @@ jobs:
   build-wasm:
     name: WebAssembly
     needs: [prepare]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
