@@ -93,7 +93,7 @@ jobs:
     strategy:
       matrix:
         arch: [arm64, x86_64]
-    runs-on: ${{ matrix.arch == 'arm64' && 'macos-14' || 'macos-15-intel' }}
+    runs-on: ${{ matrix.arch == 'arm64' && 'macos-26' || 'macos-15-intel' }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -117,15 +117,8 @@ jobs:
     needs: [prepare]
     strategy:
       matrix:
-        target:
-          [
-            ios-arm64,
-            ios-armv7,
-            ios-armv7s,
-            iphonesimulator-arm64,
-            iphonesimulator-x86_64,
-          ]
-    runs-on: "macos-14"
+        target: [ios-arm64, iphonesimulator-arm64, iphonesimulator-x86_64]
+    runs-on: "macos-26"
     steps:
       - uses: actions/checkout@v6
         with:
@@ -147,7 +140,7 @@ jobs:
   build-xcode-framework:
     name: Xcode Framework
     needs: [build-ios, build-macos]
-    runs-on: "macos-14"
+    runs-on: "macos-26"
     steps:
       - uses: actions/checkout@v6
         with:
@@ -155,7 +148,8 @@ jobs:
       - name: Download artifact for ios
         uses: actions/download-artifact@v7
         with:
-          pattern: toxcore-ios-*
+          name: toxcore-ios-arm64
+          path: toxcore-ios-arm64
       - name: Download artifact for iphonesimulator
         uses: actions/download-artifact@v7
         with:
