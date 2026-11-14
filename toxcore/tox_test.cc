@@ -69,6 +69,7 @@ TEST(Tox, ConstantsAreNonZero)
     EXPECT_GT(tox_group_peer_public_key_size(), 0);
     EXPECT_GT(tox_dht_node_ip_string_size(), 0);
     EXPECT_GT(tox_dht_node_public_key_size(), 0);
+    EXPECT_GT(tox_group_secret_key_size(), 0);
 }
 
 TEST(Tox, BootstrapErrorCodes)
@@ -107,6 +108,82 @@ TEST(Tox, ConferenceLossyPacketTooLongIsRejected)
         send_group_lossy_packet(tox->m->conferences_object, conference, data.data(), UINT16_MAX),
         -1);
 
+    tox_kill(tox);
+}
+
+TEST(Tox, GroupComesBackFromItsState)
+{
+    SimulatedEnvironment env{12345};
+    struct Tox_Options *options = tox_options_new(nullptr);
+    ASSERT_NE(options, nullptr);
+    auto node = env.create_node(33545);
+    auto other_node = env.create_node(33546);
+    Tox_Options_Testing testing_opts = {};
+    testing_opts.operating_system = &node->system;
+    Tox *tox = tox_new_testing(options, nullptr, &testing_opts, nullptr);
+    testing_opts.operating_system = &other_node->system;
+    Tox *other = tox_new_testing(options, nullptr, &testing_opts, nullptr);
+    tox_options_free(options);
+    ASSERT_NE(tox, nullptr);
+    ASSERT_NE(other, nullptr);
+
+    const std::array<std::uint8_t, 3> name{'L', 'a', 'b'};
+    const std::array<std::uint8_t, 2> nick{'M', 'e'};
+    const std::array<std::uint8_t, 4> password{'p', 'a', 's', 's'};
+    const std::uint32_t group = tox_group_new(tox, TOX_GROUP_PRIVACY_STATE_PRIVATE, name.data(),
+        name.size(), nick.data(), nick.size(), nullptr);
+    ASSERT_NE(group, UINT32_MAX);
+    ASSERT_TRUE(tox_group_set_password(tox, group, password.data(), password.size(), nullptr));
+
+    std::vector<std::uint8_t> state(tox_group_get_state_size(tox, group, nullptr));
+    ASSERT_FALSE(state.empty());
+    ASSERT_TRUE(tox_group_get_state(tox, group, state.data(), nullptr));
+    std::array<std::uint8_t, TOX_GROUP_SECRET_KEY_SIZE> self_key{};
+    ASSERT_TRUE(tox_group_self_get_secret_key(tox, group, self_key.data(), nullptr));
+    std::array<std::uint8_t, TOX_GROUP_SECRET_KEY_SIZE> chat_key{};
+    ASSERT_TRUE(tox_group_get_chat_secret_key(tox, group, chat_key.data(), nullptr));
+
+    // A group can't be joined again while we're in it.
+    Tox_Err_Group_Join_As err;
+    tox_group_join_as(
+        tox, state.data(), state.size(), self_key.data(), nullptr, nick.data(), nick.size(), &err);
+    EXPECT_EQ(err, TOX_ERR_GROUP_JOIN_AS_DUPLICATE);
+
+    std::vector<std::uint8_t> forged = state;
+    forged[forged.size() / 2] ^= 1;
+    tox_group_join_as(other, forged.data(), forged.size(), self_key.data(), nullptr, nick.data(),
+        nick.size(), &err);
+    EXPECT_EQ(err, TOX_ERR_GROUP_JOIN_AS_BAD_STATE);
+
+    std::array<std::uint8_t, TOX_GROUP_SECRET_KEY_SIZE> wrong_key = chat_key;
+    wrong_key[0] ^= 1;
+    tox_group_join_as(other, state.data(), state.size(), self_key.data(), wrong_key.data(),
+        nick.data(), nick.size(), &err);
+    EXPECT_EQ(err, TOX_ERR_GROUP_JOIN_AS_BAD_CHAT_SECRET_KEY);
+
+    const std::uint32_t restored = tox_group_join_as(other, state.data(), state.size(),
+        self_key.data(), chat_key.data(), nick.data(), nick.size(), &err);
+    ASSERT_EQ(err, TOX_ERR_GROUP_JOIN_AS_OK);
+    EXPECT_EQ(tox_group_get_group_list_size(other), 1);
+    EXPECT_EQ(
+        tox_group_get_privacy_state(other, restored, nullptr), TOX_GROUP_PRIVACY_STATE_PRIVATE);
+    EXPECT_EQ(tox_group_self_get_role(other, restored, nullptr), TOX_GROUP_ROLE_FOUNDER);
+
+    std::array<std::uint8_t, 3> restored_name{};
+    ASSERT_EQ(tox_group_get_name_size(other, restored, nullptr), name.size());
+    ASSERT_TRUE(tox_group_get_name(other, restored, restored_name.data(), nullptr));
+    EXPECT_EQ(restored_name, name);
+    std::array<std::uint8_t, 4> restored_password{};
+    ASSERT_EQ(tox_group_get_password_size(other, restored, nullptr), password.size());
+    ASSERT_TRUE(tox_group_get_password(other, restored, restored_password.data(), nullptr));
+    EXPECT_EQ(restored_password, password);
+
+    // What it gives back is what it was given.
+    std::vector<std::uint8_t> again(tox_group_get_state_size(other, restored, nullptr));
+    ASSERT_TRUE(tox_group_get_state(other, restored, again.data(), nullptr));
+    EXPECT_EQ(again, state);
+
+    tox_kill(other);
     tox_kill(tox);
 }
 

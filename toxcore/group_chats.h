@@ -55,6 +55,8 @@ typedef enum Group_Invite_Message_Type {
     GROUP_INVITE              = 0x00,  // Peer has initiated an invite
     GROUP_INVITE_ACCEPTED     = 0x01,  // Peer has accepted the invite
     GROUP_INVITE_CONFIRMATION = 0x02,  // Peer has confirmed the accepted invite
+    GROUP_PROBE               = 0x03,  // Peer asks whether we're in a group, without naming it
+    GROUP_PROBE_RESPONSE      = 0x04,  // Peer is in the group we asked about
 } Group_Invite_Message_Type;
 
 /** Group join rejection types. */
@@ -595,6 +597,44 @@ int gc_group_add(GC_Session *_Nonnull c, Group_Privacy_State privacy_state, cons
  */
 int gc_group_join(GC_Session *_Nonnull c, const uint8_t *_Nonnull chat_id, const uint8_t *_Nonnull nick, size_t nick_length, const uint8_t *_Nullable passwd,
                   uint16_t passwd_len);
+/** @brief Joins the group that `state` describes as the member whose secret key is `self_secret_key`.
+ *
+ * `state` is what gc_get_state wrote. If `chat_secret_key` is non-null, it is the group's secret key,
+ * which makes us able to act as its founder again. Parts of the state other than the settings that
+ * don't check out are left for peers to send.
+ *
+ * @return group_number on success.
+ * @retval -1 if the group object fails to initialize.
+ * @retval -2 if the group is already in the session.
+ * @retval -3 if nick is too long.
+ * @retval -4 if nick is empty or nick length is zero.
+ * @retval -5 if `state` is malformed or its settings aren't signed by the group's founder.
+ * @retval -6 if `chat_secret_key` doesn't make the group's chat ID.
+ * @retval -7 if the Messenger friend connection fails to initialize.
+ */
+int gc_group_join_as(GC_Session *_Nonnull c, const uint8_t state[_Nonnull], uint32_t state_length,
+                     const uint8_t self_secret_key[_Nonnull EXT_KEY_SEED_SIZE],
+                     const uint8_t chat_secret_key[_Nullable EXT_KEY_SEED_SIZE],
+                     const uint8_t nick[_Nullable], size_t nick_length);
+
+/** @brief Writes the secret key that makes our keypair in `chat` to `secret_key`. */
+void gc_get_self_secret_key(const GC_Chat *_Nonnull chat, uint8_t secret_key[_Nonnull EXT_KEY_SEED_SIZE]);
+
+/** @brief Writes the group's secret key to `secret_key`.
+ *
+ * @retval false if we don't have it, i.e. we're not the founder.
+ */
+bool gc_get_chat_secret_key(const GC_Chat *_Nonnull chat, uint8_t secret_key[_Nonnull EXT_KEY_SEED_SIZE]);
+
+/** @return the size of what gc_get_state writes, or 0 if we haven't got the group's settings yet. */
+uint32_t gc_get_state_size(const GC_Chat *_Nonnull chat);
+
+/** @brief Writes the group's settings, moderators, sanctions and topic to `state`, as a sync sends them.
+ *
+ * @retval false if we haven't got the group's settings yet, or `length` is too small.
+ */
+bool gc_get_state(const GC_Chat *_Nonnull chat, uint8_t state[_Nonnull], uint32_t length);
+
 /** @brief Disconnects from all peers in a group but saves the group state for later use.
  *
  * Return true on sucess.
@@ -711,6 +751,18 @@ bool group_not_added(const GC_Session *_Nonnull c, const uint8_t *_Nonnull chat_
  * Return -5 if data contains invalid connection info.
  */
 int handle_gc_invite_confirmed_packet(const GC_Session *_Nonnull c, int friend_number, const uint8_t *_Nonnull data, uint16_t length);
+
+/** @brief Handles a probe from a friend asking whether we're in a group.
+ *
+ * We answer for every group whose chat ID makes the probe's hash, if we have its settings.
+ */
+void handle_gc_probe_packet(const GC_Session *_Nonnull c, int friend_number, const uint8_t data[_Nonnull], uint16_t length);
+
+/** @brief Handles a friend's answer to our probe, and starts a handshake with them in that group.
+ *
+ * @retval false if we didn't probe for the group or the answer is unusable.
+ */
+bool handle_gc_probe_response_packet(const GC_Session *_Nonnull c, int friend_number, const uint8_t data[_Nonnull], uint16_t length);
 
 /** @brief Returns the group designated by `public_key`.
  * Returns null if group does not exist.

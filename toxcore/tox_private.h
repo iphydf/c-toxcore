@@ -542,6 +542,188 @@ size_t tox_group_peer_get_ip_address_size(const Tox *_Nonnull tox, uint32_t grou
 bool tox_group_peer_get_ip_address(const Tox *_Nonnull tox, uint32_t group_number, uint32_t peer_id, uint8_t *_Nonnull ip_addr,
                                    Tox_Err_Group_Peer_Query *_Nullable error);
 
+/*******************************************************************************
+ *
+ * :: Group chat keys and state.
+ *
+ ******************************************************************************/
+
+/**
+ * The size of a group secret key in bytes.
+ */
+#define TOX_GROUP_SECRET_KEY_SIZE        32
+
+uint32_t tox_group_secret_key_size(void);
+
+/**
+ * Write our secret key in a group to a byte array.
+ *
+ * Our public key in the group, as tox_group_self_get_public_key gives it, is
+ * made from this key. A client that keeps it can join the group again with
+ * tox_group_join_as as the same member, so we keep our role in it. Keep it as
+ * safe as the Tox secret key.
+ *
+ * @param group_number The group number of the group.
+ * @param secret_key A memory region of at least TOX_GROUP_SECRET_KEY_SIZE
+ *   bytes.
+ *
+ * @return true on success.
+ */
+bool tox_group_self_get_secret_key(const Tox *_Nonnull tox, uint32_t group_number, uint8_t secret_key[_Nonnull TOX_GROUP_SECRET_KEY_SIZE],
+                                   Tox_Err_Group_Self_Query *_Nullable error);
+
+typedef enum Tox_Err_Group_Get_Chat_Secret_Key {
+    /**
+     * The function returned successfully.
+     */
+    TOX_ERR_GROUP_GET_CHAT_SECRET_KEY_OK,
+
+    /**
+     * The group number passed did not designate a valid group.
+     */
+    TOX_ERR_GROUP_GET_CHAT_SECRET_KEY_GROUP_NOT_FOUND,
+
+    /**
+     * We don't have the group's secret key: only its founder does.
+     */
+    TOX_ERR_GROUP_GET_CHAT_SECRET_KEY_NOT_FOUNDER,
+} Tox_Err_Group_Get_Chat_Secret_Key;
+
+/**
+ * Write the group's secret key to a byte array.
+ *
+ * The Chat ID is made from this key, and only the group's founder has it. A
+ * founder who passes it to tox_group_join_as can change the group's settings
+ * again. Keep it as safe as the Tox secret key.
+ *
+ * @param group_number The group number of the group.
+ * @param secret_key A memory region of at least TOX_GROUP_SECRET_KEY_SIZE
+ *   bytes.
+ *
+ * @return true on success.
+ */
+bool tox_group_get_chat_secret_key(const Tox *_Nonnull tox, uint32_t group_number, uint8_t secret_key[_Nonnull TOX_GROUP_SECRET_KEY_SIZE],
+                                   Tox_Err_Group_Get_Chat_Secret_Key *_Nullable error);
+
+typedef enum Tox_Err_Group_Get_State {
+    /**
+     * The function returned successfully.
+     */
+    TOX_ERR_GROUP_GET_STATE_OK,
+
+    /**
+     * The group number passed did not designate a valid group.
+     */
+    TOX_ERR_GROUP_GET_STATE_GROUP_NOT_FOUND,
+
+    /**
+     * We haven't got the group's settings from a peer yet.
+     */
+    TOX_ERR_GROUP_GET_STATE_NO_STATE,
+} Tox_Err_Group_Get_State;
+
+/**
+ * Return the size of the group's state, or 0 if there is none to get.
+ *
+ * Use this to allocate the byte array for tox_group_get_state.
+ *
+ * @param group_number The group number of the group.
+ */
+size_t tox_group_get_state_size(const Tox *_Nonnull tox, uint32_t group_number, Tox_Err_Group_Get_State *_Nullable error);
+
+/**
+ * Write the group's state to a byte array.
+ *
+ * The state is what members send each other when they sync: the group's
+ * settings, signed by its founder, and its moderators, sanctions and topic. A
+ * client that keeps it can join the group again with tox_group_join_as without
+ * waiting for a member to send it. Get it again when the settings, moderation or
+ * topic change. The settings include the group's password, so keep the state
+ * as safe as that.
+ *
+ * @param group_number The group number of the group.
+ * @param state A memory region of at least tox_group_get_state_size bytes.
+ *
+ * @return true on success.
+ */
+bool tox_group_get_state(const Tox *_Nonnull tox, uint32_t group_number, uint8_t state[_Nonnull],
+                         Tox_Err_Group_Get_State *_Nullable error);
+
+typedef enum Tox_Err_Group_Join_As {
+    /**
+     * The function returned successfully.
+     */
+    TOX_ERR_GROUP_JOIN_AS_OK,
+
+    /**
+     * The group instance failed to initialize.
+     */
+    TOX_ERR_GROUP_JOIN_AS_INIT,
+
+    /**
+     * The group is already in this Tox instance.
+     */
+    TOX_ERR_GROUP_JOIN_AS_DUPLICATE,
+
+    /**
+     * name is NULL or name_length is zero.
+     */
+    TOX_ERR_GROUP_JOIN_AS_EMPTY,
+
+    /**
+     * name exceeds TOX_MAX_NAME_LENGTH.
+     */
+    TOX_ERR_GROUP_JOIN_AS_TOO_LONG,
+
+    /**
+     * state isn't a group state that tox_group_get_state wrote.
+     */
+    TOX_ERR_GROUP_JOIN_AS_BAD_STATE,
+
+    /**
+     * chat_secret_key isn't the secret key of the group in state.
+     */
+    TOX_ERR_GROUP_JOIN_AS_BAD_CHAT_SECRET_KEY,
+
+    /**
+     * There was a core error when initiating the group.
+     */
+    TOX_ERR_GROUP_JOIN_AS_CORE,
+} Tox_Err_Group_Join_As;
+
+/**
+ * Join a group from its state as the member that a secret key makes.
+ *
+ * With the state and the key that tox_group_get_state and
+ * tox_group_self_get_secret_key gave, e.g. before a restart, peers know us as
+ * before: we keep our role, and a moderator stays a moderator. Pass the group's
+ * secret key from tox_group_get_chat_secret_key to be its founder again. Any 32
+ * random bytes make a new member. Two Tox instances must not be in a group with
+ * the same key at the same time.
+ *
+ * The group has its settings from the state straight away, so it's in the
+ * group list, and members who come back after us can join through us. While a
+ * group has no peers, we ask our friends whether they're in it, so a private
+ * group, which is never announced, is found again through any friend in it. Once
+ * we reach one member, the group's sync tells us about the others.
+ *
+ * @param state The group's state, as tox_group_get_state gave it.
+ * @param state_length The length of the state.
+ * @param self_secret_key Our secret key in the group, e.g. as
+ *   tox_group_self_get_secret_key gave it.
+ * @param chat_secret_key The group's secret key, as
+ *   tox_group_get_chat_secret_key gave it, or NULL if we're not its founder.
+ * @param name The name of the peer joining the group.
+ * @param name_length The length of the peer's name. This must be greater than
+ *   zero and no larger than TOX_MAX_NAME_LENGTH.
+ *
+ * @return group_number on success, UINT32_MAX on failure.
+ */
+uint32_t tox_group_join_as(Tox *_Nonnull tox, const uint8_t state[_Nonnull], size_t state_length,
+                           const uint8_t self_secret_key[_Nonnull TOX_GROUP_SECRET_KEY_SIZE],
+                           const uint8_t chat_secret_key[_Nullable TOX_GROUP_SECRET_KEY_SIZE],
+                           const uint8_t name[_Nullable], size_t name_length, Tox_Err_Group_Join_As *_Nullable error);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
