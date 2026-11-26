@@ -26,7 +26,7 @@ extern "C" {
  *
  * - We pass the `obj` pointer as `this`-like pointer first to the callbacks.
  * - Any extra arguments passed to the callback follow the `obj` (and in case of
- *   array packing, the `arr` and `arr_size` parameters).
+ *   array packing, the `arr` and `arr_count` parameters).
  * - The packer is passed last.
  *
  * This roughly matches a curried lambda function:
@@ -94,35 +94,35 @@ bool bin_pack_obj(bin_pack_cb *_Nonnull callback, const void *_Nullable obj, con
  * @param callback The function called on the created packer and each object to
  *   be packed.
  * @param arr The object array to be packed, passed as `arr` to the callback.
- * @param arr_size The number of elements in the object array.
+ * @param arr_count The number of elements in the object array.
  * @param logger Optional logger object to pass to the callback.
  *
  * @return The packed size of the passed object array according to the callback.
  * @retval UINT32_MAX in case of errors such as buffer overflow.
  */
-uint32_t bin_pack_obj_array_b_size(bin_pack_array_cb *_Nonnull callback, const void *_Nullable arr, uint32_t arr_size, const Logger *_Nullable logger);
+uint32_t bin_pack_obj_array_b_size(bin_pack_array_cb *_Nonnull callback, const void *_Nullable arr, uint32_t arr_count, const Logger *_Nullable logger);
 /** @brief Pack an object array into a buffer of a given size.
  *
  * Similar to `bin_pack_obj_array` but does not write the array length, so
  * if you need that, encoding it is on you.
  *
- * Passing NULL for `arr` has no effect, but requires that `arr_size` is 0.
+ * Passing NULL for `arr` has no effect, but requires that `arr_count` is 0.
  *
  * @param callback The function called on the created packer and packed object
  *   array.
  * @param arr The object array to be packed, passed as `arr` to the callback.
- * @param arr_size The number of elements in the object array.
+ * @param arr_count The number of elements in the object array.
  * @param logger Optional logger object to pass to the callback.
  * @param buf A byte array large enough to hold the serialised representation of `arr`.
  * @param buf_size The size of the byte array. Can be `UINT32_MAX` to disable bounds checking.
  *
  * @retval false if an error occurred (e.g. buffer overflow).
  */
-bool bin_pack_obj_array_b(bin_pack_array_cb *_Nonnull callback, const void *_Nullable arr, uint32_t arr_size, const Logger *_Nullable logger, uint8_t *_Nonnull buf, uint32_t buf_size);
+bool bin_pack_obj_array_b(bin_pack_array_cb *_Nonnull callback, const void *_Nullable arr, uint32_t arr_count, const Logger *_Nullable logger, uint8_t *_Nonnull buf, uint32_t buf_size);
 /** @brief Encode an object array as MessagePack array into a bin packer.
  *
- * Calls the callback `arr_size` times with increasing `index` argument from 0 to
- * `arr_size`. This function is here just so we don't need to write the same
+ * Calls the callback `arr_count` times with increasing `index` argument from 0 to
+ * `arr_count`. This function is here just so we don't need to write the same
  * trivial loop many times and so we don't need an extra struct just to contain
  * an array with size so it can be passed to `bin_pack_obj`.
  *
@@ -130,19 +130,19 @@ bool bin_pack_obj_array_b(bin_pack_array_cb *_Nonnull callback, const void *_Nul
  * required here, so it must be called from within a callback to one of the
  * functions above.
  *
- * Passing NULL for `arr` requires that `arr_size` is 0. This will write a 0-size
+ * Passing NULL for `arr` requires that `arr_count` is 0. This will write a 0-size
  * MessagePack array to the packer.
  *
  * @param bp Bin packer object.
  * @param callback The function called on the created packer and packed object
  *   array.
  * @param arr The object array to be packed, passed as `arr` to the callback.
- * @param arr_size The number of elements in the object array.
+ * @param arr_count The number of elements in the object array.
  * @param logger Optional logger object to pass to the callback.
  *
  * @retval false if an error occurred (e.g. buffer overflow).
  */
-bool bin_pack_obj_array(Bin_Pack *_Nonnull bp, bin_pack_array_cb *_Nonnull callback, const void *_Nullable arr, uint32_t arr_size, const Logger *_Nullable logger);
+bool bin_pack_obj_array(Bin_Pack *_Nonnull bp, bin_pack_array_cb *_Nonnull callback, const void *_Nullable arr, uint32_t arr_count, const Logger *_Nullable logger);
 /** @brief Start packing a MessagePack array.
  *
  * A call to this function must be followed by exactly `size` calls to other functions below.

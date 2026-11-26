@@ -22,13 +22,15 @@ extern "C" {
  *
  * @thread any
  */
+GNU_ALLOC_SIZE(2)
 typedef void *_Nullable memory_malloc_cb(void *_Nullable self, uint32_t size);
 /**
  * @brief Reallocate a byte array, similar to realloc.
  *
  * @thread any
  */
-typedef void *_Nullable memory_realloc_cb(void *_Nullable self, void *_Nullable ptr, uint32_t size);
+GNU_ALLOC_SIZE(3)
+typedef void *_Nullable memory_realloc_cb(void *_Nullable self, void *_Nullable ptr, uint32_t new_size);
 /**
  * @brief Deallocate a byte or object array, similar to free.
  *
@@ -54,15 +56,17 @@ typedef struct Memory {
  * The array will not be initialised. Supported built-in types are
  * `uint8_t`, `int8_t`, and `int16_t`.
  */
+GNU_ALLOC_SIZE(2)
 void *_Nullable mem_balloc(const Memory *_Nonnull mem, uint32_t size);
 
 /**
  * @brief Resize an array of a given size for built-in types.
  *
- * If used for a type other than byte-sized types, `size` needs to be manually
- * multiplied by the element size.
+ * If used for a type other than byte-sized types, `new_size` needs to be
+ * manually multiplied by the element size.
  */
-void *_Nullable mem_brealloc(const Memory *_Nonnull mem, void *_Nullable ptr, uint32_t size);
+GNU_ALLOC_SIZE(3)
+void *_Nullable mem_brealloc(const Memory *_Nonnull mem, void *_Nullable ptr, uint32_t new_size);
 
 /**
  * @brief Allocate a single zero-initialised object.
@@ -72,6 +76,7 @@ void *_Nullable mem_brealloc(const Memory *_Nonnull mem, void *_Nullable ptr, ui
  * @param mem The memory allocator.
  * @param size Size in bytes of each element.
  */
+GNU_ALLOC_SIZE(2)
 void *_Nullable mem_alloc(const Memory *_Nonnull mem, uint32_t size);
 
 /**
@@ -79,6 +84,7 @@ void *_Nullable mem_alloc(const Memory *_Nonnull mem, uint32_t size);
  *
  * Always use as `(T *)mem_valloc(mem, N, sizeof(T))`.
  */
+GNU_ALLOC_SIZE(2, 3)
 void *_Nullable mem_valloc(const Memory *_Nonnull mem, uint32_t nmemb, uint32_t size);
 
 /**
@@ -96,6 +102,7 @@ void *_Nullable mem_valloc(const Memory *_Nonnull mem, uint32_t nmemb, uint32_t 
  * case where the multiplication would overflow. If such an overflow occurs,
  * `mem_vrealloc()` returns `nullptr`.
  */
+GNU_ALLOC_SIZE(3, 4)
 void *_Nullable mem_vrealloc(const Memory *_Nonnull mem, void *_Nullable ptr, uint32_t nmemb, uint32_t size);
 
 /** @brief Free an array, object, or object vector. */

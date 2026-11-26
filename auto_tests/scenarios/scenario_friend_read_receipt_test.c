@@ -26,7 +26,7 @@ static void on_read_receipt(const Tox_Event_Friend_Read_Receipt *event, void *us
 static void alice_script(ToxNode *self, void *ctx)
 {
     AliceState *state = (AliceState *)ctx;
-    tox_events_callback_friend_read_receipt(tox_node_get_dispatch(self), on_read_receipt);
+    tox_dispatch_callback_friend_read_receipt(tox_node_get_dispatch(self), on_read_receipt);
 
     tox_node_wait_for_self_connected(self);
     tox_node_wait_for_friend_connected(self, 0);
@@ -48,7 +48,7 @@ static void bob_script(ToxNode *self, void *ctx)
     tox_node_wait_for_friend_connected(self, 0);
 
     tox_node_log(self, "Waiting for message from Alice...");
-    WAIT_FOR_EVENT(TOX_EVENT_FRIEND_MESSAGE);
+    WAIT_FOR_EVENT(TOX_EVENT_TYPE_FRIEND_MESSAGE);
     tox_node_log(self, "Received message! Tox will automatically send a read receipt.");
 
     // We stay here to allow Alice to receive the receipt

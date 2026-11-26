@@ -74,7 +74,7 @@ static void founder_script(ToxNode *self, void *ctx)
     Tox *tox = tox_node_get_tox(self);
     Tox_Dispatch *dispatch = tox_node_get_dispatch(self);
 
-    tox_events_callback_group_peer_join(dispatch, on_group_peer_join);
+    tox_dispatch_callback_group_peer_join(dispatch, on_group_peer_join);
 
     tox_node_wait_for_self_connected(self);
 
@@ -115,12 +115,12 @@ static void peer_script(ToxNode *self, void *ctx)
     Tox *tox = tox_node_get_tox(self);
     Tox_Dispatch *dispatch = tox_node_get_dispatch(self);
 
-    tox_events_callback_group_peer_join(dispatch, on_group_peer_join);
-    tox_events_callback_group_privacy_state(dispatch, on_group_privacy_state);
-    tox_events_callback_group_voice_state(dispatch, on_group_voice_state);
-    tox_events_callback_group_topic_lock(dispatch, on_group_topic_lock);
-    tox_events_callback_group_peer_limit(dispatch, on_group_peer_limit);
-    tox_events_callback_group_password(dispatch, on_group_password);
+    tox_dispatch_callback_group_peer_join(dispatch, on_group_peer_join);
+    tox_dispatch_callback_group_privacy_state(dispatch, on_group_privacy_state);
+    tox_dispatch_callback_group_voice_state(dispatch, on_group_voice_state);
+    tox_dispatch_callback_group_topic_lock(dispatch, on_group_topic_lock);
+    tox_dispatch_callback_group_peer_limit(dispatch, on_group_peer_limit);
+    tox_dispatch_callback_group_password(dispatch, on_group_password);
 
     tox_node_wait_for_self_connected(self);
 

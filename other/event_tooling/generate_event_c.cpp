@@ -2,7 +2,7 @@
 // Copyright © 2023-2026 The TokTok team.
 
 // this file can be used to generate event.c files and the event getter
-// declarations in tox_events.h
+// declarations in tox_event.h
 // requires c++17
 
 #include <algorithm>
@@ -26,7 +26,7 @@ std::string str_toupper(std::string s) {
 }
 
 std::string output_folder = "out/events";
-std::string events_header = "out/tox_events.h";
+std::string events_header = "out/tox_event.h";
 
 struct EventTypeTrivial {
     std::string type; // eg uint32_t
@@ -226,6 +226,7 @@ void generate_event_impl(const std::string& event_name, const std::vector<EventT
 #include "../mem.h"
 #include "../tox.h"
 #include "../tox_event.h"
+#include "../tox_event_struct.h"
 #include "../tox_events.h")";
 
     if (need_tox_options_h) {
@@ -537,7 +538,7 @@ void generate_event_impl(const std::string& event_name, const std::vector<EventT
 )";
 
     f << "const Tox_Event_" << event_name << " *tox_event_get_" << event_name_l << "(const Tox_Event *event)\n{\n";
-    f << "    return event->type == TOX_EVENT_" << event_name_u << " ? event->data." << event_name_l << " : nullptr;\n}\n\n";
+    f << "    return event->type == TOX_EVENT_TYPE_" << event_name_u << " ? event->data." << event_name_l << " : nullptr;\n}\n\n";
 
     // new
     f << "Tox_Event_" << event_name << " *tox_event_" << event_name_l << "_new(const Memory *mem)\n{\n";
@@ -559,7 +560,7 @@ void generate_event_impl(const std::string& event_name, const std::vector<EventT
     f << "        tox_event_" << event_name_l << "_free(" << event_name_l << ", state->mem);\n";
     f << "        return;\n    }\n\n";
     f << "    Tox_Event event;\n";
-    f << "    event.type = TOX_EVENT_" << event_name_u << ";\n";
+    f << "    event.type = TOX_EVENT_TYPE_" << event_name_u << ";\n";
     f << "    event.data." << event_name_l << " = " << event_name_l << ";\n\n";
     f << "    if (!tox_events_add(state->events, &event)) {\n";
     f << "        tox_event_" << event_name_l << "_free(" << event_name_l << ", state->mem);\n";
@@ -569,10 +570,13 @@ void generate_event_impl(const std::string& event_name, const std::vector<EventT
     f << "bool tox_event_" << event_name_l << "_unpack(\n";
     f << "    Tox_Event_" << event_name << " **event, Bin_Unpack *bu, const Memory *mem)\n{\n";
     f << "    assert(event != nullptr);\n";
-    f << "    assert(*event == nullptr);\n";
-    f << "    *event = tox_event_" << event_name_l << "_new(mem);\n\n";
-    f << "    if (*event == nullptr) {\n        return false;\n    }\n\n";
-    f << "    return tox_event_" << event_name_l << "_unpack_into(*event, bu);\n}\n";
+    f << "    Tox_Event_" << event_name << " *const unpacked = tox_event_" << event_name_l << "_new(mem);\n\n";
+    f << "    if (unpacked == nullptr) {\n        return false;\n    }\n\n";
+    f << "    if (!tox_event_" << event_name_l << "_unpack_into(unpacked, bu)) {\n";
+    f << "        tox_event_" << event_name_l << "_free(unpacked, mem);\n";
+    f << "        return false;\n    }\n\n";
+    f << "    *event = unpacked;\n";
+    f << "    return true;\n}\n";
 
 
     f << R"(
@@ -597,7 +601,7 @@ void generate_event_impl(const std::string& event_name, const std::vector<EventT
                     f << "const " << t.type_c_arg << " *" << t.name_data << ", " << t.type_length_cb << " " << t.name_length_cb;
                 },
                 [&](const EventTypeByteArray& t) {
-                    f << "const uint8_t *" << t.name;
+                    f << "const uint8_t " << t.name << "[" << t.length_constant << "]";
                 }
             },
             t
@@ -675,7 +679,7 @@ void generate_event_impl(const std::string& event_name, const std::vector<EventT
     f << "}\n";
 }
 
-// Replaces the event typedefs and getters in tox_events.h, which come before
+// Replaces the event typedefs and getters in tox_event.h, which come before
 // the Tox_Event_Type enum, so the getters are in the same order as the members.
 void generate_event_decls(const std::vector<std::pair<std::string, std::vector<EventType>>>& event_defs) {
     std::ifstream in(events_header);
@@ -730,7 +734,7 @@ void generate_event_decls(const std::vector<std::pair<std::string, std::vector<E
 // c++ generate_event_c.cpp -std=c++17 && ./a.out Friend_Lossy_Packet && diff --color ../../toxcore/events/friend_lossy_packet.c out/friend_lossy_packet.c
 int main(int argc, char** argv) {
     // TODO: json?
-    // In tox_events.h order. Each event's members are in its struct and wire order.
+    // In tox_event.h order. Each event's members are in its struct and wire order.
     const std::vector<std::pair<std::string, std::vector<EventType>>> event_defs {
         {
             "Conference_Connected",

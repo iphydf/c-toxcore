@@ -29,7 +29,7 @@ static void on_friend_request(const Tox_Event_Friend_Request *event, void *user_
 static void receiver_script(ToxNode *self, void *ctx)
 {
     const ReceiverState *state = (const ReceiverState *)ctx;
-    tox_events_callback_friend_request(tox_node_get_dispatch(self), on_friend_request);
+    tox_dispatch_callback_friend_request(tox_node_get_dispatch(self), on_friend_request);
 
     WAIT_UNTIL(tox_node_is_self_connected(self));
 

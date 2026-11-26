@@ -19,7 +19,7 @@ static void alice_script(ToxNode *self, void *ctx)
     }
 
     tox_node_log(self, "Waiting for response from Bob...");
-    WAIT_FOR_EVENT(TOX_EVENT_FRIEND_MESSAGE);
+    WAIT_FOR_EVENT(TOX_EVENT_TYPE_FRIEND_MESSAGE);
     tox_node_log(self, "Received response from Bob!");
 }
 
@@ -32,7 +32,7 @@ static void bob_script(ToxNode *self, void *ctx)
     WAIT_UNTIL(tox_node_is_friend_connected(self, 0));
 
     tox_node_log(self, "Waiting for message from Alice...");
-    WAIT_FOR_EVENT(TOX_EVENT_FRIEND_MESSAGE);
+    WAIT_FOR_EVENT(TOX_EVENT_TYPE_FRIEND_MESSAGE);
     tox_node_log(self, "Received message from Alice! Sending response...");
 
     uint8_t msg[] = "Hello Alice!";

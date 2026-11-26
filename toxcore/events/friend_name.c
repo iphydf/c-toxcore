@@ -14,6 +14,7 @@
 #include "../mem.h"
 #include "../tox.h"
 #include "../tox_event.h"
+#include "../tox_event_struct.h"
 #include "../tox_events.h"
 #include "../tox_struct.h"
 
@@ -121,7 +122,7 @@ static bool tox_event_friend_name_unpack_into(Tox_Event_Friend_Name *_Nonnull ev
 
 const Tox_Event_Friend_Name *tox_event_get_friend_name(const Tox_Event *event)
 {
-    return event->type == TOX_EVENT_FRIEND_NAME ? event->data.friend_name : nullptr;
+    return event->type == TOX_EVENT_TYPE_FRIEND_NAME ? event->data.friend_name : nullptr;
 }
 
 Tox_Event_Friend_Name *tox_event_friend_name_new(const Memory *mem)
@@ -153,7 +154,7 @@ static void tox_events_add_friend_name(Tox_Events_State *_Nonnull state, Tox_Eve
     }
 
     Tox_Event event;
-    event.type = TOX_EVENT_FRIEND_NAME;
+    event.type = TOX_EVENT_TYPE_FRIEND_NAME;
     event.data.friend_name = friend_name;
 
     if (!tox_events_add(state->events, &event)) {
@@ -166,14 +167,19 @@ bool tox_event_friend_name_unpack(
     Tox_Event_Friend_Name **event, Bin_Unpack *bu, const Memory *mem)
 {
     assert(event != nullptr);
-    assert(*event == nullptr);
-    *event = tox_event_friend_name_new(mem);
+    Tox_Event_Friend_Name *const unpacked = tox_event_friend_name_new(mem);
 
-    if (*event == nullptr) {
+    if (unpacked == nullptr) {
         return false;
     }
 
-    return tox_event_friend_name_unpack_into(*event, bu);
+    if (!tox_event_friend_name_unpack_into(unpacked, bu)) {
+        tox_event_friend_name_free(unpacked, mem);
+        return false;
+    }
+
+    *event = unpacked;
+    return true;
 }
 
 /*****************************************************

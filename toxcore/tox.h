@@ -247,19 +247,6 @@ uint32_t tox_dht_id_size(void);
 
 typedef uint8_t Tox_Dht_Id[TOX_DHT_ID_SIZE];
 
-#ifndef TOX_HIDE_DEPRECATED
-/**
- * @brief The size of a Tox Conference unique id in bytes.
- *
- * @deprecated Use TOX_CONFERENCE_ID_SIZE instead.
- */
-#define TOX_CONFERENCE_UID_SIZE        32
-
-uint32_t tox_conference_uid_size(void);
-
-typedef uint8_t Tox_Conference_Uid[TOX_CONFERENCE_UID_SIZE];
-#endif /* TOX_HIDE_DEPRECATED */
-
 /**
  * @brief The size of a Tox Conference unique id in bytes.
  */
@@ -268,6 +255,19 @@ typedef uint8_t Tox_Conference_Uid[TOX_CONFERENCE_UID_SIZE];
 uint32_t tox_conference_id_size(void);
 
 typedef uint8_t Tox_Conference_Id[TOX_CONFERENCE_ID_SIZE];
+
+#ifndef TOX_HIDE_DEPRECATED
+/**
+ * @brief The size of a Tox Conference unique id in bytes.
+ *
+ * @deprecated Use TOX_CONFERENCE_ID_SIZE instead.
+ */
+#define TOX_CONFERENCE_UID_SIZE        TOX_CONFERENCE_ID_SIZE
+
+uint32_t tox_conference_uid_size(void);
+
+typedef Tox_Conference_Id Tox_Conference_Uid;
+#endif /* TOX_HIDE_DEPRECATED */
 
 /**
  * @brief The size of the nospam in bytes when written in a Tox address.
@@ -589,11 +589,11 @@ const char *_Nonnull tox_err_bootstrap_to_string(Tox_Err_Bootstrap value);
  *   at most TOX_MAX_HOSTNAME_LENGTH chars, including the NUL byte.
  * @param port The port on the host on which the bootstrap Tox instance is
  *   listening.
- * @param public_key The DHT public key of the bootstrap node
+ * @param dht_id The DHT public key of the bootstrap node
  *   (TOX_DHT_ID_SIZE bytes).
  * @return true on success.
  */
-bool tox_bootstrap(Tox *_Nonnull tox, const char *_Nonnull host, Tox_Port port, const Tox_Dht_Id _Nonnull public_key, Tox_Err_Bootstrap *_Nullable error);
+bool tox_bootstrap(Tox *_Nonnull tox, const char *_Nonnull host, Tox_Port port, const Tox_Dht_Id _Nonnull dht_id, Tox_Err_Bootstrap *_Nullable error);
 
 /**
  * @brief Adds additional host:port pair as TCP relay.
@@ -605,11 +605,11 @@ bool tox_bootstrap(Tox *_Nonnull tox, const char *_Nonnull host, Tox_Port port, 
  * @param host The hostname or IP address (IPv4 or IPv6) of the TCP relay.
  *   Must be at most TOX_MAX_HOSTNAME_LENGTH chars, including the NUL byte.
  * @param port The port on the host on which the TCP relay is listening.
- * @param public_key The DHT public key of the TCP relay
+ * @param dht_id The DHT public key of the TCP relay
  *   (TOX_DHT_ID_SIZE bytes).
  * @return true on success.
  */
-bool tox_add_tcp_relay(Tox *_Nonnull tox, const char *_Nonnull host, Tox_Port port, const Tox_Dht_Id _Nonnull public_key, Tox_Err_Bootstrap *_Nullable error);
+bool tox_add_tcp_relay(Tox *_Nonnull tox, const char *_Nonnull host, Tox_Port port, const Tox_Dht_Id _Nonnull dht_id, Tox_Err_Bootstrap *_Nullable error);
 
 /**
  * @brief Protocols that can be used to connect to the network or friends.
@@ -1527,6 +1527,7 @@ void tox_callback_friend_message(Tox *_Nonnull tox, tox_friend_message_cb *_Null
 
 typedef uint32_t Tox_File_Number;
 
+// TODO(iphydf): Return void in 0.3.0: it fails only for a NULL argument.
 /**
  * @brief Generates a cryptographic hash of the given data.
  *
@@ -2526,6 +2527,7 @@ typedef enum Tox_Err_Conference_Invite {
 
 const char *_Nonnull tox_err_conference_invite_to_string(Tox_Err_Conference_Invite value);
 
+// TODO(iphydf): Say the friend doesn't exist in 0.3.0, with its own error code.
 /**
  * @brief Invites a friend to a conference.
  *
@@ -2786,6 +2788,7 @@ Tox_Conference_Type tox_conference_get_type(
     const Tox *_Nonnull tox, Tox_Conference_Number conference_number,
     Tox_Err_Conference_Get_Type *_Nullable error);
 
+// TODO(iphydf): Take an error in 0.3.0, to say the conference doesn't exist.
 /**
  * @brief Get the conference unique ID.
  *
@@ -3075,6 +3078,8 @@ Tox_Port tox_self_get_tcp_port(const Tox *_Nonnull tox, Tox_Err_Get_Port *_Nulla
  */
 
 typedef uint32_t Tox_Group_Number;
+// TODO(iphydf): Rename the callbacks' `peer_id` parameters to `peer_number`,
+// with the events' `get_peer_id` and `tox_group_self_get_peer_id`.
 typedef uint32_t Tox_Group_Peer_Number;
 typedef uint32_t Tox_Group_Message_Id;
 
@@ -3764,12 +3769,12 @@ const char *_Nonnull tox_err_group_peer_query_to_string(Tox_Err_Group_Peer_Query
  * the return value is unspecified.
  *
  * @param group_number The group number of the group we wish to query.
- * @param peer_id The ID of the peer whose name length we want to retrieve.
+ * @param peer_number The number of the peer whose name length we want to retrieve.
  *
  * The return value is equal to the `length` argument received by the last
  * `group_peer_name` callback.
  */
-size_t tox_group_peer_get_name_size(const Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id,
+size_t tox_group_peer_get_name_size(const Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_number,
                                     Tox_Err_Group_Peer_Query *_Nullable error);
 
 /**
@@ -3783,14 +3788,14 @@ size_t tox_group_peer_get_name_size(const Tox *_Nonnull tox, Tox_Group_Number gr
  * `group_peer_name` callback.
  *
  * @param group_number The group number of the group we wish to query.
- * @param peer_id The ID of the peer whose name we wish to retrieve.
+ * @param peer_number The number of the peer whose name we wish to retrieve.
  * @param name A valid memory region large enough to store the friend's name.
  *   If this parameter is NULL, this function call has no effect.
  *
  * @return true on success.
  */
 bool tox_group_peer_get_name(
-    const Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id,
+    const Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_number,
     uint8_t name[_Nullable], Tox_Err_Group_Peer_Query *_Nullable error);
 
 /**
@@ -3798,12 +3803,12 @@ bool tox_group_peer_get_name(
  * invalid, the return value is unspecified.
  *
  * @param group_number The group number of the group we wish to query.
- * @param peer_id The ID of the peer whose status we wish to query.
+ * @param peer_number The number of the peer whose status we wish to query.
  *
  * The status returned is equal to the last status received through the
  * `group_peer_status` callback.
  */
-Tox_User_Status tox_group_peer_get_status(const Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id,
+Tox_User_Status tox_group_peer_get_status(const Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_number,
         Tox_Err_Group_Peer_Query *_Nullable error);
 
 /**
@@ -3811,29 +3816,29 @@ Tox_User_Status tox_group_peer_get_status(const Tox *_Nonnull tox, Tox_Group_Num
  * is invalid, the return value is unspecified.
  *
  * @param group_number The group number of the group we wish to query.
- * @param peer_id The ID of the peer whose role we wish to query.
+ * @param peer_number The number of the peer whose role we wish to query.
  *
  * The role returned is equal to the last role received through the
  * `group_moderation` callback.
  */
-Tox_Group_Role tox_group_peer_get_role(const Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id,
+Tox_Group_Role tox_group_peer_get_role(const Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_number,
                                        Tox_Err_Group_Peer_Query *_Nullable error);
 
 /**
  * Return the type of connection we have established with a peer.
  *
- * If `peer_id` designates ourself, the return value indicates whether we're
+ * If `peer_number` designates ourself, the return value indicates whether we're
  * capable of making UDP connections with other peers, or are limited to TCP
  * connections.
  *
  * @param group_number The group number of the group we wish to query.
- * @param peer_id The ID of the peer whose connection status we wish to query.
+ * @param peer_number The number of the peer whose connection status we wish to query.
  */
-Tox_Connection tox_group_peer_get_connection_status(const Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id,
+Tox_Connection tox_group_peer_get_connection_status(const Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_number,
         Tox_Err_Group_Peer_Query *_Nullable error);
 
 /**
- * Write the group public key with the designated peer_id for the designated
+ * Write the group public key with the designated peer_number for the designated
  * group number to public_key.
  *
  * This key will be permanently tied to a particular peer until they explicitly
@@ -3844,14 +3849,14 @@ Tox_Connection tox_group_peer_get_connection_status(const Tox *_Nonnull tox, Tox
  * bytes. If `public_key` is NULL this function has no effect.
  *
  * @param group_number The group number of the group we wish to query.
- * @param peer_id The ID of the peer whose public key we wish to retrieve.
+ * @param peer_number The number of the peer whose public key we wish to retrieve.
  * @param public_key A valid memory region large enough to store the public key.
  *   If this parameter is NULL, this function call has no effect.
  *
  * @return true on success.
  */
 bool tox_group_peer_get_public_key(
-    const Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id,
+    const Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_number,
     Tox_Public_Key _Nullable public_key, Tox_Err_Group_Peer_Query *_Nullable error);
 
 /**
@@ -4206,6 +4211,8 @@ void tox_callback_group_topic_lock(Tox *_Nonnull tox, tox_group_topic_lock_cb *_
  */
 uint16_t tox_group_get_peer_limit(const Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Err_Group_State_Query *_Nullable error);
 
+// TODO(iphydf): Make peer_limit a uint16_t, as in tox_group_set_peer_limit and
+// tox_group_get_peer_limit, when we can change the ABI. Its event too.
 /**
  * @param group_number The group number of the group for which the peer limit
  *   has changed.
@@ -4407,7 +4414,7 @@ const char *_Nonnull tox_err_group_send_private_message_to_string(Tox_Err_Group_
  *
  * @param group_number The group number of the group the message is intended
  *   for.
- * @param peer_id The ID of the peer the message is intended for.
+ * @param peer_number The number of the peer the message is intended for.
  * @param message_type The type of message (normal, action, ...).
  * @param message A pointer to the first element of a byte array
  *   containing the message text.
@@ -4417,7 +4424,7 @@ const char *_Nonnull tox_err_group_send_private_message_to_string(Tox_Err_Group_
  *   returned message ID value will be undefined.
  */
 Tox_Group_Message_Id tox_group_send_private_message(
-    const Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, Tox_Message_Type message_type,
+    const Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_number, Tox_Message_Type message_type,
     const uint8_t message[_Nullable], size_t length,
     Tox_Err_Group_Send_Private_Message *_Nullable error);
 
@@ -4560,14 +4567,14 @@ const char *_Nonnull tox_err_group_send_custom_private_packet_to_string(Tox_Err_
  * so that clients can tell their packets apart.
  *
  * @param group_number The group number of the group the packet is intended for.
- * @param peer_id The ID of the peer the packet is intended for.
+ * @param peer_number The number of the peer the packet is intended for.
  * @param lossless True if the packet should be lossless.
  * @param data A byte array containing the packet data.
  * @param length The length of the packet data byte array.
  *
  * @return true on success.
  */
-bool tox_group_send_custom_private_packet(const Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, bool lossless,
+bool tox_group_send_custom_private_packet(const Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_number, bool lossless,
         const uint8_t data[_Nullable], size_t length,
         Tox_Err_Group_Send_Custom_Private_Packet *_Nullable error);
 
@@ -5280,12 +5287,12 @@ const char *_Nonnull tox_err_group_set_ignore_to_string(Tox_Err_Group_Set_Ignore
  *
  * @param group_number The group number of the group in which you wish to ignore
  *   a peer.
- * @param peer_id The ID of the peer who shall be ignored or unignored.
+ * @param peer_number The number of the peer who shall be ignored or unignored.
  * @param ignore True to ignore the peer, false to unignore the peer.
  *
  * @return true on success.
  */
-bool tox_group_set_ignore(Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, bool ignore,
+bool tox_group_set_ignore(Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_number, bool ignore,
                           Tox_Err_Group_Set_Ignore *_Nullable error);
 
 typedef enum Tox_Err_Group_Set_Role {
@@ -5346,12 +5353,12 @@ const char *_Nonnull tox_err_group_set_role_to_string(Tox_Err_Group_Set_Role val
  *
  * @param group_number The group number of the group the in which you wish set
  *   the peer's role.
- * @param peer_id The ID of the peer whose role you wish to set.
+ * @param peer_number The number of the peer whose role you wish to set.
  * @param role The role you wish to set the peer to.
  *
  * @return true on success.
  */
-bool tox_group_set_role(Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id, Tox_Group_Role role,
+bool tox_group_set_role(Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_number, Tox_Group_Role role,
                         Tox_Err_Group_Set_Role *_Nullable error);
 
 typedef enum Tox_Err_Group_Kick_Peer {
@@ -5406,11 +5413,11 @@ const char *_Nonnull tox_err_group_kick_peer_to_string(Tox_Err_Group_Kick_Peer v
  * caller.
  *
  * @param group_number The group number of the group the action is intended for.
- * @param peer_id The ID of the peer who will be kicked.
+ * @param peer_number The number of the peer who will be kicked.
  *
  * @return true on success.
  */
-bool tox_group_kick_peer(const Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_id,
+bool tox_group_kick_peer(const Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_number,
                          Tox_Err_Group_Kick_Peer *_Nullable error);
 
 /**

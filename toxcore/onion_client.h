@@ -82,7 +82,7 @@ typedef struct Onion_Client Onion_Client;
  * @retval false on failure
  * @retval true on success
  */
-bool onion_add_bs_path_node(Onion_Client *_Nonnull onion_c, const IP_Port *_Nonnull ip_port, const uint8_t *_Nonnull public_key);
+bool onion_add_bs_path_node(Onion_Client *_Nonnull onion_c, const IP_Port *_Nonnull ip_port, const uint8_t public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE]);
 
 /** @brief Put up to max_num nodes in nodes.
  *
@@ -129,7 +129,7 @@ int onion_set_friend_online(Onion_Client *_Nonnull onion_c, int friend_num, bool
  */
 int onion_getfriendip(const Onion_Client *_Nonnull onion_c, int friend_num, IP_Port *_Nonnull ip_port);
 
-typedef int recv_tcp_relay_cb(void *_Nonnull object, uint32_t number, const IP_Port *_Nonnull ip_port, const uint8_t *_Nonnull public_key);
+typedef int recv_tcp_relay_cb(void *_Nonnull object, int32_t number, const IP_Port *_Nonnull ip_port, const uint8_t public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE]);
 
 /** @brief Set the function for this friend that will be callbacked with object and number
  * when that friend gives us one of the TCP relays they are connected to.
@@ -139,7 +139,7 @@ typedef int recv_tcp_relay_cb(void *_Nonnull object, uint32_t number, const IP_P
  * return -1 on failure.
  * return 0 on success.
  */
-int recv_tcp_relay_handler(Onion_Client *_Nonnull onion_c, int friend_num, recv_tcp_relay_cb *_Nonnull callback, void *_Nonnull object, uint32_t number);
+int recv_tcp_relay_handler(Onion_Client *_Nonnull onion_c, int friend_num, recv_tcp_relay_cb *_Nonnull callback, void *_Nonnull object, int32_t number);
 
 typedef void onion_dht_pk_cb(void *_Nonnull object, int32_t number, const uint8_t *_Nonnull dht_public_key, void *_Nullable userdata);
 
@@ -151,14 +151,14 @@ typedef void onion_dht_pk_cb(void *_Nonnull object, int32_t number, const uint8_
  * return -1 on failure.
  * return 0 on success.
  */
-int onion_dht_pk_callback(Onion_Client *_Nonnull onion_c, int friend_num, onion_dht_pk_cb *_Nonnull function, void *_Nonnull object, uint32_t number);
+int onion_dht_pk_callback(Onion_Client *_Nonnull onion_c, int friend_num, onion_dht_pk_cb *_Nonnull function, void *_Nonnull object, int32_t number);
 
 /** @brief Set a friend's DHT public key.
  *
  * return -1 on failure.
  * return 0 on success.
  */
-int onion_set_friend_dht_pubkey(Onion_Client *_Nonnull onion_c, int friend_num, const uint8_t *_Nonnull dht_key);
+int onion_set_friend_dht_pubkey(Onion_Client *_Nonnull onion_c, int friend_num, const uint8_t dht_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE]);
 
 /** @brief Copy friends DHT public key into dht_key.
  *
@@ -222,8 +222,8 @@ bool onion_friend_is_groupchat(const Onion_Friend *_Nonnull onion_friend);
 
 /** Unit test support functions. Do not use outside tests. */
 uint64_t onion_testonly_get_last_packet_recv(const Onion_Client *_Nonnull onion_c);
-void onion_testonly_get_temp_public_key(const Onion_Client *_Nonnull onion_c, uint8_t *_Nonnull public_key);
-void onion_testonly_get_secret_symmetric_key(const Onion_Client *_Nonnull onion_c, uint8_t *_Nonnull secret_key);
+void onion_testonly_get_temp_public_key(const Onion_Client *_Nonnull onion_c, uint8_t public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE]);
+void onion_testonly_get_secret_symmetric_key(const Onion_Client *_Nonnull onion_c, uint8_t secret_key[_Nonnull CRYPTO_SYMMETRIC_KEY_SIZE]);
 
 #ifdef __cplusplus
 } /* extern "C" */

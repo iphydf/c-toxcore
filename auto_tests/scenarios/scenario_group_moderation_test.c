@@ -92,10 +92,10 @@ static void on_group_voice_state(const Tox_Event_Group_Voice_State *event, void 
 static void common_init(ToxNode *self, ModState *state)
 {
     Tox_Dispatch *dispatch = tox_node_get_dispatch(self);
-    tox_events_callback_group_self_join(dispatch, on_group_self_join);
-    tox_events_callback_group_peer_join(dispatch, on_group_peer_join);
-    tox_events_callback_group_moderation(dispatch, on_group_moderation);
-    tox_events_callback_group_voice_state(dispatch, on_group_voice_state);
+    tox_dispatch_callback_group_self_join(dispatch, on_group_self_join);
+    tox_dispatch_callback_group_peer_join(dispatch, on_group_peer_join);
+    tox_dispatch_callback_group_moderation(dispatch, on_group_moderation);
+    tox_dispatch_callback_group_voice_state(dispatch, on_group_voice_state);
 
     for (int i = 0; i < NUM_PEERS; ++i) {
         state->peer_ids[i] = UINT32_MAX;

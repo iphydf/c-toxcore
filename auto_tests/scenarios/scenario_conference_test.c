@@ -61,10 +61,10 @@ static void peer_script(ToxNode *self, void *ctx)
     PeerState *state = (PeerState *)ctx;
     uint32_t my_index = tox_node_get_index(self);
 
-    tox_events_callback_conference_invite(tox_node_get_dispatch(self), on_conference_invite);
-    tox_events_callback_conference_connected(tox_node_get_dispatch(self), on_conference_connected);
-    tox_events_callback_conference_peer_list_changed(tox_node_get_dispatch(self), on_peer_list_changed);
-    tox_events_callback_conference_message(tox_node_get_dispatch(self), on_conference_message);
+    tox_dispatch_callback_conference_invite(tox_node_get_dispatch(self), on_conference_invite);
+    tox_dispatch_callback_conference_connected(tox_node_get_dispatch(self), on_conference_connected);
+    tox_dispatch_callback_conference_peer_list_changed(tox_node_get_dispatch(self), on_peer_list_changed);
+    tox_dispatch_callback_conference_message(tox_node_get_dispatch(self), on_conference_message);
 
     WAIT_UNTIL(tox_node_is_self_connected(self));
     tox_node_log(self, "Self connected");

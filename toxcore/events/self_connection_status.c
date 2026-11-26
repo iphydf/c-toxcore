@@ -13,6 +13,7 @@
 #include "../mem.h"
 #include "../tox.h"
 #include "../tox_event.h"
+#include "../tox_event_struct.h"
 #include "../tox_events.h"
 #include "../tox_pack.h"
 #include "../tox_struct.h"
@@ -70,7 +71,7 @@ static bool tox_event_self_connection_status_unpack_into(Tox_Event_Self_Connecti
 
 const Tox_Event_Self_Connection_Status *tox_event_get_self_connection_status(const Tox_Event *event)
 {
-    return event->type == TOX_EVENT_SELF_CONNECTION_STATUS ? event->data.self_connection_status : nullptr;
+    return event->type == TOX_EVENT_TYPE_SELF_CONNECTION_STATUS ? event->data.self_connection_status : nullptr;
 }
 
 Tox_Event_Self_Connection_Status *tox_event_self_connection_status_new(const Memory *mem)
@@ -102,7 +103,7 @@ static void tox_events_add_self_connection_status(Tox_Events_State *_Nonnull sta
     }
 
     Tox_Event event;
-    event.type = TOX_EVENT_SELF_CONNECTION_STATUS;
+    event.type = TOX_EVENT_TYPE_SELF_CONNECTION_STATUS;
     event.data.self_connection_status = self_connection_status;
 
     if (!tox_events_add(state->events, &event)) {
@@ -115,14 +116,19 @@ bool tox_event_self_connection_status_unpack(
     Tox_Event_Self_Connection_Status **event, Bin_Unpack *bu, const Memory *mem)
 {
     assert(event != nullptr);
-    assert(*event == nullptr);
-    *event = tox_event_self_connection_status_new(mem);
+    Tox_Event_Self_Connection_Status *const unpacked = tox_event_self_connection_status_new(mem);
 
-    if (*event == nullptr) {
+    if (unpacked == nullptr) {
         return false;
     }
 
-    return tox_event_self_connection_status_unpack_into(*event, bu);
+    if (!tox_event_self_connection_status_unpack_into(unpacked, bu)) {
+        tox_event_self_connection_status_free(unpacked, mem);
+        return false;
+    }
+
+    *event = unpacked;
+    return true;
 }
 
 /*****************************************************

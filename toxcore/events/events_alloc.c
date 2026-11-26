@@ -9,6 +9,7 @@
 #include "../ccompat.h"
 #include "../mem.h"
 #include "../tox_event.h"
+#include "../tox_event_struct.h"
 #include "../tox_events.h"
 
 Tox_Events_State *tox_events_alloc(Tox_Events_State *state)
@@ -45,7 +46,7 @@ void tox_events_free(Tox_Events *events)
         return;
     }
 
-    for (uint32_t i = 0; i < events->events_size; ++i) {
+    for (uint32_t i = 0; i < events->events_count; ++i) {
         tox_event_destruct(&events->events[i], events->mem);
     }
 
@@ -55,11 +56,11 @@ void tox_events_free(Tox_Events *events)
 
 bool tox_events_add(Tox_Events *events, const Tox_Event *event)
 {
-    if (events->events_size == UINT32_MAX) {
+    if (events->events_count == UINT32_MAX) {
         return false;
     }
 
-    if (events->events_size == events->events_capacity) {
+    if (events->events_count == events->events_capacity) {
         const uint64_t new_events_capacity_64 = (uint64_t)events->events_capacity * 2 + 1;
 
         if (new_events_capacity_64 > UINT32_MAX) {
@@ -78,8 +79,8 @@ bool tox_events_add(Tox_Events *events, const Tox_Event *event)
         events->events_capacity = new_events_capacity;
     }
 
-    events->events[events->events_size] = *event;
-    ++events->events_size;
+    events->events[events->events_count] = *event;
+    ++events->events_count;
 
     return true;
 }

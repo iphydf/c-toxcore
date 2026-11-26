@@ -166,7 +166,7 @@ int write_packet_tcp_secure_connection(const Logger *logger, TCP_Connection *con
     memcpy(packet, &c_length, sizeof(uint16_t));
     int len = encrypt_data_symmetric(con->mem, con->shared_key, con->sent_nonce, data, length, packet + sizeof(uint16_t));
 
-    if ((unsigned int)len != (packet_size - sizeof(uint16_t))) {
+    if (len < 0 || (unsigned int)len != (packet_size - sizeof(uint16_t))) {
         return -1;
     }
 
@@ -239,7 +239,7 @@ int read_tcp_packet(
  *
  * return length on success
  * return 0 if nothing has been read from socket.
- * return -1 on failure.
+ * return UINT16_MAX on failure.
  */
 static uint16_t read_tcp_length(const Logger *_Nonnull logger, const Network *_Nonnull ns, Socket sock, const IP_Port *_Nonnull ip_port)
 {
@@ -259,7 +259,7 @@ static uint16_t read_tcp_length(const Logger *_Nonnull logger, const Network *_N
 
         if (length > MAX_PACKET_SIZE) {
             LOGGER_ERROR(logger, "TCP packet too large: %d > %d", length, MAX_PACKET_SIZE);
-            return -1;
+            return UINT16_MAX;
         }
 
         return length;
@@ -276,13 +276,13 @@ static uint16_t read_tcp_length(const Logger *_Nonnull logger, const Network *_N
 int read_packet_tcp_secure_connection(
     const Logger *logger, const Memory *mem, const Network *ns,
     Socket sock, uint16_t *next_packet_length,
-    const uint8_t *shared_key, uint8_t *recv_nonce, uint8_t *data,
+    const uint8_t shared_key[CRYPTO_SHARED_KEY_SIZE], uint8_t recv_nonce[CRYPTO_NONCE_SIZE], uint8_t *data,
     uint16_t max_len, const IP_Port *ip_port)
 {
     if (*next_packet_length == 0) {
         const uint16_t len = read_tcp_length(logger, ns, sock, ip_port);
 
-        if (len == (uint16_t) -1) {
+        if (len == UINT16_MAX) {
             return -1;
         }
 

@@ -144,8 +144,8 @@ int get_peer_number_of_enc_pk(const GC_Chat *_Nonnull chat, const uint8_t *_Nonn
  * Return -3 if encryption fails.
  */
 int group_packet_wrap(
-    const Logger *_Nonnull log, const Memory *_Nonnull mem, const Random *_Nonnull rng, const uint8_t *_Nonnull self_pk, const uint8_t *_Nonnull shared_key, uint8_t *_Nonnull packet,
-    uint16_t packet_size, const uint8_t *_Nullable data, uint16_t length, uint64_t message_id,
+    const Logger *_Nonnull log, const Memory *_Nonnull mem, const Random *_Nonnull rng, const uint8_t *_Nonnull self_pk, const uint8_t shared_key[_Nonnull CRYPTO_SHARED_KEY_SIZE],
+    uint8_t *_Nonnull packet, uint16_t packet_size, const uint8_t *_Nullable data, uint16_t length, uint64_t message_id,
     uint8_t gp_packet_type, Net_Packet_Type net_packet_type);
 /** @brief Returns the size of a wrapped/encrypted packet with a plain size of `length`.
  *
@@ -225,11 +225,12 @@ int gc_set_ignore(const GC_Chat *_Nonnull chat, GC_Peer_Id peer_id, bool ignore)
 int gc_set_topic(GC_Chat *_Nonnull chat, const uint8_t *_Nullable topic, uint16_t length);
 /** @brief Copies the group topic to `topic`. If topic is null this function has no effect.
  *
- * Call `gc_get_topic_size` to determine the allocation size for the `topic` parameter.
+ * `topic` must have room for the longest topic, though only `gc_get_topic_size` bytes
+ * are written.
  *
  * The data written to `topic` is equal to the data received by the last topic callback.
  */
-void gc_get_topic(const GC_Chat *_Nonnull chat, uint8_t *_Nullable topic);
+void gc_get_topic(const GC_Chat *_Nonnull chat, uint8_t topic[_Nullable MAX_GC_TOPIC_SIZE]);
 /** @brief Returns the topic length.
  *
  * The return value is equal to the `length` agument received by the last topic callback.
@@ -238,10 +239,10 @@ uint16_t gc_get_topic_size(const GC_Chat *_Nonnull chat);
 
 /** @brief Copies group name to `group_name`. If `group_name` is null this function has no effect.
  *
- * Call `gc_get_group_name_size` to determine the allocation size for the `group_name`
- * parameter.
+ * `group_name` must have room for the longest group name, though only
+ * `gc_get_group_name_size` bytes are written.
  */
-void gc_get_group_name(const GC_Chat *_Nonnull chat, uint8_t *_Nullable group_name);
+void gc_get_group_name(const GC_Chat *_Nonnull chat, uint8_t group_name[_Nullable MAX_GC_GROUP_NAME_SIZE]);
 
 /** @brief Returns the group name length. */
 uint16_t gc_get_group_name_size(const GC_Chat *_Nonnull chat);
@@ -250,12 +251,12 @@ uint16_t gc_get_group_name_size(const GC_Chat *_Nonnull chat);
  *
  * If password is null this function has no effect.
  *
- * Call the `gc_get_password_size` function to determine the allocation size for
- * the `password` buffer.
+ * `password` must have room for the longest password, though only
+ * `gc_get_password_size` bytes are written.
  *
  * The data received is equal to the data received by the last password callback.
  */
-void gc_get_password(const GC_Chat *_Nonnull chat, uint8_t *_Nullable password);
+void gc_get_password(const GC_Chat *_Nonnull chat, uint8_t password[_Nullable MAX_GC_PASSWORD_SIZE]);
 
 /** @brief Returns the group password length. */
 uint16_t gc_get_password_size(const GC_Chat *_Nonnull chat);
@@ -299,9 +300,10 @@ int gc_set_self_nick(const Messenger *_Nonnull m, int group_number, const uint8_
 
 /** @brief Copies your own name to `nick`.
  *
- * If `nick` is null this function has no effect.
+ * If `nick` is null this function has no effect. `nick` must have room for
+ * the longest name, though only `gc_get_self_nick_size` bytes are written.
  */
-void gc_get_self_nick(const GC_Chat *_Nonnull chat, uint8_t *_Nullable nick);
+void gc_get_self_nick(const GC_Chat *_Nonnull chat, uint8_t nick[_Nullable MAX_GC_NICK_SIZE]);
 
 /** @brief Return your own nick length.
  *
@@ -329,14 +331,15 @@ GC_Peer_Id gc_get_self_peer_id(const GC_Chat *_Nonnull chat);
 void gc_get_self_public_key(const GC_Chat *_Nonnull chat, uint8_t *_Nullable public_key);
 /** @brief Copies nick designated by `peer_id` to `name`.
  *
- * Call `gc_get_peer_nick_size` to determine the allocation size for the `name` parameter.
+ * `name` must have room for the longest name, though only `gc_get_peer_nick_size`
+ * bytes are written.
  *
  * The data written to `name` is equal to the data received by the last nick_change callback.
  *
  * Returns true on success.
  * Returns false if peer_id is invalid.
  */
-bool gc_get_peer_nick(const GC_Chat *_Nonnull chat, GC_Peer_Id peer_id, uint8_t *_Nullable name);
+bool gc_get_peer_nick(const GC_Chat *_Nonnull chat, GC_Peer_Id peer_id, uint8_t name[_Nullable MAX_GC_NICK_SIZE]);
 /** @brief Returns the length of the nick for the peer designated by `peer_id`.
  * Returns -1 if peer_id is invalid.
  *
@@ -377,7 +380,7 @@ int gc_get_peer_ip_address_size(const GC_Chat *_Nonnull chat, GC_Peer_Id peer_id
  * Returns -1 if peer_id is invalid or doesn't correspond to a valid peer connection.
  * Returns -2 if `ip_addr` is null.
  */
-int gc_get_peer_ip_address(const GC_Chat *_Nonnull chat, GC_Peer_Id peer_id, uint8_t *_Nullable ip_addr);
+int gc_get_peer_ip_address(const GC_Chat *_Nonnull chat, GC_Peer_Id peer_id, uint8_t ip_addr[_Nullable IP_NTOA_LEN]);
 /** @brief Gets the connection status for peer associated with `peer_id`.
  *
  * If `peer_id` designates ourself, the return value indicates whether we're capable
@@ -670,6 +673,12 @@ bool gc_peer_number_is_valid(const GC_Chat *_Nonnull chat, int peer_number);
  */
 GC_Chat *_Nullable gc_get_group(const GC_Session *_Nonnull c, int group_number);
 
+/** @brief The group number an unsigned number is.
+ *
+ * @retval -1, which is no group, if it's too big to be one.
+ */
+int gc_group_number(uint32_t number);
+
 /** @brief Sends a lossy message acknowledgement to peer associated with `gconn`.
  *
  * If `type` is GR_ACK_RECV we send a read-receipt for read_id's packet. If `type` is GR_ACK_REQ
@@ -687,7 +696,7 @@ bool gc_send_message_ack(const GC_Chat *_Nonnull chat, GC_Connection *_Nonnull g
  *
  * @retval true if packet is successfully handled.
  */
-bool handle_gc_lossless_helper(const GC_Session *_Nonnull c, GC_Chat *_Nonnull chat, uint32_t peer_number, const uint8_t *_Nullable data,
+bool handle_gc_lossless_helper(const GC_Session *_Nonnull c, GC_Chat *_Nonnull chat, int peer_number, const uint8_t *_Nullable data,
                                uint16_t length, uint8_t packet_type, void *_Nullable userdata);
 /** @brief Handles an invite accept packet.
  *

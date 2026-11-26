@@ -22,7 +22,7 @@ static void on_alice_friend_connection_status(const Tox_Event_Friend_Connection_
 
 static void alice_script(ToxNode *self, void *ctx)
 {
-    tox_events_callback_friend_connection_status(tox_node_get_dispatch(self), on_alice_friend_connection_status);
+    tox_dispatch_callback_friend_connection_status(tox_node_get_dispatch(self), on_alice_friend_connection_status);
 
     tox_node_wait_for_self_connected(self);
     tox_node_wait_for_friend_connected(self, 0);
@@ -65,7 +65,7 @@ static void on_bob_friend_connection_status(const Tox_Event_Friend_Connection_St
 static void bob_script(ToxNode *self, void *ctx)
 {
     const BobState *state = (const BobState *)ctx;
-    tox_events_callback_friend_connection_status(tox_node_get_dispatch(self), on_bob_friend_connection_status);
+    tox_dispatch_callback_friend_connection_status(tox_node_get_dispatch(self), on_bob_friend_connection_status);
 
     tox_node_wait_for_self_connected(self);
     WAIT_UNTIL(state->alice_connected);

@@ -828,7 +828,7 @@ static void test_tcp_connection(void)
 }
 
 static bool tcp_oobdata_callback_called;
-static int tcp_oobdata_callback(void *object, const uint8_t *public_key, unsigned int id, const uint8_t *data,
+static int tcp_oobdata_callback(void *object, const uint8_t *public_key, int id, const uint8_t *data,
                                 uint16_t length, void *userdata)
 {
     const TCP_Connections *tcp_c = (const TCP_Connections *)object;

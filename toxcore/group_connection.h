@@ -55,7 +55,7 @@ int gcc_handle_received_message(const Logger *_Nonnull log, const Memory *_Nonnu
  * Return 0 if fragment is the end of a sequence and successfully handled.
  * Return -1 on failure.
  */
-int gcc_handle_packet_fragment(const GC_Session *_Nonnull c, GC_Chat *_Nonnull chat, uint32_t peer_number, GC_Connection *_Nonnull gconn,
+int gcc_handle_packet_fragment(const GC_Session *_Nonnull c, GC_Chat *_Nonnull chat, int peer_number, GC_Connection *_Nonnull gconn,
                                const uint8_t *_Nullable chunk, uint16_t length, uint8_t packet_type, uint64_t message_id,
                                void *_Nullable userdata);
 /** @brief Return array index for message_id */
@@ -106,7 +106,7 @@ int gcc_save_tcp_relay(const Random *_Nonnull rng, GC_Connection *_Nonnull gconn
 /** @brief Checks for and handles messages that are in proper sequence in gconn's recv_array.
  * This should always be called after a new packet is successfully handled.
  */
-void gcc_check_recv_array(const GC_Session *_Nonnull c, GC_Chat *_Nonnull chat, GC_Connection *_Nonnull gconn, uint32_t peer_number,
+void gcc_check_recv_array(const GC_Session *_Nonnull c, GC_Chat *_Nonnull chat, GC_Connection *_Nonnull gconn, int peer_number,
                           void *_Nullable userdata);
 /** @brief Attempts to re-send lossless packets that have not yet received an ack. */
 void gcc_resend_packets(const GC_Chat *_Nonnull chat, GC_Connection *_Nonnull gconn);
@@ -121,7 +121,7 @@ void gcc_resend_packets(const GC_Chat *_Nonnull chat, GC_Connection *_Nonnull gc
  *
  * @return True on success.
  */
-bool gcc_make_session_shared_key(GC_Connection *_Nonnull gconn, const uint8_t *_Nonnull sender_pk);
+bool gcc_make_session_shared_key(GC_Connection *_Nonnull gconn, const uint8_t sender_pk[_Nonnull CRYPTO_PUBLIC_KEY_SIZE]);
 
 /** @brief Return true if we have a direct connection with `gconn`. */
 bool gcc_conn_is_direct(const Mono_Time *_Nonnull mono_time, const GC_Connection *_Nonnull gconn);

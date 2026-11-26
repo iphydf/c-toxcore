@@ -13,6 +13,7 @@
 #include "../mem.h"
 #include "../tox.h"
 #include "../tox_event.h"
+#include "../tox_event_struct.h"
 #include "../tox_events.h"
 #include "../tox_struct.h"
 
@@ -68,7 +69,7 @@ static bool tox_event_conference_peer_list_changed_unpack_into(Tox_Event_Confere
 
 const Tox_Event_Conference_Peer_List_Changed *tox_event_get_conference_peer_list_changed(const Tox_Event *event)
 {
-    return event->type == TOX_EVENT_CONFERENCE_PEER_LIST_CHANGED ? event->data.conference_peer_list_changed : nullptr;
+    return event->type == TOX_EVENT_TYPE_CONFERENCE_PEER_LIST_CHANGED ? event->data.conference_peer_list_changed : nullptr;
 }
 
 Tox_Event_Conference_Peer_List_Changed *tox_event_conference_peer_list_changed_new(const Memory *mem)
@@ -100,7 +101,7 @@ static void tox_events_add_conference_peer_list_changed(Tox_Events_State *_Nonnu
     }
 
     Tox_Event event;
-    event.type = TOX_EVENT_CONFERENCE_PEER_LIST_CHANGED;
+    event.type = TOX_EVENT_TYPE_CONFERENCE_PEER_LIST_CHANGED;
     event.data.conference_peer_list_changed = conference_peer_list_changed;
 
     if (!tox_events_add(state->events, &event)) {
@@ -113,14 +114,19 @@ bool tox_event_conference_peer_list_changed_unpack(
     Tox_Event_Conference_Peer_List_Changed **event, Bin_Unpack *bu, const Memory *mem)
 {
     assert(event != nullptr);
-    assert(*event == nullptr);
-    *event = tox_event_conference_peer_list_changed_new(mem);
+    Tox_Event_Conference_Peer_List_Changed *const unpacked = tox_event_conference_peer_list_changed_new(mem);
 
-    if (*event == nullptr) {
+    if (unpacked == nullptr) {
         return false;
     }
 
-    return tox_event_conference_peer_list_changed_unpack_into(*event, bu);
+    if (!tox_event_conference_peer_list_changed_unpack_into(unpacked, bu)) {
+        tox_event_conference_peer_list_changed_free(unpacked, mem);
+        return false;
+    }
+
+    *event = unpacked;
+    return true;
 }
 
 /*****************************************************

@@ -37,6 +37,8 @@
 #include <winsock2.h>
 #include <windows.h>
 #include <ws2tcpip.h>
+
+#include <iphlpapi.h>
 #endif /* OS_WIN32 */
 
 #if !defined(OS_WIN32)
@@ -55,6 +57,14 @@
 #include <stropts.h>
 #include <sys/filio.h>
 #endif /* __sun */
+
+#ifdef __linux__
+#include <linux/if.h>
+#endif /* Linux */
+
+#if defined(__FreeBSD__) || defined(__DragonFly__)
+#include <net/if.h>
+#endif /* BSD */
 
 #else
 #ifndef IPV6_V6ONLY
@@ -545,6 +555,143 @@ static int sys_freeaddrinfo(void *_Nullable obj, const Memory *_Nonnull mem, IP_
     return 0;
 }
 
+#if defined(OS_WIN32)
+
+static int sys_broadcast_addresses(void *_Nullable obj, const Memory *_Nonnull mem, IP ips[_Nonnull], uint32_t ips_count)
+{
+    IP_ADAPTER_INFO *adapter_info = (IP_ADAPTER_INFO *)mem_balloc(mem, sizeof(IP_ADAPTER_INFO));
+
+    if (adapter_info == nullptr) {
+        return -1;
+    }
+
+    unsigned long out_buf_len = sizeof(IP_ADAPTER_INFO);
+
+    if (GetAdaptersInfo(adapter_info, &out_buf_len) == ERROR_BUFFER_OVERFLOW) {
+        mem_delete(mem, adapter_info);
+        IP_ADAPTER_INFO *new_adapter_info = (IP_ADAPTER_INFO *)mem_balloc(mem, out_buf_len);
+
+        if (new_adapter_info == nullptr) {
+            return -1;
+        }
+
+        adapter_info = new_adapter_info;
+    }
+
+    uint32_t count = 0;
+
+    if (GetAdaptersInfo(adapter_info, &out_buf_len) == NO_ERROR) {
+        for (const IP_ADAPTER_INFO *adapter = adapter_info; adapter != nullptr && count < ips_count; adapter = adapter->Next) {
+            IP4 if_ip;
+            IP4 subnet_mask;
+
+            if (net_inet_pton4(adapter->IpAddressList.IpAddress.String, &if_ip) == 1
+                    && net_inet_pton4(adapter->IpAddressList.IpMask.String, &subnet_mask) == 1
+                    && if_ip.uint32 != 0 && subnet_mask.uint32 != 0) {
+                ips[count].family = net_family_ipv4();
+                ips[count].ip.v4.uint32 = if_ip.uint32 | ~subnet_mask.uint32;
+                ++count;
+            }
+        }
+    }
+
+    mem_delete(mem, adapter_info);
+
+    return (int)count;
+}
+
+#elif !defined(FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION) && (defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__))
+
+#define MAX_INTERFACES 16
+
+static int sys_broadcast_addresses(void *_Nullable obj, const Memory *_Nonnull mem, IP ips[_Nonnull], uint32_t ips_count)
+{
+    /* Not sure how many platforms this will run on,
+     * so it's wrapped in `__linux__` for now.
+     * Definitely won't work like this on Windows...
+     */
+    const int sock = socket(AF_INET, SOCK_STREAM, 0);
+
+    if (sock < 0) {
+        return -1;
+    }
+
+    /* Configure ifconf for the ioctl call. */
+    struct ifreq i_faces[MAX_INTERFACES] = {{{0}}};
+
+    struct ifconf ifc;
+    ifc.ifc_req = i_faces;
+    ifc.ifc_len = sizeof(i_faces);
+
+    if (ioctl(sock, SIOCGIFCONF, &ifc) < 0) {
+        close(sock);
+        return -1;
+    }
+
+    /* `ifc.ifc_len` is set by the `ioctl()` to the actual length used.
+     * On usage of the complete array the call should be repeated with
+     * a larger array, not done (640kB and 16 interfaces shall be
+     * enough, for everybody!)
+     */
+    const int n = ifc.ifc_len / sizeof(struct ifreq);
+    uint32_t count = 0;
+
+    for (int i = 0; i < n && count < ips_count; ++i) {
+        /* there are interfaces with are incapable of broadcast
+         * on Linux, `lo` has no broadcast address, but this function returns `>=0` */
+        if (ioctl(sock, SIOCGIFBRDADDR, &i_faces[i]) < 0) {
+            continue;
+        }
+
+        /* moot check: only AF_INET returned (backwards compat.) */
+        if (i_faces[i].ifr_broadaddr.sa_family != AF_INET) {
+            continue;
+        }
+
+        const struct sockaddr_in *broadaddr4 = (const struct sockaddr_in *)(void *)&i_faces[i].ifr_broadaddr;
+
+        IP4 ip4;
+        get_ip4(&ip4, &broadaddr4->sin_addr);
+
+        // if no broadcast address
+        if (ip4.uint32 == 0) {
+            if (ioctl(sock, SIOCGIFADDR, &i_faces[i]) < 0) {
+                continue;
+            }
+
+            const struct sockaddr_in *addr4 = (const struct sockaddr_in *)(void *)&i_faces[i].ifr_addr;
+
+            IP4 ip4_staging;
+            get_ip4(&ip4_staging, &addr4->sin_addr);
+
+            if (ip4_staging.uint8[0] == 127) {
+                // this is 127.x.x.x
+                ip4 = ip4_staging;
+            } else {
+                // give up.
+                continue;
+            }
+        }
+
+        ips[count].family = net_family_ipv4();
+        ips[count].ip.v4 = ip4;
+        ++count;
+    }
+
+    close(sock);
+
+    return (int)count;
+}
+
+#else // TODO(irungentoo): Other platforms?
+
+static int sys_broadcast_addresses(void *_Nullable obj, const Memory *_Nonnull mem, IP ips[_Nonnull], uint32_t ips_count)
+{
+    return 0;
+}
+
+#endif /* platforms */
+
 static const Network_Funcs os_network_funcs = {
     sys_close,
     sys_accept,
@@ -562,6 +709,7 @@ static const Network_Funcs os_network_funcs = {
     sys_setsockopt,
     sys_getaddrinfo,
     sys_freeaddrinfo,
+    sys_broadcast_addresses,
 };
 const Network os_network_obj = {&os_network_funcs, nullptr};
 

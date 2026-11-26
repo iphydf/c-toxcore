@@ -38,7 +38,7 @@ static void bob_script(ToxNode *self, void *ctx)
     tox_node_log(self, "Connected to Alice. Connection type: %u", tox_friend_get_connection_status(tox, 0, nullptr));
 
     tox_node_log(self, "Waiting for lossless packet from Alice...");
-    WAIT_FOR_EVENT(TOX_EVENT_FRIEND_LOSSLESS_PACKET);
+    WAIT_FOR_EVENT(TOX_EVENT_TYPE_FRIEND_LOSSLESS_PACKET);
     if (tox_scenario_is_running(self)) {
         tox_node_log(self, "Received lossless packet from Alice!");
     } else {

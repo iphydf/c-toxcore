@@ -60,7 +60,7 @@ static void tox1_script(ToxNode *self, void *ctx)
 {
     Tox *tox = tox_node_get_tox(self);
     State *state = (State *)ctx;
-    tox_events_callback_conference_peer_list_changed(tox_node_get_dispatch(self), on_conference_peer_list_changed);
+    tox_dispatch_callback_conference_peer_list_changed(tox_node_get_dispatch(self), on_conference_peer_list_changed);
 
     WAIT_UNTIL(tox_node_is_self_connected(self));
     WAIT_UNTIL(tox_node_is_friend_connected(self, 0));
@@ -85,10 +85,10 @@ static void tox2_script(ToxNode *self, void *ctx)
 {
     Tox *tox = tox_node_get_tox(self);
     State *state = (State *)ctx;
-    tox_events_callback_conference_connected(tox_node_get_dispatch(self), on_conference_connected);
-    tox_events_callback_conference_invite(tox_node_get_dispatch(self), on_conference_invite);
-    tox_events_callback_conference_message(tox_node_get_dispatch(self), on_conference_message);
-    tox_events_callback_conference_peer_list_changed(tox_node_get_dispatch(self), on_conference_peer_list_changed);
+    tox_dispatch_callback_conference_connected(tox_node_get_dispatch(self), on_conference_connected);
+    tox_dispatch_callback_conference_invite(tox_node_get_dispatch(self), on_conference_invite);
+    tox_dispatch_callback_conference_message(tox_node_get_dispatch(self), on_conference_message);
+    tox_dispatch_callback_conference_peer_list_changed(tox_node_get_dispatch(self), on_conference_peer_list_changed);
 
     WAIT_UNTIL(tox_node_is_self_connected(self));
     tox_node_log(self, "Waiting for join...");
@@ -115,9 +115,9 @@ static void tox2_script(ToxNode *self, void *ctx)
 static void tox3_script(ToxNode *self, void *ctx)
 {
     const State *state = (const State *)ctx;
-    tox_events_callback_conference_invite(tox_node_get_dispatch(self), on_conference_invite);
-    tox_events_callback_conference_message(tox_node_get_dispatch(self), on_conference_message);
-    tox_events_callback_conference_peer_list_changed(tox_node_get_dispatch(self), on_conference_peer_list_changed);
+    tox_dispatch_callback_conference_invite(tox_node_get_dispatch(self), on_conference_invite);
+    tox_dispatch_callback_conference_message(tox_node_get_dispatch(self), on_conference_message);
+    tox_dispatch_callback_conference_peer_list_changed(tox_node_get_dispatch(self), on_conference_peer_list_changed);
 
     WAIT_UNTIL(tox_node_is_self_connected(self));
     tox_node_log(self, "Waiting for message...");

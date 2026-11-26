@@ -100,7 +100,7 @@ typedef enum Tox_Err_Key_Derivation {
 
 } Tox_Err_Key_Derivation;
 
-const char *_Nonnull tox_err_key_derivation_to_string(Tox_Err_Key_Derivation error);
+const char *_Nonnull tox_err_key_derivation_to_string(Tox_Err_Key_Derivation value);
 
 typedef enum Tox_Err_Encryption {
 
@@ -128,7 +128,7 @@ typedef enum Tox_Err_Encryption {
 
 } Tox_Err_Encryption;
 
-const char *_Nonnull tox_err_encryption_to_string(Tox_Err_Encryption error);
+const char *_Nonnull tox_err_encryption_to_string(Tox_Err_Encryption value);
 
 typedef enum Tox_Err_Decryption {
 
@@ -168,7 +168,7 @@ typedef enum Tox_Err_Decryption {
 
 } Tox_Err_Decryption;
 
-const char *_Nonnull tox_err_decryption_to_string(Tox_Err_Decryption error);
+const char *_Nonnull tox_err_decryption_to_string(Tox_Err_Decryption value);
 
 /*******************************************************************************
  *
@@ -328,7 +328,7 @@ typedef enum Tox_Err_Get_Salt {
 
 } Tox_Err_Get_Salt;
 
-const char *_Nonnull tox_err_get_salt_to_string(Tox_Err_Get_Salt error);
+const char *_Nonnull tox_err_get_salt_to_string(Tox_Err_Get_Salt value);
 
 /**
  * Retrieves the salt used to encrypt the given data.

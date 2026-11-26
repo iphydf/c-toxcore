@@ -27,7 +27,7 @@ static void alice_on_peer_list_changed(const Tox_Event_Conference_Peer_List_Chan
 static void alice_script(ToxNode *self, void *ctx)
 {
     AliceState *state = (AliceState *)ctx;
-    tox_events_callback_conference_peer_list_changed(tox_node_get_dispatch(self), alice_on_peer_list_changed);
+    tox_dispatch_callback_conference_peer_list_changed(tox_node_get_dispatch(self), alice_on_peer_list_changed);
 
     tox_node_wait_for_self_connected(self);
     tox_node_wait_for_friend_connected(self, 0);
@@ -49,7 +49,7 @@ static void alice_script(ToxNode *self, void *ctx)
     tox_node_log(self, "Alice reloaded.");
 
     // Re-register callback after reload
-    tox_events_callback_conference_peer_list_changed(tox_node_get_dispatch(self), alice_on_peer_list_changed);
+    tox_dispatch_callback_conference_peer_list_changed(tox_node_get_dispatch(self), alice_on_peer_list_changed);
 
     // After reload, we need to get the conference number again
     uint32_t chatlist[1];
@@ -90,7 +90,7 @@ static void bob_on_conference_invite(const Tox_Event_Conference_Invite *event, v
 static void bob_script(ToxNode *self, void *ctx)
 {
     const BobState *state = (const BobState *)ctx;
-    tox_events_callback_conference_invite(tox_node_get_dispatch(self), bob_on_conference_invite);
+    tox_dispatch_callback_conference_invite(tox_node_get_dispatch(self), bob_on_conference_invite);
 
     tox_node_wait_for_self_connected(self);
     tox_node_wait_for_friend_connected(self, 0);

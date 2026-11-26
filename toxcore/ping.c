@@ -48,7 +48,7 @@ struct Ping {
 #define DHT_PING_SIZE (1 + CRYPTO_PUBLIC_KEY_SIZE + CRYPTO_NONCE_SIZE + PING_PLAIN_SIZE + CRYPTO_MAC_SIZE)
 #define PING_DATA_SIZE (CRYPTO_PUBLIC_KEY_SIZE + SIZE_IPPORT)
 
-void ping_send_request(Ping *ping, const IP_Port *ipp, const uint8_t *public_key)
+void ping_send_request(Ping *ping, const IP_Port *ipp, const uint8_t public_key[CRYPTO_PUBLIC_KEY_SIZE])
 {
     uint8_t   pk[DHT_PING_SIZE];
     int       rc;
@@ -60,6 +60,11 @@ void ping_send_request(Ping *ping, const IP_Port *ipp, const uint8_t *public_key
 
     // generate key to encrypt ping_id with recipient privkey
     const uint8_t *shared_key = dht_get_shared_key_sent(ping->dht, public_key);
+
+    if (shared_key == nullptr) {
+        return;
+    }
+
     // Generate random ping_id.
     uint8_t data[PING_DATA_SIZE];
     pk_copy(data, public_key);
@@ -97,7 +102,8 @@ void ping_send_request(Ping *ping, const IP_Port *ipp, const uint8_t *public_key
     sendpacket(ping->net, ipp, pk, sizeof(pk));
 }
 
-static int ping_send_response(const Ping *_Nonnull ping, const IP_Port *_Nonnull ipp, const uint8_t *_Nonnull public_key, uint64_t ping_id, const uint8_t *_Nonnull shared_encryption_key)
+static int ping_send_response(const Ping *_Nonnull ping, const IP_Port *_Nonnull ipp, const uint8_t public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE], uint64_t ping_id,
+                              const uint8_t shared_encryption_key[_Nonnull CRYPTO_SHARED_KEY_SIZE])
 {
     uint8_t pk[DHT_PING_SIZE];
 
@@ -142,6 +148,10 @@ static int handle_ping_request(void *_Nonnull object, const IP_Port *_Nonnull so
 
     const uint8_t *shared_key = dht_get_shared_key_recv(dht, packet + 1);
 
+    if (shared_key == nullptr) {
+        return 1;
+    }
+
     uint8_t ping_plain[PING_PLAIN_SIZE];
 
     // Decrypt ping_id
@@ -185,6 +195,10 @@ static int handle_ping_response(void *_Nonnull object, const IP_Port *_Nonnull s
 
     // generate key to encrypt ping_id with recipient privkey
     const uint8_t *shared_key = dht_get_shared_key_sent(ping->dht, packet + 1);
+
+    if (shared_key == nullptr) {
+        return 1;
+    }
 
     uint8_t ping_plain[PING_PLAIN_SIZE];
     // Decrypt ping_id
@@ -233,7 +247,7 @@ static int handle_ping_response(void *_Nonnull object, const IP_Port *_Nonnull s
  * return true if it is.
  * return false if it isn't.
  */
-static bool in_list(const Client_data *_Nonnull list, uint16_t length, const Mono_Time *_Nonnull mono_time, const uint8_t *_Nonnull public_key, const IP_Port *_Nonnull ip_port)
+static bool in_list(const Client_data *_Nonnull list, uint16_t length, const Mono_Time *_Nonnull mono_time, const uint8_t public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE], const IP_Port *_Nonnull ip_port)
 {
     for (unsigned int i = 0; i < length; ++i) {
         if (pk_equal(list[i].public_key, public_key)) {
@@ -265,7 +279,7 @@ static bool in_list(const Client_data *_Nonnull list, uint16_t length, const Mon
  * @retval 0 if node was added.
  * @retval -1 if node was not added.
  */
-int32_t ping_add(Ping *ping, const uint8_t *public_key, const IP_Port *ip_port)
+int32_t ping_add(Ping *ping, const uint8_t public_key[CRYPTO_PUBLIC_KEY_SIZE], const IP_Port *ip_port)
 {
     if (!ip_isset(&ip_port->ip)) {
         return -1;

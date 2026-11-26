@@ -21,7 +21,7 @@ static void on_file_recv_control(const Tox_Event_File_Recv_Control *event, void 
 static void alice_script(ToxNode *self, void *ctx)
 {
     const AliceState *state = (const AliceState *)ctx;
-    tox_events_callback_file_recv_control(tox_node_get_dispatch(self), on_file_recv_control);
+    tox_dispatch_callback_file_recv_control(tox_node_get_dispatch(self), on_file_recv_control);
 
     tox_node_wait_for_self_connected(self);
     tox_node_wait_for_friend_connected(self, 0);
@@ -45,7 +45,7 @@ static void on_file_recv(const Tox_Event_File_Recv *event, void *user_data)
 
 static void bob_script(ToxNode *self, void *ctx)
 {
-    tox_events_callback_file_recv(tox_node_get_dispatch(self), on_file_recv);
+    tox_dispatch_callback_file_recv(tox_node_get_dispatch(self), on_file_recv);
 
     tox_node_wait_for_self_connected(self);
     tox_node_wait_for_friend_connected(self, 0);

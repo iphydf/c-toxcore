@@ -92,7 +92,7 @@ typedef struct Onion_Path {
  * @retval -1 on failure.
  * @retval 0 on success.
  */
-int create_onion_path(const Random *_Nonnull rng, const DHT *_Nonnull dht, Onion_Path *_Nonnull new_path, const Node_format *_Nonnull nodes);
+int create_onion_path(const Random *_Nonnull rng, const DHT *_Nonnull dht, Onion_Path *_Nonnull new_path, const Node_format nodes[_Nonnull ONION_PATH_LENGTH]);
 
 /** @brief Dump nodes in onion path to nodes of length num_nodes.
  *

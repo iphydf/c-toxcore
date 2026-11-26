@@ -166,6 +166,8 @@ typedef enum Toxav_Err_New {
 
 } Toxav_Err_New;
 
+const char *_Nonnull toxav_err_new_to_string(Toxav_Err_New value);
+
 /**
  * Start new A/V session. There can only be only one session per Tox instance.
  */
@@ -290,6 +292,8 @@ typedef enum Toxav_Err_Call {
 
 } Toxav_Err_Call;
 
+const char *_Nonnull toxav_err_call_to_string(Toxav_Err_Call value);
+
 /**
  * Call a friend. This will start ringing the friend.
  *
@@ -359,6 +363,8 @@ typedef enum Toxav_Err_Answer {
     TOXAV_ERR_ANSWER_INVALID_BIT_RATE,
 
 } Toxav_Err_Answer;
+
+const char *_Nonnull toxav_err_answer_to_string(Toxav_Err_Answer value);
 
 /**
  * Accept an incoming call.
@@ -495,6 +501,8 @@ typedef enum Toxav_Call_Control {
 
 } Toxav_Call_Control;
 
+const char *_Nonnull toxav_call_control_to_string(Toxav_Call_Control value);
+
 typedef enum Toxav_Err_Call_Control {
 
     /**
@@ -525,6 +533,8 @@ typedef enum Toxav_Err_Call_Control {
     TOXAV_ERR_CALL_CONTROL_INVALID_TRANSITION,
 
 } Toxav_Err_Call_Control;
+
+const char *_Nonnull toxav_err_call_control_to_string(Toxav_Err_Call_Control value);
 
 /**
  * Sends a call control command to a friend.
@@ -571,6 +581,8 @@ typedef enum Toxav_Err_Bit_Rate_Set {
     TOXAV_ERR_BIT_RATE_SET_FRIEND_NOT_IN_CALL,
 
 } Toxav_Err_Bit_Rate_Set;
+
+const char *_Nonnull toxav_err_bit_rate_set_to_string(Toxav_Err_Bit_Rate_Set value);
 
 /** @} */
 
@@ -624,6 +636,8 @@ typedef enum Toxav_Err_Send_Frame {
     TOXAV_ERR_SEND_FRAME_RTP_FAILED,
 
 } Toxav_Err_Send_Frame;
+
+const char *_Nonnull toxav_err_send_frame_to_string(Toxav_Err_Send_Frame value);
 
 /**
  * Send an audio frame to a friend.
@@ -696,8 +710,8 @@ void toxav_callback_audio_bit_rate(ToxAV *_Nonnull av, toxav_audio_bit_rate_cb *
 bool toxav_video_send_frame(
     ToxAV *_Nonnull av, Tox_Friend_Number friend_number, Toxav_Width width, Toxav_Height height,
     const uint8_t y[_Nullable /*! width * height */],
-    const uint8_t u[_Nullable /*! width/2 * height/2 */],
-    const uint8_t v[_Nullable /*! width/2 * height/2 */],
+    const uint8_t u[_Nullable /*! (width/2) * (height/2) */],
+    const uint8_t v[_Nullable /*! (width/2) * (height/2) */],
     Toxav_Err_Send_Frame *_Nullable error);
 
 /**
@@ -809,7 +823,7 @@ typedef void toxav_group_audio_cb(Tox *_Nonnull tox, Tox_Conference_Number confe
 #endif /* APIGEN_IGNORE */
 
 typedef void toxav_audio_data_cb(void *_Nonnull tox, Tox_Conference_Number conference_number, Tox_Conference_Peer_Number peer_number, const int16_t pcm[_Nonnull /*! sample_count * channels */],
-                                 uint32_t sample_count, Toxav_Channels channels, Toxav_Sampling_Rate sampling_rate, void *_Nullable userdata);
+                                 uint32_t sample_count, Toxav_Channels channels, Toxav_Sampling_Rate sampling_rate, void *_Nullable user_data);
 
 /** @brief Create a new ToxAV group.
  *
@@ -819,7 +833,7 @@ typedef void toxav_audio_data_cb(void *_Nonnull tox, Tox_Conference_Number confe
  * Note that total size of pcm in bytes is equal to
  * `sample_count * channels * sizeof(int16_t)`.
  */
-int32_t toxav_add_av_groupchat(Tox *_Nonnull tox, toxav_audio_data_cb *_Nullable audio_callback, void *_Nullable userdata);
+int32_t toxav_add_av_groupchat(Tox *_Nonnull tox, toxav_audio_data_cb *_Nullable audio_callback, void *_Nullable user_data);
 
 /** @brief Join a AV group (you need to have been invited first).
  *
@@ -831,7 +845,7 @@ int32_t toxav_add_av_groupchat(Tox *_Nonnull tox, toxav_audio_data_cb *_Nullable
  */
 int32_t toxav_join_av_groupchat(
     Tox *_Nonnull tox, Tox_Friend_Number friend_number, const uint8_t data[_Nonnull], uint16_t length,
-    toxav_audio_data_cb *_Nullable audio_callback, void *_Nullable userdata);
+    toxav_audio_data_cb *_Nullable audio_callback, void *_Nullable user_data);
 
 /** @brief Send audio to the group chat.
  *
@@ -870,7 +884,7 @@ int32_t toxav_group_send_audio(
  */
 int32_t toxav_groupchat_enable_av(
     Tox *_Nonnull tox, Tox_Conference_Number conference_number,
-    toxav_audio_data_cb *_Nullable audio_callback, void *_Nullable userdata);
+    toxav_audio_data_cb *_Nullable audio_callback, void *_Nullable user_data);
 
 /** @brief Disable A/V in a groupchat.
  *

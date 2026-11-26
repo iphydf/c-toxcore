@@ -49,7 +49,7 @@ static void shared_key_set_empty(const Logger *_Nonnull log, Shared_Key *_Nonnul
 
 Shared_Key_Cache *shared_key_cache_new(
     const Logger *log, const Mono_Time *mono_time, const Memory *mem, const Memory *secure_mem,
-    const uint8_t *self_secret_key, uint64_t timeout, uint8_t keys_per_slot)
+    const uint8_t self_secret_key[CRYPTO_SECRET_KEY_SIZE], uint64_t timeout, uint8_t keys_per_slot)
 {
     if (mono_time == nullptr || self_secret_key == nullptr || timeout == 0 || keys_per_slot == 0) {
         return nullptr;

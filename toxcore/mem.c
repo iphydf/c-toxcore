@@ -15,9 +15,9 @@ void *mem_balloc(const Memory *mem, uint32_t size)
     return ptr;
 }
 
-void *mem_brealloc(const Memory *mem, void *ptr, uint32_t size)
+void *mem_brealloc(const Memory *mem, void *ptr, uint32_t new_size)
 {
-    void *const new_ptr = mem->funcs->realloc_callback(mem->user_data, ptr, size);
+    void *const new_ptr = mem->funcs->realloc_callback(mem->user_data, ptr, new_size);
     return new_ptr;
 }
 

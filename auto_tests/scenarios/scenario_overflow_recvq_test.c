@@ -19,7 +19,7 @@ static void receiver_script(ToxNode *self, void *ctx)
 {
     State *state = (State *)ctx;
     Tox_Dispatch *dispatch = tox_node_get_dispatch(self);
-    tox_events_callback_friend_message(dispatch, on_friend_message);
+    tox_dispatch_callback_friend_message(dispatch, on_friend_message);
 
     tox_node_wait_for_self_connected(self);
     tox_node_wait_for_friend_connected(self, 0);

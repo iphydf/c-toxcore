@@ -120,11 +120,11 @@ static void peer0_script(ToxNode *self, void *ctx)
     Tox *tox = tox_node_get_tox(self);
     Tox_Dispatch *dispatch = tox_node_get_dispatch(self);
 
-    tox_events_callback_group_peer_join(dispatch, on_group_peer_join);
-    tox_events_callback_group_message(dispatch, on_group_message);
-    tox_events_callback_group_private_message(dispatch, on_group_private_message);
-    tox_events_callback_group_custom_packet(dispatch, on_group_custom_packet);
-    tox_events_callback_group_custom_private_packet(dispatch, on_group_custom_private_packet);
+    tox_dispatch_callback_group_peer_join(dispatch, on_group_peer_join);
+    tox_dispatch_callback_group_message(dispatch, on_group_message);
+    tox_dispatch_callback_group_private_message(dispatch, on_group_private_message);
+    tox_dispatch_callback_group_custom_packet(dispatch, on_group_custom_packet);
+    tox_dispatch_callback_group_custom_private_packet(dispatch, on_group_custom_private_packet);
 
     WAIT_UNTIL(tox_node_is_self_connected(self));
     WAIT_UNTIL(tox_node_is_friend_connected(self, 0));
@@ -165,9 +165,9 @@ static void peer1_script(ToxNode *self, void *ctx)
     const Tox *tox = tox_node_get_tox(self);
     Tox_Dispatch *dispatch = tox_node_get_dispatch(self);
 
-    tox_events_callback_group_invite(dispatch, on_group_invite);
-    tox_events_callback_group_peer_join(dispatch, on_group_peer_join);
-    tox_events_callback_group_message(dispatch, on_group_message);
+    tox_dispatch_callback_group_invite(dispatch, on_group_invite);
+    tox_dispatch_callback_group_peer_join(dispatch, on_group_peer_join);
+    tox_dispatch_callback_group_message(dispatch, on_group_message);
 
     WAIT_UNTIL(tox_node_is_self_connected(self));
     WAIT_UNTIL(state->peer_joined);

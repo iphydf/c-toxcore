@@ -84,12 +84,15 @@ static bool load_unpack_state_values(GC_Chat *_Nonnull chat, Bin_Unpack *_Nonnul
     bool manually_disconnected = false;
     uint8_t privacy_state = 0;
     uint8_t voice_state = 0;
+    // The lengths are set with their bytes in load_unpack_state_bin.
+    uint16_t group_name_len = 0;
+    uint16_t password_length = 0;
 
     if (!(bin_unpack_bool(bu, &manually_disconnected)
-            && bin_unpack_u16(bu, &chat->shared_state.group_name_len)
+            && bin_unpack_u16(bu, &group_name_len)
             && bin_unpack_u08(bu, &privacy_state)
             && bin_unpack_u16(bu, &chat->shared_state.maxpeers)
-            && bin_unpack_u16(bu, &chat->shared_state.password_length)
+            && bin_unpack_u16(bu, &password_length)
             && bin_unpack_u32(bu, &chat->shared_state.version)
             && bin_unpack_u32(bu, &chat->shared_state.topic_lock)
             && bin_unpack_u08(bu, &voice_state))) {
@@ -126,8 +129,8 @@ static bool load_unpack_state_bin(GC_Chat *_Nonnull chat, Bin_Unpack *_Nonnull b
         return false;
     }
 
-    if (!(bin_unpack_bin_max(bu, chat->shared_state.group_name, &chat->shared_state.group_name_len, sizeof(chat->shared_state.group_name))
-            && bin_unpack_bin_max(bu, chat->shared_state.password, &chat->shared_state.password_length, sizeof(chat->shared_state.password))
+    if (!(bin_unpack_bin_max(bu, chat->shared_state.group_name, sizeof(chat->shared_state.group_name), &chat->shared_state.group_name_len)
+            && bin_unpack_bin_max(bu, chat->shared_state.password, sizeof(chat->shared_state.password), &chat->shared_state.password_length)
             && bin_unpack_bin_fixed(bu, chat->shared_state.mod_list_hash, MOD_MODERATION_HASH_SIZE))) {
         LOGGER_ERROR(chat->log, "Failed to unpack state binary data");
         return false;
@@ -146,7 +149,7 @@ static bool load_unpack_topic_info(GC_Chat *_Nonnull chat, Bin_Unpack *_Nonnull 
     if (!(bin_unpack_u32(bu, &chat->topic_info.version)
             && bin_unpack_u16(bu, &chat->topic_info.length)
             && bin_unpack_u16(bu, &chat->topic_info.checksum)
-            && bin_unpack_bin_max(bu, chat->topic_info.topic, &chat->topic_info.length, sizeof(chat->topic_info.topic))
+            && bin_unpack_bin_max(bu, chat->topic_info.topic, sizeof(chat->topic_info.topic), &chat->topic_info.length)
             && bin_unpack_bin_fixed(bu, chat->topic_info.public_sig_key, SIG_PUBLIC_KEY_SIZE)
             && bin_unpack_bin_fixed(bu, chat->topic_sig, SIGNATURE_SIZE))) {
         LOGGER_ERROR(chat->log, "Failed to unpack topic info");
@@ -164,29 +167,32 @@ static bool load_unpack_mod_list(GC_Chat *_Nonnull chat, Bin_Unpack *_Nonnull bu
         return false;
     }
 
-    if (!bin_unpack_u16(bu, &chat->moderation.num_mods)) {
+    uint16_t num_mods;
+
+    if (!bin_unpack_u16(bu, &num_mods)) {
         LOGGER_ERROR(chat->log, "Failed to unpack mod list value");
         return false;
     }
 
-    if (chat->moderation.num_mods == 0) {
+    if (num_mods == 0) {
+        chat->moderation.num_mods = 0;
         bin_unpack_nil(bu);
         return true;
     }
 
-    if (chat->moderation.num_mods > MOD_MAX_NUM_MODERATORS) {
-        LOGGER_ERROR(chat->log, "moderation count %u exceeds maximum %u", chat->moderation.num_mods, (unsigned int)MOD_MAX_NUM_MODERATORS);
-        chat->moderation.num_mods = MOD_MAX_NUM_MODERATORS;
+    if (num_mods > MOD_MAX_NUM_MODERATORS) {
+        LOGGER_ERROR(chat->log, "moderation count %u exceeds maximum %u", num_mods, (unsigned int)MOD_MAX_NUM_MODERATORS);
+        num_mods = MOD_MAX_NUM_MODERATORS;
     }
 
-    uint8_t *packed_mod_list = (uint8_t *)mem_balloc(chat->mem, chat->moderation.num_mods * MOD_LIST_ENTRY_SIZE);
+    uint8_t *packed_mod_list = (uint8_t *)mem_balloc(chat->mem, num_mods * MOD_LIST_ENTRY_SIZE);
 
     if (packed_mod_list == nullptr) {
         LOGGER_ERROR(chat->log, "Failed to allocate memory for packed mod list");
         return false;
     }
 
-    const size_t packed_size = chat->moderation.num_mods * MOD_LIST_ENTRY_SIZE;
+    const size_t packed_size = num_mods * MOD_LIST_ENTRY_SIZE;
 
     if (!bin_unpack_bin_fixed(bu, packed_mod_list, packed_size)) {
         LOGGER_ERROR(chat->log, "Failed to unpack mod list binary data");
@@ -194,7 +200,7 @@ static bool load_unpack_mod_list(GC_Chat *_Nonnull chat, Bin_Unpack *_Nonnull bu
         return false;
     }
 
-    if (mod_list_unpack(&chat->moderation, packed_mod_list, packed_size, chat->moderation.num_mods) == -1) {
+    if (mod_list_unpack(&chat->moderation, packed_mod_list, packed_size, num_mods) == -1) {
         LOGGER_ERROR(chat->log, "Failed to unpack mod list info");
         mem_delete(chat->mem, packed_mod_list);
         return false;
@@ -258,12 +264,12 @@ static bool load_unpack_self_info(GC_Chat *_Nonnull chat, Bin_Unpack *_Nonnull b
         return false;
     }
 
-    if (chat->numpeers == 0) {
-        LOGGER_ERROR(chat->log, "Failed to unpack self: numpeers should be > 0");
+    if (chat->num_peers == 0) {
+        LOGGER_ERROR(chat->log, "Failed to unpack self: num_peers should be > 0");
         return false;
     }
 
-    GC_Peer *self = &chat->group[0];
+    GC_Peer *self = &chat->peers[0];
 
     self->gconn.addr.public_key = chat->self_public_key;
     memcpy(self->nick, self_nick, self_nick_len);
@@ -295,7 +301,7 @@ static bool load_unpack_saved_peers(GC_Chat *_Nonnull chat, Bin_Unpack *_Nonnull
         return true;
     }
 
-    uint8_t *saved_peers = (uint8_t *)mem_balloc(chat->mem, saved_peers_size * GC_SAVED_PEER_SIZE);
+    uint8_t *saved_peers = (uint8_t *)mem_balloc(chat->mem, saved_peers_size);
 
     if (saved_peers == nullptr) {
         LOGGER_ERROR(chat->log, "Failed to allocate memory for saved peer list");
@@ -417,7 +423,7 @@ static void save_pack_self_info(const GC_Chat *_Nonnull chat, Bin_Pack *_Nonnull
 {
     bin_pack_array(bp, 4);
 
-    GC_Peer *self = &chat->group[0];
+    GC_Peer *self = &chat->peers[0];
 
     if (self->nick_length > MAX_GC_NICK_SIZE) {
         LOGGER_ERROR(chat->log, "self_nick is too big (%u). Truncating to %d", self->nick_length, MAX_GC_NICK_SIZE);
@@ -466,8 +472,8 @@ static void save_pack_saved_peers(const GC_Chat *_Nonnull chat, Bin_Pack *_Nonnu
 
 void gc_save_pack_group(const GC_Chat *chat, Bin_Pack *bp)
 {
-    if (chat->numpeers == 0) {
-        LOGGER_ERROR(chat->log, "Failed to pack group: numpeers is 0");
+    if (chat->num_peers == 0) {
+        LOGGER_ERROR(chat->log, "Failed to pack group: num_peers is 0");
         return;
     }
 

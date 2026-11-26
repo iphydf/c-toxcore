@@ -44,7 +44,7 @@ static void alice_script(ToxNode *self, void *ctx)
 static void bob_script(ToxNode *self, void *ctx)
 {
     const State *state = (const State *)ctx;
-    tox_events_callback_conference_invite(tox_node_get_dispatch(self), on_conference_invite);
+    tox_dispatch_callback_conference_invite(tox_node_get_dispatch(self), on_conference_invite);
     tox_node_wait_for_self_connected(self);
 
     // Lossless packets arrive in order, so the bad invite came first.

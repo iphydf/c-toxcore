@@ -35,7 +35,7 @@ typedef struct Shared_Key_Cache Shared_Key_Cache;
  */
 Shared_Key_Cache *_Nullable shared_key_cache_new(
     const Logger *_Nonnull log, const Mono_Time *_Nonnull mono_time, const Memory *_Nonnull mem, const Memory *_Nonnull secure_mem,
-    const uint8_t *_Nonnull self_secret_key, uint64_t timeout, uint8_t keys_per_slot);
+    const uint8_t self_secret_key[_Nonnull CRYPTO_SECRET_KEY_SIZE], uint64_t timeout, uint8_t keys_per_slot);
 
 /**
  * @brief Deletes the cache and frees all resources.

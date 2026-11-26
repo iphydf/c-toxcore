@@ -97,8 +97,8 @@ static void sender_script(ToxNode *self, void *ctx)
 {
     const FileTransferState *state = (const FileTransferState *)ctx;
 
-    tox_events_callback_file_recv_control(tox_node_get_dispatch(self), on_file_recv_control);
-    tox_events_callback_file_chunk_request(tox_node_get_dispatch(self), on_file_chunk_request);
+    tox_dispatch_callback_file_recv_control(tox_node_get_dispatch(self), on_file_recv_control);
+    tox_dispatch_callback_file_chunk_request(tox_node_get_dispatch(self), on_file_chunk_request);
 
     WAIT_UNTIL(tox_node_is_self_connected(self));
     WAIT_UNTIL(tox_node_is_friend_connected(self, 0));
@@ -142,8 +142,8 @@ static void receiver_script(ToxNode *self, void *ctx)
 {
     const FileTransferState *state = (const FileTransferState *)ctx;
 
-    tox_events_callback_file_recv(tox_node_get_dispatch(self), on_file_receive);
-    tox_events_callback_file_recv_chunk(tox_node_get_dispatch(self), on_file_recv_chunk);
+    tox_dispatch_callback_file_recv(tox_node_get_dispatch(self), on_file_receive);
+    tox_dispatch_callback_file_recv_chunk(tox_node_get_dispatch(self), on_file_recv_chunk);
 
     WAIT_UNTIL(tox_node_is_self_connected(self));
 

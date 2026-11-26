@@ -55,7 +55,7 @@ static void alice_script(ToxNode *self, void *ctx)
 static void bob_script(ToxNode *self, void *ctx)
 {
     BobState *state = (BobState *)ctx;
-    tox_events_callback_friend_status(tox_node_get_dispatch(self), on_friend_status);
+    tox_dispatch_callback_friend_status(tox_node_get_dispatch(self), on_friend_status);
 
     tox_node_wait_for_self_connected(self);
     tox_node_wait_for_friend_connected(self, 0);

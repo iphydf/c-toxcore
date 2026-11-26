@@ -35,13 +35,13 @@ void ping_kill(const Memory *_Nonnull mem, Ping *_Nullable ping);
  * @retval 0 if node was added.
  * @retval -1 if node was not added.
  */
-int32_t ping_add(Ping *_Nonnull ping, const uint8_t *_Nonnull public_key, const IP_Port *_Nonnull ip_port);
+int32_t ping_add(Ping *_Nonnull ping, const uint8_t public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE], const IP_Port *_Nonnull ip_port);
 
 /** @brief Ping all the valid nodes in the to_ping list every TIME_TO_PING seconds.
  * This function must be run at least once every TIME_TO_PING seconds.
  */
 void ping_iterate(Ping *_Nonnull ping);
 
-void ping_send_request(Ping *_Nonnull ping, const IP_Port *_Nonnull ipp, const uint8_t *_Nonnull public_key);
+void ping_send_request(Ping *_Nonnull ping, const IP_Port *_Nonnull ipp, const uint8_t public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE]);
 
 #endif /* C_TOXCORE_TOXCORE_PING_H */

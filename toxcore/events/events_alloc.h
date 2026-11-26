@@ -21,7 +21,7 @@ struct Memory;
 
 struct Tox_Events {
     Tox_Event *_Nullable events;
-    uint32_t events_size;
+    uint32_t events_count;
     uint32_t events_capacity;
 
     const struct Memory *_Nonnull mem;

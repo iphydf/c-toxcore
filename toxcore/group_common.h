@@ -108,10 +108,10 @@ typedef struct GC_Connection {
     uint64_t send_message_id;   /* message_id of the next message we send to peer */
 
     uint16_t send_array_start;   /* send_array index of oldest item */
-    GC_Message_Array_Entry *_Nullable send_array;
+    GC_Message_Array_Entry *_Nonnull send_array;
 
     uint64_t received_message_id;   /* message_id of peer's last message to us */
-    GC_Message_Array_Entry *_Nullable recv_array;
+    GC_Message_Array_Entry *_Nonnull recv_array;
 
     uint64_t    last_chunk_id;  /* The message ID of the last packet fragment we received */
 
@@ -276,8 +276,8 @@ typedef struct GC_SharedState {
 
 typedef struct GC_TopicInfo {
     uint32_t    version;
-    uint16_t    length;
     uint16_t    checksum;  // used for syncing problems. the checksum with the highest value gets priority.
+    uint16_t    length;
     uint8_t     topic[MAX_GC_TOPIC_SIZE];
     uint8_t     public_sig_key[SIG_PUBLIC_KEY_SIZE];  // Public signature key of the topic setter
 } GC_TopicInfo;
@@ -309,7 +309,7 @@ typedef struct GC_Chat {
     uint64_t        last_checked_tcp_relays;
     Group_Handshake_Join_Type join_type;
 
-    GC_Peer         *_Nullable group;
+    GC_Peer         *_Nullable peers;
     Moderation      moderation;
 
     GC_Conn_State   connection_state;
@@ -325,7 +325,7 @@ typedef struct GC_Chat {
     uint16_t    peers_checksum;  // sum of the public key hash of every confirmed peer in the group
     uint16_t    roles_checksum;  // sum of every confirmed peer's role plus the first byte of their public key
 
-    uint32_t    numpeers;
+    uint32_t    num_peers;
     int         group_number;
 
     Extended_Public_Key chat_public_key;  // the chat_id is the sig portion
@@ -409,7 +409,7 @@ typedef struct GC_Session {
     Net_Profile               *_Nonnull tcp_np;
     struct GC_Announces_List  *_Nonnull announces_list;
 
-    uint32_t     chats_index;
+    uint32_t     num_chats;
 
     gc_message_cb *_Nullable message;
     gc_private_message_cb *_Nullable private_message;
@@ -436,7 +436,7 @@ typedef struct GC_Session {
  * Return -1 on failure.
  * Return -2 if a peer with public_key is already in our peerlist.
  */
-int peer_add(GC_Chat *_Nonnull chat, const IP_Port *_Nullable ipp, const uint8_t *_Nonnull public_key);
+int peer_add(GC_Chat *_Nonnull chat, const IP_Port *_Nullable ipp, const uint8_t public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE]);
 /** @brief Unpacks saved peers from `data` of size `length` into `chat`.
  *
  * Returns the number of unpacked peers on success.

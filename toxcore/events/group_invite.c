@@ -14,6 +14,7 @@
 #include "../mem.h"
 #include "../tox.h"
 #include "../tox_event.h"
+#include "../tox_event_struct.h"
 #include "../tox_events.h"
 #include "../tox_struct.h"
 
@@ -169,7 +170,7 @@ static bool tox_event_group_invite_unpack_into(Tox_Event_Group_Invite *_Nonnull 
 
 const Tox_Event_Group_Invite *tox_event_get_group_invite(const Tox_Event *event)
 {
-    return event->type == TOX_EVENT_GROUP_INVITE ? event->data.group_invite : nullptr;
+    return event->type == TOX_EVENT_TYPE_GROUP_INVITE ? event->data.group_invite : nullptr;
 }
 
 Tox_Event_Group_Invite *tox_event_group_invite_new(const Memory *mem)
@@ -201,7 +202,7 @@ static void tox_events_add_group_invite(Tox_Events_State *_Nonnull state, Tox_Ev
     }
 
     Tox_Event event;
-    event.type = TOX_EVENT_GROUP_INVITE;
+    event.type = TOX_EVENT_TYPE_GROUP_INVITE;
     event.data.group_invite = group_invite;
 
     if (!tox_events_add(state->events, &event)) {
@@ -214,14 +215,19 @@ bool tox_event_group_invite_unpack(
     Tox_Event_Group_Invite **event, Bin_Unpack *bu, const Memory *mem)
 {
     assert(event != nullptr);
-    assert(*event == nullptr);
-    *event = tox_event_group_invite_new(mem);
+    Tox_Event_Group_Invite *const unpacked = tox_event_group_invite_new(mem);
 
-    if (*event == nullptr) {
+    if (unpacked == nullptr) {
         return false;
     }
 
-    return tox_event_group_invite_unpack_into(*event, bu);
+    if (!tox_event_group_invite_unpack_into(unpacked, bu)) {
+        tox_event_group_invite_free(unpacked, mem);
+        return false;
+    }
+
+    *event = unpacked;
+    return true;
 }
 
 /*****************************************************

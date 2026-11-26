@@ -95,6 +95,9 @@ static const Network_Funcs kNetworkVtable = {
             mem_delete(mem, addrs);
             return 0;
         },
+    // A simulated network has no interfaces to broadcast on.
+    .broadcast_addresses = [](void *_Nonnull obj, const Memory *_Nonnull mem, IP *_Nonnull ips,
+                               std::uint32_t ips_count) { return 0; },
 };
 
 FakeNetworkStack::FakeNetworkStack(NetworkUniverse &universe, const IP &node_ip)

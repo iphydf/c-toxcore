@@ -352,7 +352,7 @@ static bool store_in_recv_array(const Logger *_Nonnull log, const Memory *_Nonnu
  * Return the length of the fully reassembled packet on success.
  * Return 0 on failure.
  */
-static uint16_t reassemble_packet(const Logger *_Nonnull log, const Memory *_Nonnull mem, GC_Connection *_Nullable gconn, uint8_t *_Nonnull *payload, uint64_t message_id)
+static uint16_t reassemble_packet(const Logger *_Nonnull log, const Memory *_Nonnull mem, GC_Connection *_Nullable gconn, uint8_t *_Nullable *_Nonnull payload, uint64_t message_id)
 {
     uint16_t end_idx = gcc_get_array_index(message_id - 1);
     uint16_t start_idx = end_idx;
@@ -416,7 +416,7 @@ static uint16_t reassemble_packet(const Logger *_Nonnull log, const Memory *_Non
     return processed;
 }
 
-int gcc_handle_packet_fragment(const GC_Session *c, GC_Chat *chat, uint32_t peer_number,
+int gcc_handle_packet_fragment(const GC_Session *c, GC_Chat *chat, int peer_number,
                                GC_Connection *gconn, const uint8_t *chunk, uint16_t length, uint8_t packet_type,
                                uint64_t message_id, void *userdata)
 {
@@ -510,7 +510,7 @@ int gcc_handle_received_message(const Logger *log, const Memory *mem, const Mono
  *
  * Return true on success.
  */
-static bool process_recv_array_entry(const GC_Session *_Nonnull c, GC_Chat *_Nonnull chat, GC_Connection *_Nonnull gconn, uint32_t peer_number,
+static bool process_recv_array_entry(const GC_Session *_Nonnull c, GC_Chat *_Nonnull chat, GC_Connection *_Nonnull gconn, int peer_number,
                                      GC_Message_Array_Entry *_Nonnull array_entry, void *_Nullable userdata)
 {
     uint8_t sender_pk[ENC_PUBLIC_KEY_SIZE];
@@ -542,7 +542,7 @@ static bool process_recv_array_entry(const GC_Session *_Nonnull c, GC_Chat *_Non
     return true;
 }
 
-void gcc_check_recv_array(const GC_Session *c, GC_Chat *chat, GC_Connection *gconn, uint32_t peer_number,
+void gcc_check_recv_array(const GC_Session *c, GC_Chat *chat, GC_Connection *gconn, int peer_number,
                           void *userdata)
 {
     if (gconn->last_chunk_id != 0) {  // dont check array if we have an unfinished fragment sequence
@@ -615,13 +615,13 @@ bool gcc_send_packet(const GC_Chat *chat, GC_Connection *gconn, const uint8_t *p
 
     if (gcc_direct_conn_is_possible(chat, gconn)) {
         if (gcc_conn_is_direct(chat->mono_time, gconn)) {
-            return (uint16_t) sendpacket(chat->net, &gconn->addr.ip_port, packet, length) == length;
+            return sendpacket(chat->net, &gconn->addr.ip_port, packet, length) == (int)length;
         }
 
         if (gcc_conn_should_try_direct(chat->mono_time, gconn)) {
             gconn->last_sent_direct_try_time = mono_time_get(chat->mono_time);
 
-            if ((uint16_t) sendpacket(chat->net, &gconn->addr.ip_port, packet, length) == length) {
+            if (sendpacket(chat->net, &gconn->addr.ip_port, packet, length) == (int)length) {
                 direct_send_attempt = true;
             }
         }
@@ -666,7 +666,7 @@ int gcc_encrypt_and_send_lossless_packet(const GC_Chat *chat, GC_Connection *gco
     return 0;
 }
 
-bool gcc_make_session_shared_key(GC_Connection *gconn, const uint8_t *sender_pk)
+bool gcc_make_session_shared_key(GC_Connection *gconn, const uint8_t sender_pk[CRYPTO_PUBLIC_KEY_SIZE])
 {
     if (encrypt_precompute(sender_pk, gconn->session_keys->secret_key, gconn->session_keys->shared_key) != 0) {
         return false;
@@ -731,7 +731,7 @@ void gcc_peer_cleanup(const Memory *mem, const Memory *secure_mem, GC_Connection
 
 void gcc_cleanup(const GC_Chat *chat)
 {
-    for (uint32_t i = 0; i < chat->numpeers; ++i) {
+    for (uint32_t i = 0; i < chat->num_peers; ++i) {
         GC_Connection *gconn = get_gc_connection(chat, i);
         assert(gconn != nullptr);
 

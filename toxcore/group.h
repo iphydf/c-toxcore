@@ -144,7 +144,7 @@ int group_peername_size(const Group_Chats *_Nonnull g_c, uint32_t groupnumber, u
  * @retval -1 if groupnumber is invalid.
  * @retval -2 if peernumber is invalid.
  */
-int group_peername(const Group_Chats *_Nonnull g_c, uint32_t groupnumber, uint32_t peernumber, uint8_t *_Nonnull name, bool frozen);
+int group_peername(const Group_Chats *_Nonnull g_c, uint32_t groupnumber, uint32_t peernumber, uint8_t name[_Nonnull MAX_NAME_LENGTH], bool frozen);
 
 /**
  * @brief Copy last active timestamp of frozen peernumber who is in groupnumber to
@@ -170,7 +170,7 @@ int group_set_max_frozen(const Group_Chats *_Nonnull g_c, uint32_t groupnumber, 
  * @retval -2 if invite packet failed to send.
  * @retval -3 if we are not connected to the group chat.
  */
-int invite_friend(const Group_Chats *_Nonnull g_c, uint32_t friendnumber, uint32_t groupnumber);
+int invite_friend(const Group_Chats *_Nonnull g_c, int32_t friendnumber, uint32_t groupnumber);
 
 /** @brief Join a group (we need to have been invited first).
  *
@@ -185,7 +185,7 @@ int invite_friend(const Group_Chats *_Nonnull g_c, uint32_t friendnumber, uint32
  * @retval -5 if group instance failed to initialize.
  * @retval -6 if join packet fails to send.
  */
-int join_groupchat(Group_Chats *_Nonnull g_c, uint32_t friendnumber, uint8_t expected_type, const uint8_t *_Nonnull data, uint16_t length);
+int join_groupchat(Group_Chats *_Nonnull g_c, int32_t friendnumber, uint8_t expected_type, const uint8_t *_Nonnull data, uint16_t length);
 
 /** @brief send a group message
  * @retval 0 on success
@@ -222,7 +222,7 @@ int group_title_get_size(const Group_Chats *_Nonnull g_c, uint32_t groupnumber);
  * @retval -1 if groupnumber is invalid.
  * @retval -2 if title is too long or empty.
  */
-int group_title_get(const Group_Chats *_Nonnull g_c, uint32_t groupnumber, uint8_t *_Nullable title);
+int group_title_get(const Group_Chats *_Nonnull g_c, uint32_t groupnumber, uint8_t title[_Nullable MAX_NAME_LENGTH]);
 
 /**
  * @return the number of (frozen, if frozen is true) peers in the group chat on success.
@@ -280,7 +280,7 @@ int group_get_type(const Group_Chats *_Nonnull g_c, uint32_t groupnumber);
  */
 bool conference_get_id(const Group_Chats *_Nonnull g_c, uint32_t groupnumber, uint8_t *_Nullable id);
 
-int32_t conference_by_id(const Group_Chats *_Nonnull g_c, const uint8_t *_Nonnull id);
+int32_t conference_by_id(const Group_Chats *_Nonnull g_c, const uint8_t id[_Nonnull CRYPTO_PUBLIC_KEY_SIZE]);
 
 /** Send current name (set in messenger) to all online groups. */
 void send_name_all_groups(const Group_Chats *_Nonnull g_c);

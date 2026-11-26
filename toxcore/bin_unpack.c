@@ -183,7 +183,7 @@ bool bin_unpack_str(Bin_Unpack *bu, char **str_ptr, uint32_t *str_length_ptr)
     return true;
 }
 
-bool bin_unpack_bin_max(Bin_Unpack *bu, uint8_t *data, uint16_t *data_length_ptr, uint16_t max_data_length)
+bool bin_unpack_bin_max(Bin_Unpack *bu, uint8_t *data, uint16_t max_data_length, uint16_t *data_length_ptr)
 {
     uint32_t bin_size;
     if (!bin_unpack_bin_size(bu, &bin_size) || bin_size > max_data_length) {

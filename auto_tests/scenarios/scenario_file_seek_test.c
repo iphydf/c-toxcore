@@ -38,7 +38,7 @@ static void on_file_chunk_request(const Tox_Event_File_Chunk_Request *event, voi
 static void sender_script(ToxNode *self, void *ctx)
 {
     SenderState *state = (SenderState *)ctx;
-    tox_events_callback_file_chunk_request(tox_node_get_dispatch(self), on_file_chunk_request);
+    tox_dispatch_callback_file_chunk_request(tox_node_get_dispatch(self), on_file_chunk_request);
 
     tox_node_wait_for_self_connected(self);
     tox_node_wait_for_friend_connected(self, 0);
@@ -79,8 +79,8 @@ static void on_file_recv_chunk(const Tox_Event_File_Recv_Chunk *event, void *use
 static void receiver_script(ToxNode *self, void *ctx)
 {
     ReceiverState *state = (ReceiverState *)ctx;
-    tox_events_callback_file_recv(tox_node_get_dispatch(self), on_file_recv);
-    tox_events_callback_file_recv_chunk(tox_node_get_dispatch(self), on_file_recv_chunk);
+    tox_dispatch_callback_file_recv(tox_node_get_dispatch(self), on_file_recv);
+    tox_dispatch_callback_file_recv_chunk(tox_node_get_dispatch(self), on_file_recv_chunk);
 
     tox_node_wait_for_self_connected(self);
     tox_node_wait_for_friend_connected(self, 0);

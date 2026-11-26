@@ -51,8 +51,8 @@ static void founder_script(ToxNode *self, void *ctx)
     Tox *tox = tox_node_get_tox(self);
     Tox_Dispatch *dispatch = tox_node_get_dispatch(self);
 
-    tox_events_callback_group_peer_join(dispatch, on_group_peer_join);
-    tox_events_callback_group_self_join(dispatch, on_group_self_join);
+    tox_dispatch_callback_group_peer_join(dispatch, on_group_peer_join);
+    tox_dispatch_callback_group_self_join(dispatch, on_group_self_join);
 
     tox_node_wait_for_self_connected(self);
 
@@ -134,7 +134,7 @@ static void peer2_script(ToxNode *self, void *ctx)
 {
     const State *state = (const State *)ctx;
     Tox *tox = tox_node_get_tox(self);
-    tox_events_callback_group_join_fail(tox_node_get_dispatch(self), on_group_join_fail);
+    tox_dispatch_callback_group_join_fail(tox_node_get_dispatch(self), on_group_join_fail);
     tox_node_wait_for_self_connected(self);
 
     const ToxNode *founder = tox_scenario_get_node(tox_node_get_scenario(self), 0);
@@ -161,7 +161,7 @@ static void peer3_script(ToxNode *self, void *ctx)
 {
     const State *state = (const State *)ctx;
     Tox *tox = tox_node_get_tox(self);
-    tox_events_callback_group_join_fail(tox_node_get_dispatch(self), on_group_join_fail);
+    tox_dispatch_callback_group_join_fail(tox_node_get_dispatch(self), on_group_join_fail);
     tox_node_wait_for_self_connected(self);
 
     const ToxNode *founder = tox_scenario_get_node(tox_node_get_scenario(self), 0);
@@ -188,7 +188,7 @@ static void peer4_script(ToxNode *self, void *ctx)
 {
     const State *state = (const State *)ctx;
     Tox *tox = tox_node_get_tox(self);
-    tox_events_callback_group_join_fail(tox_node_get_dispatch(self), on_group_join_fail);
+    tox_dispatch_callback_group_join_fail(tox_node_get_dispatch(self), on_group_join_fail);
     tox_node_wait_for_self_connected(self);
 
     const ToxNode *founder = tox_scenario_get_node(tox_node_get_scenario(self), 0);
@@ -215,7 +215,7 @@ static void peer5_script(ToxNode *self, void *ctx)
 {
     const State *state = (const State *)ctx;
     Tox *tox = tox_node_get_tox(self);
-    tox_events_callback_group_self_join(tox_node_get_dispatch(self), on_group_self_join);
+    tox_dispatch_callback_group_self_join(tox_node_get_dispatch(self), on_group_self_join);
     tox_node_wait_for_self_connected(self);
 
     const ToxNode *founder = tox_scenario_get_node(tox_node_get_scenario(self), 0);
@@ -243,7 +243,7 @@ static void peer6_script(ToxNode *self, void *ctx)
 {
     const State *state = (const State *)ctx;
     Tox *tox = tox_node_get_tox(self);
-    tox_events_callback_group_self_join(tox_node_get_dispatch(self), on_group_self_join);
+    tox_dispatch_callback_group_self_join(tox_node_get_dispatch(self), on_group_self_join);
     tox_node_wait_for_self_connected(self);
 
     const ToxNode *founder = tox_scenario_get_node(tox_node_get_scenario(self), 0);

@@ -14,6 +14,7 @@
 #include "../mem.h"
 #include "../tox.h"
 #include "../tox_event.h"
+#include "../tox_event_struct.h"
 #include "../tox_events.h"
 #include "../tox_struct.h"
 
@@ -121,7 +122,7 @@ static bool tox_event_friend_lossless_packet_unpack_into(Tox_Event_Friend_Lossle
 
 const Tox_Event_Friend_Lossless_Packet *tox_event_get_friend_lossless_packet(const Tox_Event *event)
 {
-    return event->type == TOX_EVENT_FRIEND_LOSSLESS_PACKET ? event->data.friend_lossless_packet : nullptr;
+    return event->type == TOX_EVENT_TYPE_FRIEND_LOSSLESS_PACKET ? event->data.friend_lossless_packet : nullptr;
 }
 
 Tox_Event_Friend_Lossless_Packet *tox_event_friend_lossless_packet_new(const Memory *mem)
@@ -153,7 +154,7 @@ static void tox_events_add_friend_lossless_packet(Tox_Events_State *_Nonnull sta
     }
 
     Tox_Event event;
-    event.type = TOX_EVENT_FRIEND_LOSSLESS_PACKET;
+    event.type = TOX_EVENT_TYPE_FRIEND_LOSSLESS_PACKET;
     event.data.friend_lossless_packet = friend_lossless_packet;
 
     if (!tox_events_add(state->events, &event)) {
@@ -166,14 +167,19 @@ bool tox_event_friend_lossless_packet_unpack(
     Tox_Event_Friend_Lossless_Packet **event, Bin_Unpack *bu, const Memory *mem)
 {
     assert(event != nullptr);
-    assert(*event == nullptr);
-    *event = tox_event_friend_lossless_packet_new(mem);
+    Tox_Event_Friend_Lossless_Packet *const unpacked = tox_event_friend_lossless_packet_new(mem);
 
-    if (*event == nullptr) {
+    if (unpacked == nullptr) {
         return false;
     }
 
-    return tox_event_friend_lossless_packet_unpack_into(*event, bu);
+    if (!tox_event_friend_lossless_packet_unpack_into(unpacked, bu)) {
+        tox_event_friend_lossless_packet_free(unpacked, mem);
+        return false;
+    }
+
+    *event = unpacked;
+    return true;
 }
 
 /*****************************************************

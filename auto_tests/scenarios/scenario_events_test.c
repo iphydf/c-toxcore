@@ -21,7 +21,7 @@ static void bob_script(ToxNode *self, void *ctx)
     tox_node_wait_for_friend_connected(self, 0);
 
     tox_node_log(self, "Waiting for message from Alice...");
-    WAIT_FOR_EVENT(TOX_EVENT_FRIEND_MESSAGE);
+    WAIT_FOR_EVENT(TOX_EVENT_TYPE_FRIEND_MESSAGE);
     tox_node_log(self, "Received message!");
 }
 

@@ -41,7 +41,7 @@ static int32_t list_index(uint32_t i)
  * @retval <0  no match, returns index (return value is `list_index(index)`) where
  *   the data should be inserted
  */
-static int find(const BS_List *_Nonnull list, const uint8_t *_Nonnull data)
+static int find(const BS_List *_Nonnull list, const void *_Nonnull data)
 {
     // should work well, but could be improved
     if (list->n == 0) {
@@ -169,7 +169,7 @@ void bs_list_free(BS_List *list)
     list->ids = nullptr;
 }
 
-int bs_list_find(const BS_List *list, const uint8_t *data)
+int bs_list_find(const BS_List *list, const void *data)
 {
     const int r = find(list, data);
 
@@ -181,7 +181,7 @@ int bs_list_find(const BS_List *list, const uint8_t *data)
     return list->ids[r];
 }
 
-bool bs_list_add(BS_List *list, const uint8_t *data, int id)
+bool bs_list_add(BS_List *list, const void *data, int id)
 {
     // find where the new element should be inserted
     // see: return value of find()
@@ -222,7 +222,7 @@ bool bs_list_add(BS_List *list, const uint8_t *data, int id)
     return true;
 }
 
-bool bs_list_remove(BS_List *list, const uint8_t *data, int id)
+bool bs_list_remove(BS_List *list, const void *data, int id)
 {
     const int i = find(list, data);
 

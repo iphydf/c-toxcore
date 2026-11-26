@@ -20,7 +20,7 @@ static void on_peer_list_changed(const Tox_Event_Conference_Peer_List_Changed *e
 static void alice_script(ToxNode *self, void *ctx)
 {
     AliceState *state = (AliceState *)ctx;
-    tox_events_callback_conference_peer_list_changed(tox_node_get_dispatch(self), on_peer_list_changed);
+    tox_dispatch_callback_conference_peer_list_changed(tox_node_get_dispatch(self), on_peer_list_changed);
 
     tox_node_wait_for_self_connected(self);
     tox_node_wait_for_friend_connected(self, 0);
@@ -91,7 +91,7 @@ static void bob_on_conference_invite(const Tox_Event_Conference_Invite *event, v
 static void bob_script(ToxNode *self, void *ctx)
 {
     const BobState *state = (const BobState *)ctx;
-    tox_events_callback_conference_invite(tox_node_get_dispatch(self), bob_on_conference_invite);
+    tox_dispatch_callback_conference_invite(tox_node_get_dispatch(self), bob_on_conference_invite);
 
     tox_node_wait_for_self_connected(self);
     tox_node_wait_for_friend_connected(self, 0);

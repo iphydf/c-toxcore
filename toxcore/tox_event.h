@@ -2,337 +2,517 @@
  * Copyright © 2022-2026 The TokTok team.
  */
 
+/**
+ * WARNING: This is an experimental API and is subject to change.
+ *
+ * At this point, it probably won't change very much anymore, but we may have
+ * small breaking changes before a stable release.
+ */
+
 #ifndef C_TOXCORE_TOXCORE_TOX_EVENT_H
 #define C_TOXCORE_TOXCORE_TOX_EVENT_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
-#include "attributes.h"
-#include "bin_pack.h"
-#include "bin_unpack.h"
-#include "mem.h"
-#include "tox_events.h"
-#include "tox_private.h"
+#include "tox.h"
+#include "tox_attributes.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef union Tox_Event_Data {
-    Tox_Event_Self_Connection_Status *_Nullable self_connection_status;
-    Tox_Event_Friend_Request *_Nullable friend_request;
-    Tox_Event_Friend_Connection_Status *_Nullable friend_connection_status;
-    Tox_Event_Friend_Lossy_Packet *_Nullable friend_lossy_packet;
-    Tox_Event_Friend_Lossless_Packet *_Nullable friend_lossless_packet;
-    Tox_Event_Friend_Name *_Nullable friend_name;
-    Tox_Event_Friend_Status *_Nullable friend_status;
-    Tox_Event_Friend_Status_Message *_Nullable friend_status_message;
-    Tox_Event_Friend_Message *_Nullable friend_message;
-    Tox_Event_Friend_Read_Receipt *_Nullable friend_read_receipt;
-    Tox_Event_Friend_Typing *_Nullable friend_typing;
-    Tox_Event_File_Chunk_Request *_Nullable file_chunk_request;
-    Tox_Event_File_Recv *_Nullable file_recv;
-    Tox_Event_File_Recv_Chunk *_Nullable file_recv_chunk;
-    Tox_Event_File_Recv_Control *_Nullable file_recv_control;
-    Tox_Event_Conference_Invite *_Nullable conference_invite;
-    Tox_Event_Conference_Connected *_Nullable conference_connected;
-    Tox_Event_Conference_Peer_List_Changed *_Nullable conference_peer_list_changed;
-    Tox_Event_Conference_Peer_Name *_Nullable conference_peer_name;
-    Tox_Event_Conference_Title *_Nullable conference_title;
-    Tox_Event_Conference_Message *_Nullable conference_message;
-    Tox_Event_Group_Peer_Name *_Nullable group_peer_name;
-    Tox_Event_Group_Peer_Status *_Nullable group_peer_status;
-    Tox_Event_Group_Topic *_Nullable group_topic;
-    Tox_Event_Group_Privacy_State *_Nullable group_privacy_state;
-    Tox_Event_Group_Voice_State *_Nullable group_voice_state;
-    Tox_Event_Group_Topic_Lock *_Nullable group_topic_lock;
-    Tox_Event_Group_Peer_Limit *_Nullable group_peer_limit;
-    Tox_Event_Group_Password *_Nullable group_password;
-    Tox_Event_Group_Message *_Nullable group_message;
-    Tox_Event_Group_Private_Message *_Nullable group_private_message;
-    Tox_Event_Group_Custom_Packet *_Nullable group_custom_packet;
-    Tox_Event_Group_Custom_Private_Packet *_Nullable group_custom_private_packet;
-    Tox_Event_Group_Invite *_Nullable group_invite;
-    Tox_Event_Group_Peer_Join *_Nullable group_peer_join;
-    Tox_Event_Group_Peer_Exit *_Nullable group_peer_exit;
-    Tox_Event_Group_Self_Join *_Nullable group_self_join;
-    Tox_Event_Group_Join_Fail *_Nullable group_join_fail;
-    Tox_Event_Group_Moderation *_Nullable group_moderation;
-    Tox_Event_Dht_Nodes_Response *_Nullable dht_nodes_response;
-} Tox_Event_Data;
+typedef struct Tox_Event_Conference_Connected Tox_Event_Conference_Connected;
+uint32_t tox_event_conference_connected_get_conference_number(
+    const Tox_Event_Conference_Connected *_Nonnull conference_connected);
 
-struct Tox_Event {
-    Tox_Event_Type type;
-    Tox_Event_Data data;
-};
+typedef struct Tox_Event_Conference_Invite Tox_Event_Conference_Invite;
+uint32_t tox_event_conference_invite_get_friend_number(
+    const Tox_Event_Conference_Invite *_Nonnull conference_invite);
+Tox_Conference_Type tox_event_conference_invite_get_type(
+    const Tox_Event_Conference_Invite *_Nonnull conference_invite);
+const uint8_t *_Nullable tox_event_conference_invite_get_cookie(
+    const Tox_Event_Conference_Invite *_Nonnull conference_invite);
+uint32_t tox_event_conference_invite_get_cookie_length(
+    const Tox_Event_Conference_Invite *_Nonnull conference_invite);
 
-Tox_Event_Conference_Connected *_Nullable tox_event_conference_connected_new(const Memory *_Nonnull mem);
-Tox_Event_Conference_Invite *_Nullable tox_event_conference_invite_new(const Memory *_Nonnull mem);
-Tox_Event_Conference_Message *_Nullable tox_event_conference_message_new(const Memory *_Nonnull mem);
-Tox_Event_Conference_Peer_List_Changed *_Nullable tox_event_conference_peer_list_changed_new(const Memory *_Nonnull mem);
-Tox_Event_Conference_Peer_Name *_Nullable tox_event_conference_peer_name_new(const Memory *_Nonnull mem);
-Tox_Event_Conference_Title *_Nullable tox_event_conference_title_new(const Memory *_Nonnull mem);
-Tox_Event_File_Chunk_Request *_Nullable tox_event_file_chunk_request_new(const Memory *_Nonnull mem);
-Tox_Event_File_Recv_Chunk *_Nullable tox_event_file_recv_chunk_new(const Memory *_Nonnull mem);
-Tox_Event_File_Recv_Control *_Nullable tox_event_file_recv_control_new(const Memory *_Nonnull mem);
-Tox_Event_File_Recv *_Nullable tox_event_file_recv_new(const Memory *_Nonnull mem);
-Tox_Event_Friend_Connection_Status *_Nullable tox_event_friend_connection_status_new(const Memory *_Nonnull mem);
-Tox_Event_Friend_Lossless_Packet *_Nullable tox_event_friend_lossless_packet_new(const Memory *_Nonnull mem);
-Tox_Event_Friend_Lossy_Packet *_Nullable tox_event_friend_lossy_packet_new(const Memory *_Nonnull mem);
-Tox_Event_Friend_Message *_Nullable tox_event_friend_message_new(const Memory *_Nonnull mem);
-Tox_Event_Friend_Name *_Nullable tox_event_friend_name_new(const Memory *_Nonnull mem);
-Tox_Event_Friend_Read_Receipt *_Nullable tox_event_friend_read_receipt_new(const Memory *_Nonnull mem);
-Tox_Event_Friend_Request *_Nullable tox_event_friend_request_new(const Memory *_Nonnull mem);
-Tox_Event_Friend_Status_Message *_Nullable tox_event_friend_status_message_new(const Memory *_Nonnull mem);
-Tox_Event_Friend_Status *_Nullable tox_event_friend_status_new(const Memory *_Nonnull mem);
-Tox_Event_Friend_Typing *_Nullable tox_event_friend_typing_new(const Memory *_Nonnull mem);
-Tox_Event_Self_Connection_Status *_Nullable tox_event_self_connection_status_new(const Memory *_Nonnull mem);
-Tox_Event_Group_Peer_Name *_Nullable tox_event_group_peer_name_new(const Memory *_Nonnull mem);
-Tox_Event_Group_Peer_Status *_Nullable tox_event_group_peer_status_new(const Memory *_Nonnull mem);
-Tox_Event_Group_Topic *_Nullable tox_event_group_topic_new(const Memory *_Nonnull mem);
-Tox_Event_Group_Privacy_State *_Nullable tox_event_group_privacy_state_new(const Memory *_Nonnull mem);
-Tox_Event_Group_Voice_State *_Nullable tox_event_group_voice_state_new(const Memory *_Nonnull mem);
-Tox_Event_Group_Topic_Lock *_Nullable tox_event_group_topic_lock_new(const Memory *_Nonnull mem);
-Tox_Event_Group_Peer_Limit *_Nullable tox_event_group_peer_limit_new(const Memory *_Nonnull mem);
-Tox_Event_Group_Password *_Nullable tox_event_group_password_new(const Memory *_Nonnull mem);
-Tox_Event_Group_Message *_Nullable tox_event_group_message_new(const Memory *_Nonnull mem);
-Tox_Event_Group_Private_Message *_Nullable tox_event_group_private_message_new(const Memory *_Nonnull mem);
-Tox_Event_Group_Custom_Packet *_Nullable tox_event_group_custom_packet_new(const Memory *_Nonnull mem);
-Tox_Event_Group_Custom_Private_Packet *_Nullable tox_event_group_custom_private_packet_new(const Memory *_Nonnull mem);
-Tox_Event_Group_Invite *_Nullable tox_event_group_invite_new(const Memory *_Nonnull mem);
-Tox_Event_Group_Peer_Join *_Nullable tox_event_group_peer_join_new(const Memory *_Nonnull mem);
-Tox_Event_Group_Peer_Exit *_Nullable tox_event_group_peer_exit_new(const Memory *_Nonnull mem);
-Tox_Event_Group_Self_Join *_Nullable tox_event_group_self_join_new(const Memory *_Nonnull mem);
-Tox_Event_Group_Join_Fail *_Nullable tox_event_group_join_fail_new(const Memory *_Nonnull mem);
-Tox_Event_Group_Moderation *_Nullable tox_event_group_moderation_new(const Memory *_Nonnull mem);
-Tox_Event_Dht_Nodes_Response *_Nullable tox_event_dht_nodes_response_new(const Memory *_Nonnull mem);
+typedef struct Tox_Event_Conference_Message Tox_Event_Conference_Message;
+uint32_t tox_event_conference_message_get_conference_number(
+    const Tox_Event_Conference_Message *_Nonnull conference_message);
+uint32_t tox_event_conference_message_get_peer_number(
+    const Tox_Event_Conference_Message *_Nonnull conference_message);
+Tox_Message_Type tox_event_conference_message_get_type(
+    const Tox_Event_Conference_Message *_Nonnull conference_message);
+const uint8_t *_Nullable tox_event_conference_message_get_message(
+    const Tox_Event_Conference_Message *_Nonnull conference_message);
+uint32_t tox_event_conference_message_get_message_length(
+    const Tox_Event_Conference_Message *_Nonnull conference_message);
+
+typedef struct Tox_Event_Conference_Peer_List_Changed Tox_Event_Conference_Peer_List_Changed;
+uint32_t tox_event_conference_peer_list_changed_get_conference_number(
+    const Tox_Event_Conference_Peer_List_Changed *_Nonnull conference_peer_list_changed);
+
+typedef struct Tox_Event_Conference_Peer_Name Tox_Event_Conference_Peer_Name;
+uint32_t tox_event_conference_peer_name_get_conference_number(
+    const Tox_Event_Conference_Peer_Name *_Nonnull conference_peer_name);
+uint32_t tox_event_conference_peer_name_get_peer_number(
+    const Tox_Event_Conference_Peer_Name *_Nonnull conference_peer_name);
+const uint8_t *_Nullable tox_event_conference_peer_name_get_name(
+    const Tox_Event_Conference_Peer_Name *_Nonnull conference_peer_name);
+uint32_t tox_event_conference_peer_name_get_name_length(
+    const Tox_Event_Conference_Peer_Name *_Nonnull conference_peer_name);
+
+typedef struct Tox_Event_Conference_Title Tox_Event_Conference_Title;
+uint32_t tox_event_conference_title_get_conference_number(
+    const Tox_Event_Conference_Title *_Nonnull conference_title);
+uint32_t tox_event_conference_title_get_peer_number(
+    const Tox_Event_Conference_Title *_Nonnull conference_title);
+const uint8_t *_Nullable tox_event_conference_title_get_title(
+    const Tox_Event_Conference_Title *_Nonnull conference_title);
+uint32_t tox_event_conference_title_get_title_length(
+    const Tox_Event_Conference_Title *_Nonnull conference_title);
+
+typedef struct Tox_Event_File_Chunk_Request Tox_Event_File_Chunk_Request;
+uint32_t tox_event_file_chunk_request_get_friend_number(
+    const Tox_Event_File_Chunk_Request *_Nonnull file_chunk_request);
+uint32_t tox_event_file_chunk_request_get_file_number(
+    const Tox_Event_File_Chunk_Request *_Nonnull file_chunk_request);
+uint64_t tox_event_file_chunk_request_get_position(
+    const Tox_Event_File_Chunk_Request *_Nonnull file_chunk_request);
+uint16_t tox_event_file_chunk_request_get_length(
+    const Tox_Event_File_Chunk_Request *_Nonnull file_chunk_request);
+
+typedef struct Tox_Event_File_Recv Tox_Event_File_Recv;
+uint32_t tox_event_file_recv_get_friend_number(
+    const Tox_Event_File_Recv *_Nonnull file_recv);
+uint32_t tox_event_file_recv_get_file_number(
+    const Tox_Event_File_Recv *_Nonnull file_recv);
+uint32_t tox_event_file_recv_get_kind(
+    const Tox_Event_File_Recv *_Nonnull file_recv);
+uint64_t tox_event_file_recv_get_file_size(
+    const Tox_Event_File_Recv *_Nonnull file_recv);
+const uint8_t *_Nullable tox_event_file_recv_get_filename(
+    const Tox_Event_File_Recv *_Nonnull file_recv);
+uint32_t tox_event_file_recv_get_filename_length(
+    const Tox_Event_File_Recv *_Nonnull file_recv);
+
+typedef struct Tox_Event_File_Recv_Chunk Tox_Event_File_Recv_Chunk;
+uint32_t tox_event_file_recv_chunk_get_friend_number(
+    const Tox_Event_File_Recv_Chunk *_Nonnull file_recv_chunk);
+uint32_t tox_event_file_recv_chunk_get_file_number(
+    const Tox_Event_File_Recv_Chunk *_Nonnull file_recv_chunk);
+uint64_t tox_event_file_recv_chunk_get_position(
+    const Tox_Event_File_Recv_Chunk *_Nonnull file_recv_chunk);
+const uint8_t *_Nullable tox_event_file_recv_chunk_get_data(
+    const Tox_Event_File_Recv_Chunk *_Nonnull file_recv_chunk);
+uint32_t tox_event_file_recv_chunk_get_data_length(
+    const Tox_Event_File_Recv_Chunk *_Nonnull file_recv_chunk);
+
+typedef struct Tox_Event_File_Recv_Control Tox_Event_File_Recv_Control;
+uint32_t tox_event_file_recv_control_get_friend_number(
+    const Tox_Event_File_Recv_Control *_Nonnull file_recv_control);
+uint32_t tox_event_file_recv_control_get_file_number(
+    const Tox_Event_File_Recv_Control *_Nonnull file_recv_control);
+Tox_File_Control tox_event_file_recv_control_get_control(
+    const Tox_Event_File_Recv_Control *_Nonnull file_recv_control);
+
+typedef struct Tox_Event_Friend_Connection_Status Tox_Event_Friend_Connection_Status;
+uint32_t tox_event_friend_connection_status_get_friend_number(
+    const Tox_Event_Friend_Connection_Status *_Nonnull friend_connection_status);
+Tox_Connection tox_event_friend_connection_status_get_connection_status(
+    const Tox_Event_Friend_Connection_Status *_Nonnull friend_connection_status);
+
+typedef struct Tox_Event_Friend_Lossless_Packet Tox_Event_Friend_Lossless_Packet;
+uint32_t tox_event_friend_lossless_packet_get_friend_number(
+    const Tox_Event_Friend_Lossless_Packet *_Nonnull friend_lossless_packet);
+const uint8_t *_Nullable tox_event_friend_lossless_packet_get_data(
+    const Tox_Event_Friend_Lossless_Packet *_Nonnull friend_lossless_packet);
+uint32_t tox_event_friend_lossless_packet_get_data_length(
+    const Tox_Event_Friend_Lossless_Packet *_Nonnull friend_lossless_packet);
+
+typedef struct Tox_Event_Friend_Lossy_Packet Tox_Event_Friend_Lossy_Packet;
+uint32_t tox_event_friend_lossy_packet_get_friend_number(
+    const Tox_Event_Friend_Lossy_Packet *_Nonnull friend_lossy_packet);
+const uint8_t *_Nullable tox_event_friend_lossy_packet_get_data(
+    const Tox_Event_Friend_Lossy_Packet *_Nonnull friend_lossy_packet);
+uint32_t tox_event_friend_lossy_packet_get_data_length(
+    const Tox_Event_Friend_Lossy_Packet *_Nonnull friend_lossy_packet);
+
+typedef struct Tox_Event_Friend_Message Tox_Event_Friend_Message;
+uint32_t tox_event_friend_message_get_friend_number(
+    const Tox_Event_Friend_Message *_Nonnull friend_message);
+Tox_Message_Type tox_event_friend_message_get_type(
+    const Tox_Event_Friend_Message *_Nonnull friend_message);
+const uint8_t *_Nullable tox_event_friend_message_get_message(
+    const Tox_Event_Friend_Message *_Nonnull friend_message);
+uint32_t tox_event_friend_message_get_message_length(
+    const Tox_Event_Friend_Message *_Nonnull friend_message);
+
+typedef struct Tox_Event_Friend_Name Tox_Event_Friend_Name;
+uint32_t tox_event_friend_name_get_friend_number(
+    const Tox_Event_Friend_Name *_Nonnull friend_name);
+const uint8_t *_Nullable tox_event_friend_name_get_name(
+    const Tox_Event_Friend_Name *_Nonnull friend_name);
+uint32_t tox_event_friend_name_get_name_length(
+    const Tox_Event_Friend_Name *_Nonnull friend_name);
+
+typedef struct Tox_Event_Friend_Read_Receipt Tox_Event_Friend_Read_Receipt;
+uint32_t tox_event_friend_read_receipt_get_friend_number(
+    const Tox_Event_Friend_Read_Receipt *_Nonnull friend_read_receipt);
+uint32_t tox_event_friend_read_receipt_get_message_id(
+    const Tox_Event_Friend_Read_Receipt *_Nonnull friend_read_receipt);
+
+typedef struct Tox_Event_Friend_Request Tox_Event_Friend_Request;
+const uint8_t *_Nonnull tox_event_friend_request_get_public_key(
+    const Tox_Event_Friend_Request *_Nonnull friend_request);
+const uint8_t *_Nullable tox_event_friend_request_get_message(
+    const Tox_Event_Friend_Request *_Nonnull friend_request);
+uint32_t tox_event_friend_request_get_message_length(
+    const Tox_Event_Friend_Request *_Nonnull friend_request);
+
+typedef struct Tox_Event_Friend_Status Tox_Event_Friend_Status;
+uint32_t tox_event_friend_status_get_friend_number(
+    const Tox_Event_Friend_Status *_Nonnull friend_status);
+Tox_User_Status tox_event_friend_status_get_status(
+    const Tox_Event_Friend_Status *_Nonnull friend_status);
+
+typedef struct Tox_Event_Friend_Status_Message Tox_Event_Friend_Status_Message;
+uint32_t tox_event_friend_status_message_get_friend_number(
+    const Tox_Event_Friend_Status_Message *_Nonnull friend_status_message);
+const uint8_t *_Nullable tox_event_friend_status_message_get_message(
+    const Tox_Event_Friend_Status_Message *_Nonnull friend_status_message);
+uint32_t tox_event_friend_status_message_get_message_length(
+    const Tox_Event_Friend_Status_Message *_Nonnull friend_status_message);
+
+typedef struct Tox_Event_Friend_Typing Tox_Event_Friend_Typing;
+uint32_t tox_event_friend_typing_get_friend_number(
+    const Tox_Event_Friend_Typing *_Nonnull friend_typing);
+bool tox_event_friend_typing_get_typing(
+    const Tox_Event_Friend_Typing *_Nonnull friend_typing);
+
+typedef struct Tox_Event_Self_Connection_Status Tox_Event_Self_Connection_Status;
+Tox_Connection tox_event_self_connection_status_get_connection_status(
+    const Tox_Event_Self_Connection_Status *_Nonnull self_connection_status);
+
+typedef struct Tox_Event_Group_Peer_Name Tox_Event_Group_Peer_Name;
+uint32_t tox_event_group_peer_name_get_group_number(
+    const Tox_Event_Group_Peer_Name *_Nonnull group_peer_name);
+uint32_t tox_event_group_peer_name_get_peer_id(
+    const Tox_Event_Group_Peer_Name *_Nonnull group_peer_name);
+const uint8_t *_Nullable tox_event_group_peer_name_get_name(
+    const Tox_Event_Group_Peer_Name *_Nonnull group_peer_name);
+uint32_t tox_event_group_peer_name_get_name_length(
+    const Tox_Event_Group_Peer_Name *_Nonnull group_peer_name);
+
+typedef struct Tox_Event_Group_Peer_Status Tox_Event_Group_Peer_Status;
+uint32_t tox_event_group_peer_status_get_group_number(
+    const Tox_Event_Group_Peer_Status *_Nonnull group_peer_status);
+uint32_t tox_event_group_peer_status_get_peer_id(
+    const Tox_Event_Group_Peer_Status *_Nonnull group_peer_status);
+Tox_User_Status tox_event_group_peer_status_get_status(
+    const Tox_Event_Group_Peer_Status *_Nonnull group_peer_status);
+
+typedef struct Tox_Event_Group_Topic Tox_Event_Group_Topic;
+uint32_t tox_event_group_topic_get_group_number(
+    const Tox_Event_Group_Topic *_Nonnull group_topic);
+uint32_t tox_event_group_topic_get_peer_id(
+    const Tox_Event_Group_Topic *_Nonnull group_topic);
+const uint8_t *_Nullable tox_event_group_topic_get_topic(
+    const Tox_Event_Group_Topic *_Nonnull group_topic);
+uint32_t tox_event_group_topic_get_topic_length(
+    const Tox_Event_Group_Topic *_Nonnull group_topic);
+
+typedef struct Tox_Event_Group_Privacy_State Tox_Event_Group_Privacy_State;
+uint32_t tox_event_group_privacy_state_get_group_number(
+    const Tox_Event_Group_Privacy_State *_Nonnull group_privacy_state);
+Tox_Group_Privacy_State tox_event_group_privacy_state_get_privacy_state(
+    const Tox_Event_Group_Privacy_State *_Nonnull group_privacy_state);
+
+typedef struct Tox_Event_Group_Voice_State Tox_Event_Group_Voice_State;
+uint32_t tox_event_group_voice_state_get_group_number(
+    const Tox_Event_Group_Voice_State *_Nonnull group_voice_state);
+Tox_Group_Voice_State tox_event_group_voice_state_get_voice_state(
+    const Tox_Event_Group_Voice_State *_Nonnull group_voice_state);
+
+typedef struct Tox_Event_Group_Topic_Lock Tox_Event_Group_Topic_Lock;
+uint32_t tox_event_group_topic_lock_get_group_number(
+    const Tox_Event_Group_Topic_Lock *_Nonnull group_topic_lock);
+Tox_Group_Topic_Lock tox_event_group_topic_lock_get_topic_lock(
+    const Tox_Event_Group_Topic_Lock *_Nonnull group_topic_lock);
+
+typedef struct Tox_Event_Group_Peer_Limit Tox_Event_Group_Peer_Limit;
+uint32_t tox_event_group_peer_limit_get_group_number(
+    const Tox_Event_Group_Peer_Limit *_Nonnull group_peer_limit);
+uint32_t tox_event_group_peer_limit_get_peer_limit(
+    const Tox_Event_Group_Peer_Limit *_Nonnull group_peer_limit);
+
+typedef struct Tox_Event_Group_Password Tox_Event_Group_Password;
+uint32_t tox_event_group_password_get_group_number(
+    const Tox_Event_Group_Password *_Nonnull group_password);
+const uint8_t *_Nullable tox_event_group_password_get_password(
+    const Tox_Event_Group_Password *_Nonnull group_password);
+uint32_t tox_event_group_password_get_password_length(
+    const Tox_Event_Group_Password *_Nonnull group_password);
+
+typedef struct Tox_Event_Group_Message Tox_Event_Group_Message;
+uint32_t tox_event_group_message_get_group_number(
+    const Tox_Event_Group_Message *_Nonnull group_message);
+uint32_t tox_event_group_message_get_peer_id(
+    const Tox_Event_Group_Message *_Nonnull group_message);
+Tox_Message_Type tox_event_group_message_get_message_type(
+    const Tox_Event_Group_Message *_Nonnull group_message);
+const uint8_t *_Nullable tox_event_group_message_get_message(
+    const Tox_Event_Group_Message *_Nonnull group_message);
+uint32_t tox_event_group_message_get_message_length(
+    const Tox_Event_Group_Message *_Nonnull group_message);
+uint32_t tox_event_group_message_get_message_id(
+    const Tox_Event_Group_Message *_Nonnull group_message);
+
+typedef struct Tox_Event_Group_Private_Message Tox_Event_Group_Private_Message;
+uint32_t tox_event_group_private_message_get_group_number(
+    const Tox_Event_Group_Private_Message *_Nonnull group_private_message);
+uint32_t tox_event_group_private_message_get_peer_id(
+    const Tox_Event_Group_Private_Message *_Nonnull group_private_message);
+Tox_Message_Type tox_event_group_private_message_get_message_type(
+    const Tox_Event_Group_Private_Message *_Nonnull group_private_message);
+const uint8_t *_Nullable tox_event_group_private_message_get_message(
+    const Tox_Event_Group_Private_Message *_Nonnull group_private_message);
+uint32_t tox_event_group_private_message_get_message_length(
+    const Tox_Event_Group_Private_Message *_Nonnull group_private_message);
+uint32_t tox_event_group_private_message_get_message_id(
+    const Tox_Event_Group_Private_Message *_Nonnull group_private_message);
+
+typedef struct Tox_Event_Group_Custom_Packet Tox_Event_Group_Custom_Packet;
+uint32_t tox_event_group_custom_packet_get_group_number(
+    const Tox_Event_Group_Custom_Packet *_Nonnull group_custom_packet);
+uint32_t tox_event_group_custom_packet_get_peer_id(
+    const Tox_Event_Group_Custom_Packet *_Nonnull group_custom_packet);
+const uint8_t *_Nullable tox_event_group_custom_packet_get_data(
+    const Tox_Event_Group_Custom_Packet *_Nonnull group_custom_packet);
+uint32_t tox_event_group_custom_packet_get_data_length(
+    const Tox_Event_Group_Custom_Packet *_Nonnull group_custom_packet);
+
+typedef struct Tox_Event_Group_Custom_Private_Packet Tox_Event_Group_Custom_Private_Packet;
+uint32_t tox_event_group_custom_private_packet_get_group_number(
+    const Tox_Event_Group_Custom_Private_Packet *_Nonnull group_custom_private_packet);
+uint32_t tox_event_group_custom_private_packet_get_peer_id(
+    const Tox_Event_Group_Custom_Private_Packet *_Nonnull group_custom_private_packet);
+const uint8_t *_Nullable tox_event_group_custom_private_packet_get_data(
+    const Tox_Event_Group_Custom_Private_Packet *_Nonnull group_custom_private_packet);
+uint32_t tox_event_group_custom_private_packet_get_data_length(
+    const Tox_Event_Group_Custom_Private_Packet *_Nonnull group_custom_private_packet);
+
+typedef struct Tox_Event_Group_Invite Tox_Event_Group_Invite;
+uint32_t tox_event_group_invite_get_friend_number(
+    const Tox_Event_Group_Invite *_Nonnull group_invite);
+const uint8_t *_Nullable tox_event_group_invite_get_invite_data(
+    const Tox_Event_Group_Invite *_Nonnull group_invite);
+uint32_t tox_event_group_invite_get_invite_data_length(
+    const Tox_Event_Group_Invite *_Nonnull group_invite);
+const uint8_t *_Nullable tox_event_group_invite_get_group_name(
+    const Tox_Event_Group_Invite *_Nonnull group_invite);
+uint32_t tox_event_group_invite_get_group_name_length(
+    const Tox_Event_Group_Invite *_Nonnull group_invite);
+
+typedef struct Tox_Event_Group_Peer_Join Tox_Event_Group_Peer_Join;
+uint32_t tox_event_group_peer_join_get_group_number(
+    const Tox_Event_Group_Peer_Join *_Nonnull group_peer_join);
+uint32_t tox_event_group_peer_join_get_peer_id(
+    const Tox_Event_Group_Peer_Join *_Nonnull group_peer_join);
+
+typedef struct Tox_Event_Group_Peer_Exit Tox_Event_Group_Peer_Exit;
+uint32_t tox_event_group_peer_exit_get_group_number(
+    const Tox_Event_Group_Peer_Exit *_Nonnull group_peer_exit);
+uint32_t tox_event_group_peer_exit_get_peer_id(
+    const Tox_Event_Group_Peer_Exit *_Nonnull group_peer_exit);
+Tox_Group_Exit_Type tox_event_group_peer_exit_get_exit_type(
+    const Tox_Event_Group_Peer_Exit *_Nonnull group_peer_exit);
+const uint8_t *_Nullable tox_event_group_peer_exit_get_name(
+    const Tox_Event_Group_Peer_Exit *_Nonnull group_peer_exit);
+uint32_t tox_event_group_peer_exit_get_name_length(
+    const Tox_Event_Group_Peer_Exit *_Nonnull group_peer_exit);
+const uint8_t *_Nullable tox_event_group_peer_exit_get_part_message(
+    const Tox_Event_Group_Peer_Exit *_Nonnull group_peer_exit);
+uint32_t tox_event_group_peer_exit_get_part_message_length(
+    const Tox_Event_Group_Peer_Exit *_Nonnull group_peer_exit);
+
+typedef struct Tox_Event_Group_Self_Join Tox_Event_Group_Self_Join;
+uint32_t tox_event_group_self_join_get_group_number(
+    const Tox_Event_Group_Self_Join *_Nonnull group_self_join);
+
+typedef struct Tox_Event_Group_Join_Fail Tox_Event_Group_Join_Fail;
+uint32_t tox_event_group_join_fail_get_group_number(
+    const Tox_Event_Group_Join_Fail *_Nonnull group_join_fail);
+Tox_Group_Join_Fail tox_event_group_join_fail_get_fail_type(
+    const Tox_Event_Group_Join_Fail *_Nonnull group_join_fail);
+
+typedef struct Tox_Event_Group_Moderation Tox_Event_Group_Moderation;
+uint32_t tox_event_group_moderation_get_group_number(
+    const Tox_Event_Group_Moderation *_Nonnull group_moderation);
+uint32_t tox_event_group_moderation_get_source_peer_id(
+    const Tox_Event_Group_Moderation *_Nonnull group_moderation);
+uint32_t tox_event_group_moderation_get_target_peer_id(
+    const Tox_Event_Group_Moderation *_Nonnull group_moderation);
+Tox_Group_Mod_Event tox_event_group_moderation_get_mod_type(
+    const Tox_Event_Group_Moderation *_Nonnull group_moderation);
+
+typedef struct Tox_Event_Dht_Nodes_Response Tox_Event_Dht_Nodes_Response;
+const uint8_t *_Nonnull tox_event_dht_nodes_response_get_public_key(
+    const Tox_Event_Dht_Nodes_Response *_Nonnull dht_nodes_response);
+const char *_Nullable tox_event_dht_nodes_response_get_ip(
+    const Tox_Event_Dht_Nodes_Response *_Nonnull dht_nodes_response);
+uint32_t tox_event_dht_nodes_response_get_ip_length(
+    const Tox_Event_Dht_Nodes_Response *_Nonnull dht_nodes_response);
+Tox_Port tox_event_dht_nodes_response_get_port(
+    const Tox_Event_Dht_Nodes_Response *_Nonnull dht_nodes_response);
+
+typedef enum Tox_Event_Type {
+    TOX_EVENT_TYPE_SELF_CONNECTION_STATUS        = 0,
+
+    TOX_EVENT_TYPE_FRIEND_REQUEST                = 1,
+    TOX_EVENT_TYPE_FRIEND_CONNECTION_STATUS      = 2,
+    TOX_EVENT_TYPE_FRIEND_LOSSY_PACKET           = 3,
+    TOX_EVENT_TYPE_FRIEND_LOSSLESS_PACKET        = 4,
+
+    TOX_EVENT_TYPE_FRIEND_NAME                   = 5,
+    TOX_EVENT_TYPE_FRIEND_STATUS                 = 6,
+    TOX_EVENT_TYPE_FRIEND_STATUS_MESSAGE         = 7,
+
+    TOX_EVENT_TYPE_FRIEND_MESSAGE                = 8,
+    TOX_EVENT_TYPE_FRIEND_READ_RECEIPT           = 9,
+    TOX_EVENT_TYPE_FRIEND_TYPING                 = 10,
+
+    TOX_EVENT_TYPE_FILE_CHUNK_REQUEST            = 11,
+    TOX_EVENT_TYPE_FILE_RECV                     = 12,
+    TOX_EVENT_TYPE_FILE_RECV_CHUNK               = 13,
+    TOX_EVENT_TYPE_FILE_RECV_CONTROL             = 14,
+
+    TOX_EVENT_TYPE_CONFERENCE_INVITE             = 15,
+    TOX_EVENT_TYPE_CONFERENCE_CONNECTED          = 16,
+    TOX_EVENT_TYPE_CONFERENCE_PEER_LIST_CHANGED  = 17,
+    TOX_EVENT_TYPE_CONFERENCE_PEER_NAME          = 18,
+    TOX_EVENT_TYPE_CONFERENCE_TITLE              = 19,
+
+    TOX_EVENT_TYPE_CONFERENCE_MESSAGE            = 20,
+
+    TOX_EVENT_TYPE_GROUP_PEER_NAME               = 21,
+    TOX_EVENT_TYPE_GROUP_PEER_STATUS             = 22,
+    TOX_EVENT_TYPE_GROUP_TOPIC                   = 23,
+    TOX_EVENT_TYPE_GROUP_PRIVACY_STATE           = 24,
+    TOX_EVENT_TYPE_GROUP_VOICE_STATE             = 25,
+    TOX_EVENT_TYPE_GROUP_TOPIC_LOCK              = 26,
+    TOX_EVENT_TYPE_GROUP_PEER_LIMIT              = 27,
+    TOX_EVENT_TYPE_GROUP_PASSWORD                = 28,
+    TOX_EVENT_TYPE_GROUP_MESSAGE                 = 29,
+    TOX_EVENT_TYPE_GROUP_PRIVATE_MESSAGE         = 30,
+    TOX_EVENT_TYPE_GROUP_CUSTOM_PACKET           = 31,
+    TOX_EVENT_TYPE_GROUP_CUSTOM_PRIVATE_PACKET   = 32,
+    TOX_EVENT_TYPE_GROUP_INVITE                  = 33,
+    TOX_EVENT_TYPE_GROUP_PEER_JOIN               = 34,
+    TOX_EVENT_TYPE_GROUP_PEER_EXIT               = 35,
+    TOX_EVENT_TYPE_GROUP_SELF_JOIN               = 36,
+    TOX_EVENT_TYPE_GROUP_JOIN_FAIL               = 37,
+    TOX_EVENT_TYPE_GROUP_MODERATION              = 38,
+
+    TOX_EVENT_TYPE_DHT_NODES_RESPONSE            = 39,
+
+    TOX_EVENT_TYPE_INVALID                       = 255,
+} Tox_Event_Type;
+
+const char *_Nonnull tox_event_type_to_string(Tox_Event_Type value);
 
 /**
- * Destructor.
+ * A single Tox core event.
+ *
+ * It could contain any of the above event types. Use `tox_event_get_type` to
+ * find out which one it is, then use one of the `get` functions to get the
+ * actual event object out. The `get` functions will return NULL in case of type
+ * mismatch.
  */
-void tox_event_destruct(Tox_Event *_Nullable event, const Memory *_Nonnull mem);
+typedef struct Tox_Event Tox_Event;
 
-void tox_event_conference_connected_free(Tox_Event_Conference_Connected *_Nullable conference_connected, const Memory *_Nonnull mem);
-void tox_event_conference_invite_free(Tox_Event_Conference_Invite *_Nullable conference_invite, const Memory *_Nonnull mem);
-void tox_event_conference_message_free(Tox_Event_Conference_Message *_Nullable conference_message, const Memory *_Nonnull mem);
-void tox_event_conference_peer_list_changed_free(Tox_Event_Conference_Peer_List_Changed *_Nullable conference_peer_list_changed, const Memory *_Nonnull mem);
-void tox_event_conference_peer_name_free(Tox_Event_Conference_Peer_Name *_Nullable conference_peer_name, const Memory *_Nonnull mem);
-void tox_event_conference_title_free(Tox_Event_Conference_Title *_Nullable conference_title, const Memory *_Nonnull mem);
-void tox_event_file_chunk_request_free(Tox_Event_File_Chunk_Request *_Nullable file_chunk_request, const Memory *_Nonnull mem);
-void tox_event_file_recv_chunk_free(Tox_Event_File_Recv_Chunk *_Nullable file_recv_chunk, const Memory *_Nonnull mem);
-void tox_event_file_recv_control_free(Tox_Event_File_Recv_Control *_Nullable file_recv_control, const Memory *_Nonnull mem);
-void tox_event_file_recv_free(Tox_Event_File_Recv *_Nullable file_recv, const Memory *_Nonnull mem);
-void tox_event_friend_connection_status_free(Tox_Event_Friend_Connection_Status *_Nullable friend_connection_status, const Memory *_Nonnull mem);
-void tox_event_friend_lossless_packet_free(Tox_Event_Friend_Lossless_Packet *_Nullable friend_lossless_packet, const Memory *_Nonnull mem);
-void tox_event_friend_lossy_packet_free(Tox_Event_Friend_Lossy_Packet *_Nullable friend_lossy_packet, const Memory *_Nonnull mem);
-void tox_event_friend_message_free(Tox_Event_Friend_Message *_Nullable friend_message, const Memory *_Nonnull mem);
-void tox_event_friend_name_free(Tox_Event_Friend_Name *_Nullable friend_name, const Memory *_Nonnull mem);
-void tox_event_friend_read_receipt_free(Tox_Event_Friend_Read_Receipt *_Nullable friend_read_receipt, const Memory *_Nonnull mem);
-void tox_event_friend_request_free(Tox_Event_Friend_Request *_Nullable friend_request, const Memory *_Nonnull mem);
-void tox_event_friend_status_message_free(Tox_Event_Friend_Status_Message *_Nullable friend_status_message, const Memory *_Nonnull mem);
-void tox_event_friend_status_free(Tox_Event_Friend_Status *_Nullable friend_status, const Memory *_Nonnull mem);
-void tox_event_friend_typing_free(Tox_Event_Friend_Typing *_Nullable friend_typing, const Memory *_Nonnull mem);
-void tox_event_self_connection_status_free(Tox_Event_Self_Connection_Status *_Nullable self_connection_status, const Memory *_Nonnull mem);
-void tox_event_group_peer_name_free(Tox_Event_Group_Peer_Name *_Nullable group_peer_name, const Memory *_Nonnull mem);
-void tox_event_group_peer_status_free(Tox_Event_Group_Peer_Status *_Nullable group_peer_status, const Memory *_Nonnull mem);
-void tox_event_group_topic_free(Tox_Event_Group_Topic *_Nullable group_topic, const Memory *_Nonnull mem);
-void tox_event_group_privacy_state_free(Tox_Event_Group_Privacy_State *_Nullable group_privacy_state, const Memory *_Nonnull mem);
-void tox_event_group_voice_state_free(Tox_Event_Group_Voice_State *_Nullable group_voice_state, const Memory *_Nonnull mem);
-void tox_event_group_topic_lock_free(Tox_Event_Group_Topic_Lock *_Nullable group_topic_lock, const Memory *_Nonnull mem);
-void tox_event_group_peer_limit_free(Tox_Event_Group_Peer_Limit *_Nullable group_peer_limit, const Memory *_Nonnull mem);
-void tox_event_group_password_free(Tox_Event_Group_Password *_Nullable group_password, const Memory *_Nonnull mem);
-void tox_event_group_message_free(Tox_Event_Group_Message *_Nullable group_message, const Memory *_Nonnull mem);
-void tox_event_group_private_message_free(Tox_Event_Group_Private_Message *_Nullable group_private_message, const Memory *_Nonnull mem);
-void tox_event_group_custom_packet_free(Tox_Event_Group_Custom_Packet *_Nullable group_custom_packet, const Memory *_Nonnull mem);
-void tox_event_group_custom_private_packet_free(Tox_Event_Group_Custom_Private_Packet *_Nullable group_custom_private_packet, const Memory *_Nonnull mem);
-void tox_event_group_invite_free(Tox_Event_Group_Invite *_Nullable group_invite, const Memory *_Nonnull mem);
-void tox_event_group_peer_join_free(Tox_Event_Group_Peer_Join *_Nullable group_peer_join, const Memory *_Nonnull mem);
-void tox_event_group_peer_exit_free(Tox_Event_Group_Peer_Exit *_Nullable group_peer_exit, const Memory *_Nonnull mem);
-void tox_event_group_self_join_free(Tox_Event_Group_Self_Join *_Nullable group_self_join, const Memory *_Nonnull mem);
-void tox_event_group_join_fail_free(Tox_Event_Group_Join_Fail *_Nullable group_join_fail, const Memory *_Nonnull mem);
-void tox_event_group_moderation_free(Tox_Event_Group_Moderation *_Nullable group_moderation, const Memory *_Nonnull mem);
-void tox_event_dht_nodes_response_free(Tox_Event_Dht_Nodes_Response *_Nullable dht_nodes_response, const Memory *_Nonnull mem);
+Tox_Event_Type tox_event_get_type(const Tox_Event *_Nonnull event);
 
-/**
- * Pack into msgpack.
- */
-bool tox_event_pack(const Tox_Event *_Nonnull event, Bin_Pack *_Nonnull bp);
-
-bool tox_event_conference_connected_pack(const Tox_Event_Conference_Connected *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_conference_invite_pack(const Tox_Event_Conference_Invite *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_conference_message_pack(const Tox_Event_Conference_Message *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_conference_peer_list_changed_pack(const Tox_Event_Conference_Peer_List_Changed *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_conference_peer_name_pack(const Tox_Event_Conference_Peer_Name *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_conference_title_pack(const Tox_Event_Conference_Title *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_file_chunk_request_pack(const Tox_Event_File_Chunk_Request *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_file_recv_chunk_pack(const Tox_Event_File_Recv_Chunk *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_file_recv_control_pack(const Tox_Event_File_Recv_Control *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_file_recv_pack(const Tox_Event_File_Recv *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_friend_connection_status_pack(const Tox_Event_Friend_Connection_Status *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_friend_lossless_packet_pack(const Tox_Event_Friend_Lossless_Packet *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_friend_lossy_packet_pack(const Tox_Event_Friend_Lossy_Packet *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_friend_message_pack(const Tox_Event_Friend_Message *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_friend_name_pack(const Tox_Event_Friend_Name *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_friend_read_receipt_pack(const Tox_Event_Friend_Read_Receipt *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_friend_request_pack(const Tox_Event_Friend_Request *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_friend_status_message_pack(const Tox_Event_Friend_Status_Message *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_friend_status_pack(const Tox_Event_Friend_Status *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_friend_typing_pack(const Tox_Event_Friend_Typing *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_self_connection_status_pack(const Tox_Event_Self_Connection_Status *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_group_peer_name_pack(const Tox_Event_Group_Peer_Name *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_group_peer_status_pack(const Tox_Event_Group_Peer_Status *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_group_topic_pack(const Tox_Event_Group_Topic *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_group_privacy_state_pack(const Tox_Event_Group_Privacy_State *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_group_voice_state_pack(const Tox_Event_Group_Voice_State *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_group_topic_lock_pack(const Tox_Event_Group_Topic_Lock *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_group_peer_limit_pack(const Tox_Event_Group_Peer_Limit *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_group_password_pack(const Tox_Event_Group_Password *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_group_message_pack(const Tox_Event_Group_Message *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_group_private_message_pack(const Tox_Event_Group_Private_Message *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_group_custom_packet_pack(const Tox_Event_Group_Custom_Packet *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_group_custom_private_packet_pack(const Tox_Event_Group_Custom_Private_Packet *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_group_invite_pack(const Tox_Event_Group_Invite *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_group_peer_join_pack(const Tox_Event_Group_Peer_Join *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_group_peer_exit_pack(const Tox_Event_Group_Peer_Exit *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_group_self_join_pack(const Tox_Event_Group_Self_Join *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_group_join_fail_pack(const Tox_Event_Group_Join_Fail *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_group_moderation_pack(const Tox_Event_Group_Moderation *_Nonnull event, Bin_Pack *_Nonnull bp);
-bool tox_event_dht_nodes_response_pack(const Tox_Event_Dht_Nodes_Response *_Nonnull event, Bin_Pack *_Nonnull bp);
-
-/**
- * Unpack from msgpack.
- */
-bool tox_event_unpack_into(Tox_Event *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-
-bool tox_event_conference_connected_unpack(Tox_Event_Conference_Connected *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_conference_invite_unpack(Tox_Event_Conference_Invite *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_conference_message_unpack(Tox_Event_Conference_Message *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_conference_peer_list_changed_unpack(Tox_Event_Conference_Peer_List_Changed *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_conference_peer_name_unpack(Tox_Event_Conference_Peer_Name *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_conference_title_unpack(Tox_Event_Conference_Title *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_file_chunk_request_unpack(Tox_Event_File_Chunk_Request *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_file_recv_chunk_unpack(Tox_Event_File_Recv_Chunk *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_file_recv_control_unpack(Tox_Event_File_Recv_Control *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_file_recv_unpack(Tox_Event_File_Recv *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_friend_connection_status_unpack(Tox_Event_Friend_Connection_Status *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_friend_lossless_packet_unpack(Tox_Event_Friend_Lossless_Packet *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_friend_lossy_packet_unpack(Tox_Event_Friend_Lossy_Packet *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_friend_message_unpack(Tox_Event_Friend_Message *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_friend_name_unpack(Tox_Event_Friend_Name *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_friend_read_receipt_unpack(Tox_Event_Friend_Read_Receipt *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_friend_request_unpack(Tox_Event_Friend_Request *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_friend_status_message_unpack(Tox_Event_Friend_Status_Message *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_friend_status_unpack(Tox_Event_Friend_Status *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_friend_typing_unpack(Tox_Event_Friend_Typing *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_self_connection_status_unpack(Tox_Event_Self_Connection_Status *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_group_peer_name_unpack(Tox_Event_Group_Peer_Name *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_group_peer_status_unpack(Tox_Event_Group_Peer_Status *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_group_topic_unpack(Tox_Event_Group_Topic *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_group_privacy_state_unpack(Tox_Event_Group_Privacy_State *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_group_voice_state_unpack(Tox_Event_Group_Voice_State *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_group_topic_lock_unpack(Tox_Event_Group_Topic_Lock *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_group_peer_limit_unpack(Tox_Event_Group_Peer_Limit *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_group_password_unpack(Tox_Event_Group_Password *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_group_message_unpack(Tox_Event_Group_Message *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_group_private_message_unpack(Tox_Event_Group_Private_Message *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_group_custom_packet_unpack(Tox_Event_Group_Custom_Packet *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_group_custom_private_packet_unpack(Tox_Event_Group_Custom_Private_Packet *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_group_invite_unpack(Tox_Event_Group_Invite *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_group_peer_join_unpack(Tox_Event_Group_Peer_Join *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_group_peer_exit_unpack(Tox_Event_Group_Peer_Exit *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_group_self_join_unpack(Tox_Event_Group_Self_Join *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_group_join_fail_unpack(Tox_Event_Group_Join_Fail *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_group_moderation_unpack(Tox_Event_Group_Moderation *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-bool tox_event_dht_nodes_response_unpack(Tox_Event_Dht_Nodes_Response *_Nonnull *_Nonnull event, Bin_Unpack *_Nonnull bu, const Memory *_Nonnull mem);
-
-typedef struct Tox_Events_State Tox_Events_State;
-
-void tox_events_handle_conference_connected(Tox_Conference_Number conference_number, Tox_Events_State *_Nonnull state);
-void tox_events_handle_conference_invite(uint32_t friend_number, Tox_Conference_Type type, const uint8_t *_Nonnull cookie, size_t length, Tox_Events_State *_Nonnull state);
-void tox_events_handle_conference_message(uint32_t conference_number, uint32_t peer_number, Tox_Message_Type type, const uint8_t *_Nonnull message, size_t length, Tox_Events_State *_Nonnull state);
-void tox_events_handle_conference_peer_list_changed(uint32_t conference_number, Tox_Events_State *_Nonnull state);
-void tox_events_handle_conference_peer_name(uint32_t conference_number, uint32_t peer_number, const uint8_t *_Nonnull name, size_t length, Tox_Events_State *_Nonnull state);
-void tox_events_handle_conference_title(uint32_t conference_number, uint32_t peer_number, const uint8_t *_Nonnull title, size_t length, Tox_Events_State *_Nonnull state);
-void tox_events_handle_dht_nodes_response(const uint8_t *_Nonnull public_key, const char *_Nonnull ip, uint32_t ip_length, uint16_t port, Tox_Events_State *_Nonnull state);
-void tox_events_handle_file_chunk_request(uint32_t friend_number, uint32_t file_number, uint64_t position, size_t length, Tox_Events_State *_Nonnull state);
-void tox_events_handle_file_recv(uint32_t friend_number, uint32_t file_number, uint32_t kind, uint64_t file_size, const uint8_t *_Nonnull filename, size_t filename_length,
-                                 Tox_Events_State *_Nonnull state);
-void tox_events_handle_file_recv_chunk(uint32_t friend_number, uint32_t file_number, uint64_t position, const uint8_t *_Nullable data, size_t length, Tox_Events_State *_Nonnull state);
-void tox_events_handle_file_recv_control(uint32_t friend_number, uint32_t file_number, Tox_File_Control control, Tox_Events_State *_Nonnull state);
-void tox_events_handle_friend_connection_status(uint32_t friend_number, Tox_Connection connection_status, Tox_Events_State *_Nonnull state);
-void tox_events_handle_friend_lossless_packet(uint32_t friend_number, const uint8_t *_Nonnull data, size_t length, Tox_Events_State *_Nonnull state);
-void tox_events_handle_friend_lossy_packet(uint32_t friend_number, const uint8_t *_Nonnull data, size_t length, Tox_Events_State *_Nonnull state);
-void tox_events_handle_friend_message(uint32_t friend_number, Tox_Message_Type type, const uint8_t *_Nonnull message, size_t length, Tox_Events_State *_Nonnull state);
-void tox_events_handle_friend_name(uint32_t friend_number, const uint8_t *_Nonnull name, size_t length, Tox_Events_State *_Nonnull state);
-void tox_events_handle_friend_read_receipt(uint32_t friend_number, uint32_t message_id, Tox_Events_State *_Nonnull state);
-void tox_events_handle_friend_request(const uint8_t *_Nonnull public_key, const uint8_t *_Nonnull message, size_t length, Tox_Events_State *_Nonnull state);
-void tox_events_handle_friend_status(uint32_t friend_number, Tox_User_Status status, Tox_Events_State *_Nonnull state);
-void tox_events_handle_friend_status_message(uint32_t friend_number, const uint8_t *_Nonnull message, size_t length, Tox_Events_State *_Nonnull state);
-void tox_events_handle_friend_typing(uint32_t friend_number, bool typing, Tox_Events_State *_Nonnull state);
-void tox_events_handle_self_connection_status(Tox_Connection connection_status, Tox_Events_State *_Nonnull state);
-void tox_events_handle_group_peer_name(uint32_t group_number, uint32_t peer_id, const uint8_t *_Nonnull name, size_t name_length, Tox_Events_State *_Nonnull state);
-void tox_events_handle_group_peer_status(uint32_t group_number, uint32_t peer_id, Tox_User_Status status, Tox_Events_State *_Nonnull state);
-void tox_events_handle_group_topic(uint32_t group_number, uint32_t peer_id, const uint8_t *_Nonnull topic, size_t topic_length, Tox_Events_State *_Nonnull state);
-void tox_events_handle_group_privacy_state(uint32_t group_number, Tox_Group_Privacy_State privacy_state, Tox_Events_State *_Nonnull state);
-void tox_events_handle_group_voice_state(uint32_t group_number, Tox_Group_Voice_State voice_state, Tox_Events_State *_Nonnull state);
-void tox_events_handle_group_topic_lock(uint32_t group_number, Tox_Group_Topic_Lock topic_lock, Tox_Events_State *_Nonnull state);
-void tox_events_handle_group_peer_limit(uint32_t group_number, uint32_t peer_limit, Tox_Events_State *_Nonnull state);
-void tox_events_handle_group_password(uint32_t group_number, const uint8_t *_Nullable password, size_t password_length, Tox_Events_State *_Nonnull state);
-void tox_events_handle_group_message(uint32_t group_number, uint32_t peer_id, Tox_Message_Type message_type, const uint8_t *_Nonnull message, size_t message_length, uint32_t message_id,
-                                     Tox_Events_State *_Nonnull state);
-void tox_events_handle_group_private_message(uint32_t group_number, uint32_t peer_id, Tox_Message_Type message_type, const uint8_t *_Nonnull message, size_t message_length, uint32_t message_id,
-        Tox_Events_State *_Nonnull state);
-void tox_events_handle_group_custom_packet(uint32_t group_number, uint32_t peer_id, const uint8_t *_Nonnull data, size_t data_length, Tox_Events_State *_Nonnull state);
-void tox_events_handle_group_custom_private_packet(uint32_t group_number, uint32_t peer_id, const uint8_t *_Nonnull data, size_t data_length, Tox_Events_State *_Nonnull state);
-void tox_events_handle_group_invite(uint32_t friend_number, const uint8_t *_Nonnull invite_data, size_t invite_data_length, const uint8_t *_Nonnull group_name, size_t group_name_length,
-                                    Tox_Events_State *_Nonnull state);
-void tox_events_handle_group_peer_join(uint32_t group_number, uint32_t peer_id, Tox_Events_State *_Nonnull state);
-void tox_events_handle_group_peer_exit(uint32_t group_number, uint32_t peer_id, Tox_Group_Exit_Type exit_type, const uint8_t *_Nonnull name, size_t name_length, const uint8_t *_Nullable part_message,
-                                       size_t part_message_length, Tox_Events_State *_Nonnull state);
-void tox_events_handle_group_self_join(uint32_t group_number, Tox_Events_State *_Nonnull state);
-void tox_events_handle_group_join_fail(uint32_t group_number, Tox_Group_Join_Fail fail_type, Tox_Events_State *_Nonnull state);
-void tox_events_handle_group_moderation(uint32_t group_number, uint32_t source_peer_id, uint32_t target_peer_id, Tox_Group_Mod_Event mod_type, Tox_Events_State *_Nonnull state);
-
-void tox_events_handle_conference_connected_dispatch(Tox *_Nonnull tox, const Tox_Event_Conference_Connected *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_conference_invite_dispatch(Tox *_Nonnull tox, const Tox_Event_Conference_Invite *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_conference_message_dispatch(Tox *_Nonnull tox, const Tox_Event_Conference_Message *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_conference_peer_list_changed_dispatch(Tox *_Nonnull tox, const Tox_Event_Conference_Peer_List_Changed *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_conference_peer_name_dispatch(Tox *_Nonnull tox, const Tox_Event_Conference_Peer_Name *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_conference_title_dispatch(Tox *_Nonnull tox, const Tox_Event_Conference_Title *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_dht_nodes_response_dispatch(Tox *_Nonnull tox, const Tox_Event_Dht_Nodes_Response *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_file_chunk_request_dispatch(Tox *_Nonnull tox, const Tox_Event_File_Chunk_Request *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_file_recv_chunk_dispatch(Tox *_Nonnull tox, const Tox_Event_File_Recv_Chunk *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_file_recv_control_dispatch(Tox *_Nonnull tox, const Tox_Event_File_Recv_Control *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_file_recv_dispatch(Tox *_Nonnull tox, const Tox_Event_File_Recv *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_friend_connection_status_dispatch(Tox *_Nonnull tox, const Tox_Event_Friend_Connection_Status *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_friend_lossless_packet_dispatch(Tox *_Nonnull tox, const Tox_Event_Friend_Lossless_Packet *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_friend_lossy_packet_dispatch(Tox *_Nonnull tox, const Tox_Event_Friend_Lossy_Packet *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_friend_message_dispatch(Tox *_Nonnull tox, const Tox_Event_Friend_Message *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_friend_name_dispatch(Tox *_Nonnull tox, const Tox_Event_Friend_Name *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_friend_read_receipt_dispatch(Tox *_Nonnull tox, const Tox_Event_Friend_Read_Receipt *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_friend_request_dispatch(Tox *_Nonnull tox, const Tox_Event_Friend_Request *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_friend_status_dispatch(Tox *_Nonnull tox, const Tox_Event_Friend_Status *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_friend_status_message_dispatch(Tox *_Nonnull tox, const Tox_Event_Friend_Status_Message *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_friend_typing_dispatch(Tox *_Nonnull tox, const Tox_Event_Friend_Typing *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_self_connection_status_dispatch(Tox *_Nonnull tox, const Tox_Event_Self_Connection_Status *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_group_peer_name_dispatch(Tox *_Nonnull tox, const Tox_Event_Group_Peer_Name *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_group_peer_status_dispatch(Tox *_Nonnull tox, const Tox_Event_Group_Peer_Status *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_group_topic_dispatch(Tox *_Nonnull tox, const Tox_Event_Group_Topic *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_group_privacy_state_dispatch(Tox *_Nonnull tox, const Tox_Event_Group_Privacy_State *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_group_voice_state_dispatch(Tox *_Nonnull tox, const Tox_Event_Group_Voice_State *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_group_topic_lock_dispatch(Tox *_Nonnull tox, const Tox_Event_Group_Topic_Lock *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_group_peer_limit_dispatch(Tox *_Nonnull tox, const Tox_Event_Group_Peer_Limit *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_group_password_dispatch(Tox *_Nonnull tox, const Tox_Event_Group_Password *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_group_message_dispatch(Tox *_Nonnull tox, const Tox_Event_Group_Message *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_group_private_message_dispatch(Tox *_Nonnull tox, const Tox_Event_Group_Private_Message *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_group_custom_packet_dispatch(Tox *_Nonnull tox, const Tox_Event_Group_Custom_Packet *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_group_custom_private_packet_dispatch(Tox *_Nonnull tox, const Tox_Event_Group_Custom_Private_Packet *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_group_invite_dispatch(Tox *_Nonnull tox, const Tox_Event_Group_Invite *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_group_peer_join_dispatch(Tox *_Nonnull tox, const Tox_Event_Group_Peer_Join *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_group_peer_exit_dispatch(Tox *_Nonnull tox, const Tox_Event_Group_Peer_Exit *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_group_self_join_dispatch(Tox *_Nonnull tox, const Tox_Event_Group_Self_Join *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_group_join_fail_dispatch(Tox *_Nonnull tox, const Tox_Event_Group_Join_Fail *_Nonnull event, void *_Nullable user_data);
-void tox_events_handle_group_moderation_dispatch(Tox *_Nonnull tox, const Tox_Event_Group_Moderation *_Nonnull event, void *_Nullable user_data);
+const Tox_Event_Conference_Connected *_Nullable tox_event_get_conference_connected(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Conference_Invite *_Nullable tox_event_get_conference_invite(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Conference_Message *_Nullable tox_event_get_conference_message(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Conference_Peer_List_Changed *_Nullable tox_event_get_conference_peer_list_changed(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Conference_Peer_Name *_Nullable tox_event_get_conference_peer_name(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Conference_Title *_Nullable tox_event_get_conference_title(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_File_Chunk_Request *_Nullable tox_event_get_file_chunk_request(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_File_Recv_Chunk *_Nullable tox_event_get_file_recv_chunk(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_File_Recv_Control *_Nullable tox_event_get_file_recv_control(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_File_Recv *_Nullable tox_event_get_file_recv(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Friend_Connection_Status *_Nullable tox_event_get_friend_connection_status(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Friend_Lossless_Packet *_Nullable tox_event_get_friend_lossless_packet(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Friend_Lossy_Packet *_Nullable tox_event_get_friend_lossy_packet(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Friend_Message *_Nullable tox_event_get_friend_message(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Friend_Name *_Nullable tox_event_get_friend_name(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Friend_Read_Receipt *_Nullable tox_event_get_friend_read_receipt(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Friend_Request *_Nullable tox_event_get_friend_request(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Friend_Status_Message *_Nullable tox_event_get_friend_status_message(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Friend_Status *_Nullable tox_event_get_friend_status(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Friend_Typing *_Nullable tox_event_get_friend_typing(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Self_Connection_Status *_Nullable tox_event_get_self_connection_status(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Group_Peer_Name *_Nullable tox_event_get_group_peer_name(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Group_Peer_Status *_Nullable tox_event_get_group_peer_status(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Group_Topic *_Nullable tox_event_get_group_topic(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Group_Privacy_State *_Nullable tox_event_get_group_privacy_state(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Group_Voice_State *_Nullable tox_event_get_group_voice_state(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Group_Topic_Lock *_Nullable tox_event_get_group_topic_lock(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Group_Peer_Limit *_Nullable tox_event_get_group_peer_limit(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Group_Password *_Nullable tox_event_get_group_password(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Group_Message *_Nullable tox_event_get_group_message(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Group_Private_Message *_Nullable tox_event_get_group_private_message(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Group_Custom_Packet *_Nullable tox_event_get_group_custom_packet(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Group_Custom_Private_Packet *_Nullable tox_event_get_group_custom_private_packet(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Group_Invite *_Nullable tox_event_get_group_invite(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Group_Peer_Join *_Nullable tox_event_get_group_peer_join(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Group_Peer_Exit *_Nullable tox_event_get_group_peer_exit(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Group_Self_Join *_Nullable tox_event_get_group_self_join(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Group_Join_Fail *_Nullable tox_event_get_group_join_fail(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Group_Moderation *_Nullable tox_event_get_group_moderation(
+    const Tox_Event *_Nonnull event);
+const Tox_Event_Dht_Nodes_Response *_Nullable tox_event_get_dht_nodes_response(
+    const Tox_Event *_Nonnull event);
 
 #ifdef __cplusplus
 } /* extern "C" */

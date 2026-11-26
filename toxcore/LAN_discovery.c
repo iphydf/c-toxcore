@@ -8,34 +8,6 @@
  */
 #include "LAN_discovery.h"
 
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-// The mingw32/64 Windows library warns about including winsock2.h after
-// windows.h even though with the above it's a valid thing to do. So, to make
-// mingw32 headers happy, we include winsock2.h first.
-#include <winsock2.h>
-
-#include <windows.h>
-#include <ws2tcpip.h>
-
-#include <iphlpapi.h>
-#endif /* WIN32 */
-
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__)
-#include <netinet/in.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
-#endif /* Linux/BSD */
-
-#ifdef __linux__
-#include <linux/if.h>
-#endif /* Linux */
-
-#if defined(__FreeBSD__) || defined(__DragonFly__)
-#include <net/if.h>
-#endif /* BSD */
-
 #include "attributes.h"
 #include "ccompat.h"
 #include "crypto_core.h"
@@ -51,8 +23,6 @@ struct Broadcast_Info {
     IP ips[MAX_INTERFACES];
 };
 
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-
 static Broadcast_Info *_Nullable fetch_broadcast_info(const Memory *_Nonnull mem, const Network *_Nonnull ns)
 {
     Broadcast_Info *broadcast = (Broadcast_Info *)mem_alloc(mem, sizeof(Broadcast_Info));
@@ -63,175 +33,17 @@ static Broadcast_Info *_Nullable fetch_broadcast_info(const Memory *_Nonnull mem
 
     broadcast->mem = mem;
 
-    IP_ADAPTER_INFO *adapter_info = (IP_ADAPTER_INFO *)mem_balloc(mem, sizeof(IP_ADAPTER_INFO));
+    const int count = ns_broadcast_addresses(ns, mem, broadcast->ips, MAX_INTERFACES);
 
-    if (adapter_info == nullptr) {
+    if (count < 0) {
         mem_delete(mem, broadcast);
         return nullptr;
     }
 
-    unsigned long out_buf_len = sizeof(IP_ADAPTER_INFO);
-
-    if (GetAdaptersInfo(adapter_info, &out_buf_len) == ERROR_BUFFER_OVERFLOW) {
-        mem_delete(mem, adapter_info);
-        IP_ADAPTER_INFO *new_adapter_info = (IP_ADAPTER_INFO *)mem_balloc(mem, out_buf_len);
-
-        if (new_adapter_info == nullptr) {
-            mem_delete(mem, broadcast);
-            return nullptr;
-        }
-
-        adapter_info = new_adapter_info;
-    }
-
-    const int ret = GetAdaptersInfo(adapter_info, &out_buf_len);
-
-    if (ret == NO_ERROR) {
-        IP_ADAPTER_INFO *adapter = adapter_info;
-
-        while (adapter != nullptr) {
-            IP if_ip = {0};
-            IP subnet_mask = {0};
-
-            if (addr_parse_ip(adapter->IpAddressList.IpMask.String, &subnet_mask)
-                    && addr_parse_ip(adapter->IpAddressList.IpAddress.String, &if_ip)) {
-                if (net_family_is_ipv4(if_ip.family) && net_family_is_ipv4(subnet_mask.family)) {
-                    if (if_ip.ip.v4.uint32 != 0 && subnet_mask.ip.v4.uint32 != 0) {
-                        IP *ip = &broadcast->ips[broadcast->count];
-                        ip->family = net_family_ipv4();
-                        ip->ip.v4.uint32 = if_ip.ip.v4.uint32 | ~subnet_mask.ip.v4.uint32;
-                        ++broadcast->count;
-
-                        if (broadcast->count >= MAX_INTERFACES) {
-                            break;
-                        }
-                    }
-                }
-            }
-
-            adapter = adapter->Next;
-        }
-    }
-
-    if (adapter_info != nullptr) {
-        mem_delete(mem, adapter_info);
-    }
+    broadcast->count = (uint32_t)count;
 
     return broadcast;
 }
-
-#elif !defined(FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION) && (defined(__linux__) || defined(__FreeBSD__) || defined(__DragonFly__))
-
-static bool ip4_is_local(const IP4 *_Nonnull ip4);
-
-static Broadcast_Info *_Nullable fetch_broadcast_info(const Memory *_Nonnull mem, const Network *_Nonnull ns)
-{
-    Broadcast_Info *broadcast = (Broadcast_Info *)mem_alloc(mem, sizeof(Broadcast_Info));
-
-    if (broadcast == nullptr) {
-        return nullptr;
-    }
-
-    broadcast->mem = mem;
-
-    /* Not sure how many platforms this will run on,
-     * so it's wrapped in `__linux__` for now.
-     * Definitely won't work like this on Windows...
-     */
-    const Socket sock = net_socket(ns, net_family_ipv4(), TOX_SOCK_STREAM, 0);
-
-    if (!sock_valid(sock)) {
-        mem_delete(mem, broadcast);
-        return nullptr;
-    }
-
-    /* Configure ifconf for the ioctl call. */
-    struct ifreq i_faces[MAX_INTERFACES] = {{{0}}};
-
-    struct ifconf ifc;
-    ifc.ifc_buf = (char *)i_faces;
-    ifc.ifc_len = sizeof(i_faces);
-
-    if (ioctl(net_socket_to_native(sock), SIOCGIFCONF, &ifc) < 0) {
-        kill_sock(ns, sock);
-        mem_delete(mem, broadcast);
-        return nullptr;
-    }
-
-    /* `ifc.ifc_len` is set by the `ioctl()` to the actual length used.
-     * On usage of the complete array the call should be repeated with
-     * a larger array, not done (640kB and 16 interfaces shall be
-     * enough, for everybody!)
-     */
-    const int n = ifc.ifc_len / sizeof(struct ifreq);
-
-    for (int i = 0; i < n; ++i) {
-        /* there are interfaces with are incapable of broadcast
-         * on Linux, `lo` has no broadcast address, but this function returns `>=0` */
-        if (ioctl(net_socket_to_native(sock), SIOCGIFBRDADDR, &i_faces[i]) < 0) {
-            continue;
-        }
-
-        /* moot check: only AF_INET returned (backwards compat.) */
-        if (i_faces[i].ifr_broadaddr.sa_family != AF_INET) {
-            continue;
-        }
-
-        const struct sockaddr_in *broadaddr4 = (const struct sockaddr_in *)(void *)&i_faces[i].ifr_broadaddr;
-
-        if (broadcast->count >= MAX_INTERFACES) {
-            break;
-        }
-
-        IP *ip = &broadcast->ips[broadcast->count];
-        ip->family = net_family_ipv4();
-        ip->ip.v4.uint32 = broadaddr4->sin_addr.s_addr;
-
-        // if no broadcast address
-        if (ip->ip.v4.uint32 == 0) {
-            if (ioctl(net_socket_to_native(sock), SIOCGIFADDR, &i_faces[i]) < 0) {
-                continue;
-            }
-
-            const struct sockaddr_in *addr4 = (const struct sockaddr_in *)(void *)&i_faces[i].ifr_addr;
-
-
-            IP4 ip4_staging;
-            ip4_staging.uint32 = addr4->sin_addr.s_addr;
-
-            if (ip4_is_local(&ip4_staging)) {
-                // this is 127.x.x.x
-                ip->ip.v4.uint32 = ip4_staging.uint32;
-            } else {
-                // give up.
-                continue;
-            }
-        }
-
-        ++broadcast->count;
-    }
-
-    kill_sock(ns, sock);
-
-    return broadcast;
-}
-
-#else // TODO(irungentoo): Other platforms?
-
-static Broadcast_Info *_Nullable fetch_broadcast_info(const Memory *_Nonnull mem, const Network *_Nonnull ns)
-{
-    Broadcast_Info *broadcast = (Broadcast_Info *)mem_alloc(mem, sizeof(Broadcast_Info));
-
-    if (broadcast == nullptr) {
-        return nullptr;
-    }
-
-    broadcast->mem = mem;
-
-    return broadcast;
-}
-
-#endif /* platforms */
 
 /** @brief Send packet to all IPv4 broadcast addresses
  *
@@ -281,7 +93,7 @@ static IP broadcast_ip(Family family_socket, Family family_broadcast)
     return ip;
 }
 
-static bool ip4_is_local(const IP4 *ip4)
+static bool ip4_is_local(const IP4 *_Nonnull ip4)
 {
     /* Loopback. */
     return ip4->uint8[0] == 127;
@@ -364,7 +176,7 @@ bool ip_is_lan(const IP *ip)
     return false;
 }
 
-bool lan_discovery_send(const Networking_Core *net, const Broadcast_Info *broadcast, const uint8_t *dht_pk,
+bool lan_discovery_send(const Networking_Core *net, const Broadcast_Info *broadcast, const uint8_t dht_pk[CRYPTO_PUBLIC_KEY_SIZE],
                         uint16_t port)
 {
     if (broadcast == nullptr) {

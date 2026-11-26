@@ -37,7 +37,7 @@ static void dump_events(const char *path, const Tox_Events *events)
     const uint32_t len = tox_events_bytes_size(events);
     uint8_t *buf = (uint8_t *)malloc(len);
     ck_assert(buf != nullptr);
-    ck_assert(tox_events_get_bytes(events, buf));
+    ck_assert(tox_events_get_bytes(events, buf, len, nullptr));
     fwrite(buf, 1, len, fh);
     free(buf);
     fclose(fh);
@@ -52,8 +52,8 @@ static void print_events(const Tox_System *sys, Tox_Events *events)
     ck_assert(bytes1 != nullptr);
     ck_assert(bytes2 != nullptr);
 
-    ck_assert(tox_events_get_bytes(events, bytes1));
-    ck_assert(tox_events_get_bytes(events, bytes2));
+    ck_assert(tox_events_get_bytes(events, bytes1, size, nullptr));
+    ck_assert(tox_events_get_bytes(events, bytes2, size, nullptr));
 
     // Make sure get_bytes is deterministic.
     ck_assert(memcmp(bytes1, bytes2, size) == 0);
@@ -118,7 +118,7 @@ static void test_tox_events(void)
     ck_assert_msg(dispatch != nullptr, "failed to create event dispatcher");
     ck_assert(err_new == TOX_ERR_DISPATCH_NEW_OK);
 
-    tox_events_callback_friend_message(dispatch, handle_events_friend_message);
+    tox_dispatch_callback_friend_message(dispatch, handle_events_friend_message);
 
     uint8_t pk[TOX_PUBLIC_KEY_SIZE];
     tox_self_get_dht_id(toxes[0], pk);

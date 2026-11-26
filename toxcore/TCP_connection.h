@@ -53,7 +53,7 @@
 #define NUM_ONION_TCP_CONNECTIONS RECOMMENDED_FRIEND_TCP_CONNECTIONS
 
 typedef struct TCP_Conn_to {
-    uint32_t tcp_connection;
+    int tcp_connection;
     uint8_t status;
     uint8_t connection_id;
 } TCP_Conn_to;
@@ -91,7 +91,7 @@ uint32_t tcp_connections_count(const TCP_Connections *_Nonnull tcp_c);
 uint32_t tcp_connected_relays_count(const TCP_Connections *_Nonnull tcp_c);
 
 /** @brief Returns true if we know of a valid TCP relay with the passed public key. */
-bool tcp_relay_is_valid(const TCP_Connections *_Nonnull tcp_c, const uint8_t *_Nonnull relay_pk);
+bool tcp_relay_is_valid(const TCP_Connections *_Nonnull tcp_c, const uint8_t relay_pk[_Nonnull CRYPTO_PUBLIC_KEY_SIZE]);
 
 /** @brief Send a packet to the TCP connection.
  *
@@ -122,7 +122,7 @@ bool tcp_get_random_conn_ip_port(const TCP_Connections *_Nonnull tcp_c, IP_Port 
  * return 0 on success.
  * return -1 on failure.
  */
-int tcp_send_onion_request(TCP_Connections *_Nonnull tcp_c, uint32_t tcp_connections_number, const uint8_t *_Nonnull data, uint16_t length);
+int tcp_send_onion_request(TCP_Connections *_Nonnull tcp_c, int tcp_connections_number, const uint8_t *_Nonnull data, uint16_t length);
 
 /** @brief Set if we want TCP_connection to allocate some connection for onion use.
  *
@@ -149,11 +149,11 @@ int tcp_send_forward_request(const Logger *_Nonnull logger, TCP_Connections *_No
  * return 0 on success.
  * return -1 on failure.
  */
-int tcp_send_oob_packet(const TCP_Connections *_Nonnull tcp_c, unsigned int tcp_connections_number, const uint8_t *_Nonnull public_key, const uint8_t *_Nonnull packet, uint16_t length);
+int tcp_send_oob_packet(const TCP_Connections *_Nonnull tcp_c, int tcp_connections_number, const uint8_t *_Nonnull public_key, const uint8_t *_Nonnull packet, uint16_t length);
 
 typedef int tcp_data_cb(void *_Nonnull object, int crypt_connection_id, const uint8_t *_Nonnull packet, uint16_t length, void *_Nullable userdata);
 
-int tcp_send_oob_packet_using_relay(const TCP_Connections *_Nonnull tcp_c, const uint8_t *_Nonnull relay_pk, const uint8_t *_Nonnull public_key, const uint8_t *_Nonnull packet,
+int tcp_send_oob_packet_using_relay(const TCP_Connections *_Nonnull tcp_c, const uint8_t relay_pk[_Nonnull CRYPTO_PUBLIC_KEY_SIZE], const uint8_t *_Nonnull public_key, const uint8_t *_Nonnull packet,
                                     uint16_t length);
 
 /** @brief Set the callback for TCP data packets. */
@@ -167,7 +167,7 @@ void set_onion_packet_tcp_connection_callback(TCP_Connections *_Nonnull tcp_c, t
 void set_forwarding_packet_tcp_connection_callback(TCP_Connections *_Nonnull tcp_c,
         forwarded_response_cb *_Nullable tcp_forwarded_response_callback,
         void *_Nullable object);
-typedef int tcp_oob_cb(void *_Nonnull object, const uint8_t *_Nonnull public_key, unsigned int tcp_connections_number,
+typedef int tcp_oob_cb(void *_Nonnull object, const uint8_t *_Nonnull public_key, int tcp_connections_number,
                        const uint8_t *_Nonnull packet, uint16_t length, void *_Nullable userdata);
 
 /** @brief Set the callback for TCP oob data packets. */
@@ -177,14 +177,14 @@ void set_oob_packet_tcp_connection_callback(TCP_Connections *_Nonnull tcp_c, tcp
  *
  * return ip_port.
  */
-IP_Port tcp_connections_number_to_ip_port(unsigned int tcp_connections_number);
+IP_Port tcp_connections_number_to_ip_port(int tcp_connections_number);
 
 /** @brief Decode ip_port created by tcp_connections_number_to_ip_port to tcp_connections_number.
  *
  * return true on success.
  * return false if ip_port is invalid.
  */
-bool ip_port_to_tcp_connections_number(const IP_Port *_Nonnull ip_port, unsigned int *_Nonnull tcp_connections_number);
+bool ip_port_to_tcp_connections_number(const IP_Port *_Nonnull ip_port, int *_Nonnull tcp_connections_number);
 
 /** @brief Create a new TCP connection to public_key.
  *
@@ -195,7 +195,7 @@ bool ip_port_to_tcp_connections_number(const IP_Port *_Nonnull ip_port, unsigned
  * return connections_number on success.
  * return -1 on failure.
  */
-int new_tcp_connection_to(TCP_Connections *_Nonnull tcp_c, const uint8_t *_Nonnull public_key, int id);
+int new_tcp_connection_to(TCP_Connections *_Nonnull tcp_c, const uint8_t public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE], int id);
 
 /**
  * @retval 0 on success.
@@ -228,7 +228,7 @@ uint32_t tcp_connection_to_online_tcp_relays(const TCP_Connections *_Nonnull tcp
  * return 0 on success.
  * return -1 on failure.
  */
-int add_tcp_number_relay_connection(const TCP_Connections *_Nonnull tcp_c, int connections_number, unsigned int tcp_connections_number);
+int add_tcp_number_relay_connection(const TCP_Connections *_Nonnull tcp_c, int connections_number, int tcp_connections_number);
 
 /** @brief Add a TCP relay tied to a connection.
  *
@@ -237,14 +237,14 @@ int add_tcp_number_relay_connection(const TCP_Connections *_Nonnull tcp_c, int c
  * return 0 on success.
  * return -1 on failure.
  */
-int add_tcp_relay_connection(TCP_Connections *_Nonnull tcp_c, int connections_number, const IP_Port *_Nonnull ip_port, const uint8_t *_Nonnull relay_pk);
+int add_tcp_relay_connection(TCP_Connections *_Nonnull tcp_c, int connections_number, const IP_Port *_Nonnull ip_port, const uint8_t relay_pk[_Nonnull CRYPTO_PUBLIC_KEY_SIZE]);
 
 /** @brief Add a TCP relay to the TCP_Connections instance.
  *
  * return 0 on success.
  * return -1 on failure.
  */
-int add_tcp_relay_global(TCP_Connections *_Nonnull tcp_c, const IP_Port *_Nonnull ip_port, const uint8_t *_Nonnull relay_pk);
+int add_tcp_relay_global(TCP_Connections *_Nonnull tcp_c, const IP_Port *_Nonnull ip_port, const uint8_t relay_pk[_Nonnull CRYPTO_PUBLIC_KEY_SIZE]);
 
 /** @brief Copy a maximum of max_num TCP relays we are connected to to tcp_relays.
  *

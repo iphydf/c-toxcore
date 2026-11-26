@@ -78,8 +78,8 @@ static void peer_script(ToxNode *self, void *ctx)
     Tox *tox = tox_node_get_tox(self);
     Tox_Dispatch *dispatch = tox_node_get_dispatch(self);
 
-    tox_events_callback_conference_invite(dispatch, on_conference_invite);
-    tox_events_callback_conference_connected(dispatch, on_conference_connected);
+    tox_dispatch_callback_conference_invite(dispatch, on_conference_invite);
+    tox_dispatch_callback_conference_connected(dispatch, on_conference_connected);
 
     WAIT_UNTIL(tox_node_is_self_connected(self));
 

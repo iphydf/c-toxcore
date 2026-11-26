@@ -13,6 +13,7 @@
 #include "../mem.h"
 #include "../tox.h"
 #include "../tox_event.h"
+#include "../tox_event_struct.h"
 #include "../tox_events.h"
 #include "../tox_struct.h"
 
@@ -87,7 +88,7 @@ static bool tox_event_group_peer_limit_unpack_into(Tox_Event_Group_Peer_Limit *_
 
 const Tox_Event_Group_Peer_Limit *tox_event_get_group_peer_limit(const Tox_Event *event)
 {
-    return event->type == TOX_EVENT_GROUP_PEER_LIMIT ? event->data.group_peer_limit : nullptr;
+    return event->type == TOX_EVENT_TYPE_GROUP_PEER_LIMIT ? event->data.group_peer_limit : nullptr;
 }
 
 Tox_Event_Group_Peer_Limit *tox_event_group_peer_limit_new(const Memory *mem)
@@ -119,7 +120,7 @@ static void tox_events_add_group_peer_limit(Tox_Events_State *_Nonnull state, To
     }
 
     Tox_Event event;
-    event.type = TOX_EVENT_GROUP_PEER_LIMIT;
+    event.type = TOX_EVENT_TYPE_GROUP_PEER_LIMIT;
     event.data.group_peer_limit = group_peer_limit;
 
     if (!tox_events_add(state->events, &event)) {
@@ -132,14 +133,19 @@ bool tox_event_group_peer_limit_unpack(
     Tox_Event_Group_Peer_Limit **event, Bin_Unpack *bu, const Memory *mem)
 {
     assert(event != nullptr);
-    assert(*event == nullptr);
-    *event = tox_event_group_peer_limit_new(mem);
+    Tox_Event_Group_Peer_Limit *const unpacked = tox_event_group_peer_limit_new(mem);
 
-    if (*event == nullptr) {
+    if (unpacked == nullptr) {
         return false;
     }
 
-    return tox_event_group_peer_limit_unpack_into(*event, bu);
+    if (!tox_event_group_peer_limit_unpack_into(unpacked, bu)) {
+        tox_event_group_peer_limit_free(unpacked, mem);
+        return false;
+    }
+
+    *event = unpacked;
+    return true;
 }
 
 /*****************************************************

@@ -366,7 +366,7 @@ private:
         // Just setting a dummy callback
         recv_tcp_relay_handler(
             onion_client_.get(), friend_num,
-            [](void *, std::uint32_t, const IP_Port *, const std::uint8_t *) { return 0; }, this,
+            [](void *, std::int32_t, const IP_Port *, const std::uint8_t *) { return 0; }, this,
             0);
     }
 

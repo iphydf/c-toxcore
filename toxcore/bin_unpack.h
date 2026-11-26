@@ -93,7 +93,7 @@ bool bin_unpack_str(Bin_Unpack *_Nonnull bu, char *_Nonnull *_Nonnull str_ptr, u
  * not allocate memory and requires that `max_data_length` is less than or equal to `sizeof(arr)`
  * when `arr` is passed as `data` pointer.
  */
-bool bin_unpack_bin_max(Bin_Unpack *_Nonnull bu, uint8_t *_Nonnull data, uint16_t *_Nonnull data_length_ptr, uint16_t max_data_length);
+bool bin_unpack_bin_max(Bin_Unpack *_Nonnull bu, uint8_t *_Nonnull data, uint16_t max_data_length, uint16_t *_Nonnull data_length_ptr);
 /** @brief Unpack a MessagePack bin of a fixed length into a pre-allocated byte array.
  *
  * Similar to the function above, but doesn't output the data length.

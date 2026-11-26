@@ -89,7 +89,7 @@ static void alice_script(ToxNode *self, void *ctx)
 {
     LossState *state = (LossState *)ctx;
     Tox *tox = tox_node_get_tox(self);
-    tox_events_callback_group_peer_join(tox_node_get_dispatch(self), on_group_peer_join);
+    tox_dispatch_callback_group_peer_join(tox_node_get_dispatch(self), on_group_peer_join);
 
     WAIT_UNTIL(tox_node_is_self_connected(self));
     WAIT_UNTIL(tox_node_is_friend_connected(self, 0));
@@ -118,9 +118,9 @@ static void bob_script(ToxNode *self, void *ctx)
 {
     const LossState *state = (const LossState *)ctx;
     Tox_Dispatch *dispatch = tox_node_get_dispatch(self);
-    tox_events_callback_group_invite(dispatch, on_group_invite);
-    tox_events_callback_group_peer_join(dispatch, on_group_peer_join);
-    tox_events_callback_group_message(dispatch, on_group_message);
+    tox_dispatch_callback_group_invite(dispatch, on_group_invite);
+    tox_dispatch_callback_group_peer_join(dispatch, on_group_peer_join);
+    tox_dispatch_callback_group_message(dispatch, on_group_message);
 
     WAIT_UNTIL(tox_node_is_self_connected(self));
     WAIT_UNTIL(state->received >= NUM_MESSAGES);

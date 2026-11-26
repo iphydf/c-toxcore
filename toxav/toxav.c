@@ -1748,3 +1748,178 @@ static void call_kill_transmission(ToxAVCall *call)
     pthread_mutex_destroy(call->mutex_audio);
     pthread_mutex_destroy(call->mutex_video);
 }
+
+const char *toxav_err_new_to_string(Toxav_Err_New value)
+{
+    switch (value) {
+        case TOXAV_ERR_NEW_OK:
+            return "TOXAV_ERR_NEW_OK";
+
+        case TOXAV_ERR_NEW_NULL:
+            return "TOXAV_ERR_NEW_NULL";
+
+        case TOXAV_ERR_NEW_MALLOC:
+            return "TOXAV_ERR_NEW_MALLOC";
+
+        case TOXAV_ERR_NEW_MULTIPLE:
+            return "TOXAV_ERR_NEW_MULTIPLE";
+    }
+
+    return "<invalid Toxav_Err_New>";
+}
+
+const char *toxav_err_call_to_string(Toxav_Err_Call value)
+{
+    switch (value) {
+        case TOXAV_ERR_CALL_OK:
+            return "TOXAV_ERR_CALL_OK";
+
+        case TOXAV_ERR_CALL_MALLOC:
+            return "TOXAV_ERR_CALL_MALLOC";
+
+        case TOXAV_ERR_CALL_SYNC:
+            return "TOXAV_ERR_CALL_SYNC";
+
+        case TOXAV_ERR_CALL_FRIEND_NOT_FOUND:
+            return "TOXAV_ERR_CALL_FRIEND_NOT_FOUND";
+
+        case TOXAV_ERR_CALL_FRIEND_NOT_CONNECTED:
+            return "TOXAV_ERR_CALL_FRIEND_NOT_CONNECTED";
+
+        case TOXAV_ERR_CALL_FRIEND_ALREADY_IN_CALL:
+            return "TOXAV_ERR_CALL_FRIEND_ALREADY_IN_CALL";
+
+        case TOXAV_ERR_CALL_INVALID_BIT_RATE:
+            return "TOXAV_ERR_CALL_INVALID_BIT_RATE";
+    }
+
+    return "<invalid Toxav_Err_Call>";
+}
+
+const char *toxav_err_answer_to_string(Toxav_Err_Answer value)
+{
+    switch (value) {
+        case TOXAV_ERR_ANSWER_OK:
+            return "TOXAV_ERR_ANSWER_OK";
+
+        case TOXAV_ERR_ANSWER_SYNC:
+            return "TOXAV_ERR_ANSWER_SYNC";
+
+        case TOXAV_ERR_ANSWER_CODEC_INITIALIZATION:
+            return "TOXAV_ERR_ANSWER_CODEC_INITIALIZATION";
+
+        case TOXAV_ERR_ANSWER_FRIEND_NOT_FOUND:
+            return "TOXAV_ERR_ANSWER_FRIEND_NOT_FOUND";
+
+        case TOXAV_ERR_ANSWER_FRIEND_NOT_CALLING:
+            return "TOXAV_ERR_ANSWER_FRIEND_NOT_CALLING";
+
+        case TOXAV_ERR_ANSWER_INVALID_BIT_RATE:
+            return "TOXAV_ERR_ANSWER_INVALID_BIT_RATE";
+    }
+
+    return "<invalid Toxav_Err_Answer>";
+}
+
+const char *toxav_call_control_to_string(Toxav_Call_Control value)
+{
+    switch (value) {
+        case TOXAV_CALL_CONTROL_RESUME:
+            return "TOXAV_CALL_CONTROL_RESUME";
+
+        case TOXAV_CALL_CONTROL_PAUSE:
+            return "TOXAV_CALL_CONTROL_PAUSE";
+
+        case TOXAV_CALL_CONTROL_CANCEL:
+            return "TOXAV_CALL_CONTROL_CANCEL";
+
+        case TOXAV_CALL_CONTROL_MUTE_AUDIO:
+            return "TOXAV_CALL_CONTROL_MUTE_AUDIO";
+
+        case TOXAV_CALL_CONTROL_UNMUTE_AUDIO:
+            return "TOXAV_CALL_CONTROL_UNMUTE_AUDIO";
+
+        case TOXAV_CALL_CONTROL_HIDE_VIDEO:
+            return "TOXAV_CALL_CONTROL_HIDE_VIDEO";
+
+        case TOXAV_CALL_CONTROL_SHOW_VIDEO:
+            return "TOXAV_CALL_CONTROL_SHOW_VIDEO";
+    }
+
+    return "<invalid Toxav_Call_Control>";
+}
+
+const char *toxav_err_call_control_to_string(Toxav_Err_Call_Control value)
+{
+    switch (value) {
+        case TOXAV_ERR_CALL_CONTROL_OK:
+            return "TOXAV_ERR_CALL_CONTROL_OK";
+
+        case TOXAV_ERR_CALL_CONTROL_SYNC:
+            return "TOXAV_ERR_CALL_CONTROL_SYNC";
+
+        case TOXAV_ERR_CALL_CONTROL_FRIEND_NOT_FOUND:
+            return "TOXAV_ERR_CALL_CONTROL_FRIEND_NOT_FOUND";
+
+        case TOXAV_ERR_CALL_CONTROL_FRIEND_NOT_IN_CALL:
+            return "TOXAV_ERR_CALL_CONTROL_FRIEND_NOT_IN_CALL";
+
+        case TOXAV_ERR_CALL_CONTROL_INVALID_TRANSITION:
+            return "TOXAV_ERR_CALL_CONTROL_INVALID_TRANSITION";
+    }
+
+    return "<invalid Toxav_Err_Call_Control>";
+}
+
+const char *toxav_err_bit_rate_set_to_string(Toxav_Err_Bit_Rate_Set value)
+{
+    switch (value) {
+        case TOXAV_ERR_BIT_RATE_SET_OK:
+            return "TOXAV_ERR_BIT_RATE_SET_OK";
+
+        case TOXAV_ERR_BIT_RATE_SET_SYNC:
+            return "TOXAV_ERR_BIT_RATE_SET_SYNC";
+
+        case TOXAV_ERR_BIT_RATE_SET_INVALID_BIT_RATE:
+            return "TOXAV_ERR_BIT_RATE_SET_INVALID_BIT_RATE";
+
+        case TOXAV_ERR_BIT_RATE_SET_FRIEND_NOT_FOUND:
+            return "TOXAV_ERR_BIT_RATE_SET_FRIEND_NOT_FOUND";
+
+        case TOXAV_ERR_BIT_RATE_SET_FRIEND_NOT_IN_CALL:
+            return "TOXAV_ERR_BIT_RATE_SET_FRIEND_NOT_IN_CALL";
+    }
+
+    return "<invalid Toxav_Err_Bit_Rate_Set>";
+}
+
+const char *toxav_err_send_frame_to_string(Toxav_Err_Send_Frame value)
+{
+    switch (value) {
+        case TOXAV_ERR_SEND_FRAME_OK:
+            return "TOXAV_ERR_SEND_FRAME_OK";
+
+        case TOXAV_ERR_SEND_FRAME_NULL:
+            return "TOXAV_ERR_SEND_FRAME_NULL";
+
+        case TOXAV_ERR_SEND_FRAME_FRIEND_NOT_FOUND:
+            return "TOXAV_ERR_SEND_FRAME_FRIEND_NOT_FOUND";
+
+        case TOXAV_ERR_SEND_FRAME_FRIEND_NOT_IN_CALL:
+            return "TOXAV_ERR_SEND_FRAME_FRIEND_NOT_IN_CALL";
+
+        case TOXAV_ERR_SEND_FRAME_SYNC:
+            return "TOXAV_ERR_SEND_FRAME_SYNC";
+
+        case TOXAV_ERR_SEND_FRAME_INVALID:
+            return "TOXAV_ERR_SEND_FRAME_INVALID";
+
+        case TOXAV_ERR_SEND_FRAME_PAYLOAD_TYPE_DISABLED:
+            return "TOXAV_ERR_SEND_FRAME_PAYLOAD_TYPE_DISABLED";
+
+        case TOXAV_ERR_SEND_FRAME_RTP_FAILED:
+            return "TOXAV_ERR_SEND_FRAME_RTP_FAILED";
+    }
+
+    return "<invalid Toxav_Err_Send_Frame>";
+}

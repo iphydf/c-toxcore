@@ -78,7 +78,7 @@ void set_filter_function(Friend_Requests *fr, filter_function_cb *function, void
 }
 
 /** Add to list of received friend requests. */
-static void addto_receivedlist(Friend_Requests *_Nonnull fr, const uint8_t *_Nonnull real_pk)
+static void addto_receivedlist(Friend_Requests *_Nonnull fr, const uint8_t real_pk[_Nonnull CRYPTO_PUBLIC_KEY_SIZE])
 {
     if (fr->received.requests_index >= MAX_RECEIVED_STORED) {
         fr->received.requests_index = 0;
@@ -93,7 +93,7 @@ static void addto_receivedlist(Friend_Requests *_Nonnull fr, const uint8_t *_Non
  * @retval false if it did not.
  * @retval true if it did.
  */
-static bool request_received(const Friend_Requests *_Nonnull fr, const uint8_t *_Nonnull real_pk)
+static bool request_received(const Friend_Requests *_Nonnull fr, const uint8_t real_pk[_Nonnull CRYPTO_PUBLIC_KEY_SIZE])
 {
     for (uint32_t i = 0; i < MAX_RECEIVED_STORED; ++i) {
         if (pk_equal(fr->received.requests[i], real_pk)) {
@@ -109,7 +109,7 @@ static bool request_received(const Friend_Requests *_Nonnull fr, const uint8_t *
  * @retval 0 if it removed it successfully.
  * @retval -1 if it didn't find it.
  */
-int remove_request_received(Friend_Requests *fr, const uint8_t *real_pk)
+int remove_request_received(Friend_Requests *fr, const uint8_t real_pk[CRYPTO_PUBLIC_KEY_SIZE])
 {
     for (uint32_t i = 0; i < MAX_RECEIVED_STORED; ++i) {
         if (pk_equal(fr->received.requests[i], real_pk)) {
@@ -121,7 +121,7 @@ int remove_request_received(Friend_Requests *fr, const uint8_t *real_pk)
     return -1;
 }
 
-static int friendreq_handlepacket(void *_Nonnull object, const uint8_t *_Nonnull source_pubkey, const uint8_t *_Nonnull data, uint16_t length, void *_Nonnull userdata)
+static int friendreq_handlepacket(void *_Nonnull object, const uint8_t source_pubkey[_Nonnull CRYPTO_PUBLIC_KEY_SIZE], const uint8_t *_Nonnull data, uint16_t length, void *_Nonnull userdata)
 {
     Friend_Requests *const fr = (Friend_Requests *)object;
 

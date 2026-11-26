@@ -38,8 +38,8 @@ static void node_script(ToxNode *self, void *ctx)
     const Tox *tox = tox_node_get_tox(self);
     Tox_Dispatch *dispatch = tox_node_get_dispatch(self);
 
-    tox_events_callback_conference_invite(dispatch, on_conference_invite);
-    tox_events_callback_conference_connected(dispatch, on_conference_connected);
+    tox_dispatch_callback_conference_invite(dispatch, on_conference_invite);
+    tox_dispatch_callback_conference_connected(dispatch, on_conference_connected);
 
     tox_node_log(self, "Waiting for self connection...");
     tox_node_wait_for_self_connected(self);
@@ -71,8 +71,8 @@ static void coordinator_script(ToxNode *self, void *ctx)
     Tox *tox = tox_node_get_tox(self);
     Tox_Dispatch *dispatch = tox_node_get_dispatch(self);
 
-    tox_events_callback_conference_invite(dispatch, on_conference_invite);
-    tox_events_callback_conference_connected(dispatch, on_conference_connected);
+    tox_dispatch_callback_conference_invite(dispatch, on_conference_invite);
+    tox_dispatch_callback_conference_connected(dispatch, on_conference_connected);
 
     tox_node_log(self, "Waiting for self connection...");
     tox_node_wait_for_self_connected(self);
@@ -165,8 +165,8 @@ static void n1_script(ToxNode *self, void *ctx)
     Tox *tox = tox_node_get_tox(self);
     Tox_Dispatch *dispatch = tox_node_get_dispatch(self);
 
-    tox_events_callback_conference_invite(dispatch, on_conference_invite);
-    tox_events_callback_conference_connected(dispatch, on_conference_connected);
+    tox_dispatch_callback_conference_invite(dispatch, on_conference_invite);
+    tox_dispatch_callback_conference_connected(dispatch, on_conference_connected);
 
     tox_node_log(self, "Waiting for self connection...");
     tox_node_wait_for_self_connected(self);
@@ -221,8 +221,8 @@ static void n3_script(ToxNode *self, void *ctx)
     Tox *tox = tox_node_get_tox(self);
     Tox_Dispatch *dispatch = tox_node_get_dispatch(self);
 
-    tox_events_callback_conference_invite(dispatch, on_conference_invite);
-    tox_events_callback_conference_connected(dispatch, on_conference_connected);
+    tox_dispatch_callback_conference_invite(dispatch, on_conference_invite);
+    tox_dispatch_callback_conference_connected(dispatch, on_conference_connected);
 
     tox_node_log(self, "Waiting for self connection...");
     tox_node_wait_for_self_connected(self);

@@ -29,7 +29,7 @@ struct Ping_Array {
 
     uint32_t last_deleted; /* number representing the next entry to be deleted. */
     uint32_t last_added;   /* number representing the last entry to be added. */
-    uint32_t total_size;   /* The length of entries */
+    uint32_t entries_count;   /* The length of entries */
     uint32_t timeout;      /* The timeout after which entries are cleared. */
 };
 
@@ -61,7 +61,7 @@ Ping_Array *ping_array_new(const Memory *mem, uint32_t size, uint32_t timeout)
     empty_array->mem = mem;
     empty_array->last_deleted = 0;
     empty_array->last_added = 0;
-    empty_array->total_size = size;
+    empty_array->entries_count = size;
     empty_array->timeout = timeout;
     return empty_array;
 }
@@ -80,7 +80,7 @@ void ping_array_kill(Ping_Array *array)
     }
 
     while (array->last_deleted != array->last_added) {
-        const uint32_t index = array->last_deleted % array->total_size;
+        const uint32_t index = array->last_deleted % array->entries_count;
         clear_entry(array, index);
         ++array->last_deleted;
     }
@@ -93,7 +93,7 @@ void ping_array_kill(Ping_Array *array)
 static void ping_array_clear_timedout(Ping_Array *_Nonnull array, const Mono_Time *_Nonnull mono_time)
 {
     while (array->last_deleted != array->last_added) {
-        const uint32_t index = array->last_deleted % array->total_size;
+        const uint32_t index = array->last_deleted % array->entries_count;
 
         if (!mono_time_is_timeout(mono_time, array->entries[index].ping_time, array->timeout)) {
             break;
@@ -108,17 +108,16 @@ uint64_t ping_array_add(Ping_Array *array, const Mono_Time *mono_time, const Ran
                         const uint8_t *data, uint32_t length)
 {
     ping_array_clear_timedout(array, mono_time);
-    const uint32_t index = array->last_added % array->total_size;
+    const uint32_t index = array->last_added % array->entries_count;
 
     if (array->entries[index].data != nullptr) {
-        array->last_deleted = array->last_added - array->total_size;
+        array->last_deleted = array->last_added - array->entries_count;
         clear_entry(array, index);
     }
 
     uint8_t *entry_data = (uint8_t *)mem_balloc(array->mem, length);
 
     if (entry_data == nullptr) {
-        array->entries[index].data = nullptr;
         return 0;
     }
 
@@ -129,12 +128,12 @@ uint64_t ping_array_add(Ping_Array *array, const Mono_Time *mono_time, const Ran
     array->entries[index].ping_time = mono_time_get(mono_time);
     ++array->last_added;
     uint64_t ping_id = random_u64(rng);
-    ping_id /= array->total_size;
-    ping_id *= array->total_size;
+    ping_id /= array->entries_count;
+    ping_id *= array->entries_count;
     ping_id += index;
 
     if (ping_id == 0) {
-        ping_id += array->total_size;
+        ping_id += array->entries_count;
     }
 
     array->entries[index].ping_id = ping_id;
@@ -148,7 +147,7 @@ int32_t ping_array_check(Ping_Array *array, const Mono_Time *mono_time, uint8_t 
         return -1;
     }
 
-    const uint32_t index = ping_id % array->total_size;
+    const uint32_t index = ping_id % array->entries_count;
 
     if (array->entries[index].ping_id != ping_id) {
         return -1;

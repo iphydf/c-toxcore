@@ -14,6 +14,7 @@
 #include "../mem.h"
 #include "../tox.h"
 #include "../tox_event.h"
+#include "../tox_event_struct.h"
 #include "../tox_events.h"
 #include "../tox_pack.h"
 #include "../tox_struct.h"
@@ -199,7 +200,7 @@ static bool tox_event_group_peer_exit_unpack_into(Tox_Event_Group_Peer_Exit *_No
 
 const Tox_Event_Group_Peer_Exit *tox_event_get_group_peer_exit(const Tox_Event *event)
 {
-    return event->type == TOX_EVENT_GROUP_PEER_EXIT ? event->data.group_peer_exit : nullptr;
+    return event->type == TOX_EVENT_TYPE_GROUP_PEER_EXIT ? event->data.group_peer_exit : nullptr;
 }
 
 Tox_Event_Group_Peer_Exit *tox_event_group_peer_exit_new(const Memory *mem)
@@ -231,7 +232,7 @@ static void tox_events_add_group_peer_exit(Tox_Events_State *_Nonnull state, Tox
     }
 
     Tox_Event event;
-    event.type = TOX_EVENT_GROUP_PEER_EXIT;
+    event.type = TOX_EVENT_TYPE_GROUP_PEER_EXIT;
     event.data.group_peer_exit = group_peer_exit;
 
     if (!tox_events_add(state->events, &event)) {
@@ -244,14 +245,19 @@ bool tox_event_group_peer_exit_unpack(
     Tox_Event_Group_Peer_Exit **event, Bin_Unpack *bu, const Memory *mem)
 {
     assert(event != nullptr);
-    assert(*event == nullptr);
-    *event = tox_event_group_peer_exit_new(mem);
+    Tox_Event_Group_Peer_Exit *const unpacked = tox_event_group_peer_exit_new(mem);
 
-    if (*event == nullptr) {
+    if (unpacked == nullptr) {
         return false;
     }
 
-    return tox_event_group_peer_exit_unpack_into(*event, bu);
+    if (!tox_event_group_peer_exit_unpack_into(unpacked, bu)) {
+        tox_event_group_peer_exit_free(unpacked, mem);
+        return false;
+    }
+
+    *event = unpacked;
+    return true;
 }
 
 /*****************************************************

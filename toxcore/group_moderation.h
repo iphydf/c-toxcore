@@ -80,6 +80,11 @@ typedef struct Mod_Sanction {
     uint8_t     signature[SIGNATURE_SIZE];
 } Mod_Sanction;
 
+/** A moderator, by their public signature key. */
+typedef struct Mod_List_Entry {
+    uint8_t     public_sig_key[SIG_PUBLIC_KEY_SIZE];
+} Mod_List_Entry;
+
 typedef struct Moderation {
     const       Memory *_Nonnull mem;
     const       Logger *_Nonnull log;
@@ -89,7 +94,7 @@ typedef struct Moderation {
 
     Mod_Sanction_Creds sanctions_creds;
 
-    uint8_t     *_Nullable *_Nullable mod_list;  // array of public signature keys of all the mods
+    Mod_List_Entry *_Nullable mods;  // array of public signature keys of all the mods
     uint16_t    num_mods;
 
     // copies from parent/sibling chat/shared state objects
@@ -124,13 +129,13 @@ void mod_list_pack(const Moderation *_Nonnull moderation, uint8_t *_Nonnull data
  *
  * Returns true on sucess.
  */
-bool mod_list_make_hash(const Moderation *_Nonnull moderation, uint8_t *_Nonnull hash);
+bool mod_list_make_hash(const Moderation *_Nonnull moderation, uint8_t hash[_Nonnull CRYPTO_SHA256_SIZE]);
 
 /** @brief Puts a sha256 hash of `packed_mod_list` of `length` bytes in `hash`.
  *
  * @param hash must have room for at least MOD_MODERATION_HASH_SIZE bytes.
  */
-void mod_list_get_data_hash(uint8_t *_Nonnull hash, const uint8_t *_Nonnull packed_mod_list, uint16_t length);
+void mod_list_get_data_hash(uint8_t hash[_Nonnull CRYPTO_SHA256_SIZE], const uint8_t *_Nonnull packed_mod_list, uint16_t length);
 
 /** @brief Removes moderator at index-th position in the moderator list.
  *

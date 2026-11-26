@@ -65,7 +65,7 @@ static void on_dht_nodes_response(const Tox_Event_Dht_Nodes_Response *event, voi
 static void peer_script(ToxNode *self, void *ctx)
 {
     State *state = (State *)ctx;
-    tox_events_callback_dht_nodes_response(tox_node_get_dispatch(self), on_dht_nodes_response);
+    tox_dispatch_callback_dht_nodes_response(tox_node_get_dispatch(self), on_dht_nodes_response);
 
     // Initial bootstrap: ask the node we bootstrapped from for all other nodes
     // Wait for self connection first

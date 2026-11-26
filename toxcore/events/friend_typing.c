@@ -13,6 +13,7 @@
 #include "../mem.h"
 #include "../tox.h"
 #include "../tox_event.h"
+#include "../tox_event_struct.h"
 #include "../tox_events.h"
 #include "../tox_struct.h"
 
@@ -87,7 +88,7 @@ static bool tox_event_friend_typing_unpack_into(Tox_Event_Friend_Typing *_Nonnul
 
 const Tox_Event_Friend_Typing *tox_event_get_friend_typing(const Tox_Event *event)
 {
-    return event->type == TOX_EVENT_FRIEND_TYPING ? event->data.friend_typing : nullptr;
+    return event->type == TOX_EVENT_TYPE_FRIEND_TYPING ? event->data.friend_typing : nullptr;
 }
 
 Tox_Event_Friend_Typing *tox_event_friend_typing_new(const Memory *mem)
@@ -119,7 +120,7 @@ static void tox_events_add_friend_typing(Tox_Events_State *_Nonnull state, Tox_E
     }
 
     Tox_Event event;
-    event.type = TOX_EVENT_FRIEND_TYPING;
+    event.type = TOX_EVENT_TYPE_FRIEND_TYPING;
     event.data.friend_typing = friend_typing;
 
     if (!tox_events_add(state->events, &event)) {
@@ -132,14 +133,19 @@ bool tox_event_friend_typing_unpack(
     Tox_Event_Friend_Typing **event, Bin_Unpack *bu, const Memory *mem)
 {
     assert(event != nullptr);
-    assert(*event == nullptr);
-    *event = tox_event_friend_typing_new(mem);
+    Tox_Event_Friend_Typing *const unpacked = tox_event_friend_typing_new(mem);
 
-    if (*event == nullptr) {
+    if (unpacked == nullptr) {
         return false;
     }
 
-    return tox_event_friend_typing_unpack_into(*event, bu);
+    if (!tox_event_friend_typing_unpack_into(unpacked, bu)) {
+        tox_event_friend_typing_free(unpacked, mem);
+        return false;
+    }
+
+    *event = unpacked;
+    return true;
 }
 
 /*****************************************************

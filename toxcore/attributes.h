@@ -14,8 +14,10 @@
 
 #ifdef __GNUC__
 #define GNU_PRINTF(f, a) __attribute__((__format__(__printf__, f, a)))
+#define GNU_ALLOC_SIZE(...) __attribute__((__alloc_size__(__VA_ARGS__)))
 #else
 #define GNU_PRINTF(f, a)
+#define GNU_ALLOC_SIZE(...)
 #endif
 
 #ifndef __clang__

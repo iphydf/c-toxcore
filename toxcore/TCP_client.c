@@ -69,7 +69,7 @@ struct TCP_Client_Connection {
 
     /* Can be used by user. */
     void *_Nullable custom_object;
-    uint32_t custom_uint;
+    int custom_number;
 };
 
 const uint8_t *tcp_con_public_key(const TCP_Client_Connection *con)
@@ -90,17 +90,17 @@ void *tcp_con_custom_object(const TCP_Client_Connection *con)
 {
     return con->custom_object;
 }
-uint32_t tcp_con_custom_uint(const TCP_Client_Connection *con)
+int tcp_con_custom_number(const TCP_Client_Connection *con)
 {
-    return con->custom_uint;
+    return con->custom_number;
 }
 void tcp_con_set_custom_object(TCP_Client_Connection *con, void *object)
 {
     con->custom_object = object;
 }
-void tcp_con_set_custom_uint(TCP_Client_Connection *con, uint32_t value)
+void tcp_con_set_custom_number(TCP_Client_Connection *con, int value)
 {
-    con->custom_uint = value;
+    con->custom_number = value;
 }
 
 /**
@@ -336,7 +336,7 @@ static int generate_handshake(TCP_Client_Connection *_Nonnull tcp_conn)
  * @retval 0 on success.
  * @retval -1 on failure.
  */
-static int handle_handshake(TCP_Client_Connection *_Nonnull tcp_conn, const uint8_t *_Nonnull data)
+static int handle_handshake(TCP_Client_Connection *_Nonnull tcp_conn, const uint8_t data[_Nonnull TCP_SERVER_HANDSHAKE_SIZE])
 {
     uint8_t plain[CRYPTO_PUBLIC_KEY_SIZE + CRYPTO_NONCE_SIZE];
     const int len = decrypt_data_symmetric(tcp_conn->con.mem, tcp_conn->con.shared_key, data, data + CRYPTO_NONCE_SIZE,
@@ -595,7 +595,7 @@ void forwarding_handler(TCP_Client_Connection *con, forwarded_response_cb *forwa
 /** Create new TCP connection to ip_port/public_key */
 TCP_Client_Connection *new_tcp_connection(
     const Logger *logger, const Memory *mem, const Mono_Time *mono_time, const Random *rng, const Network *ns,
-    const IP_Port *ip_port, const uint8_t *public_key, const uint8_t *self_public_key, const uint8_t *self_secret_key,
+    const IP_Port *ip_port, const uint8_t *public_key, const uint8_t *self_public_key, const uint8_t self_secret_key[CRYPTO_SECRET_KEY_SIZE],
     const TCP_Proxy_Info *proxy_info, Net_Profile *net_profile)
 {
     assert(logger != nullptr);

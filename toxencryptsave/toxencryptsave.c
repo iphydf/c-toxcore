@@ -421,9 +421,9 @@ bool tox_is_data_encrypted(const uint8_t data[_Nonnull TOX_PASS_ENCRYPTION_EXTRA
     return memcmp(data, TOX_ENC_SAVE_MAGIC_NUMBER, TOX_ENC_SAVE_MAGIC_LENGTH) == 0;
 }
 
-const char *tox_err_key_derivation_to_string(Tox_Err_Key_Derivation error)
+const char *tox_err_key_derivation_to_string(Tox_Err_Key_Derivation value)
 {
-    switch (error) {
+    switch (value) {
         case TOX_ERR_KEY_DERIVATION_OK:
             return "TOX_ERR_KEY_DERIVATION_OK";
         case TOX_ERR_KEY_DERIVATION_NULL:
@@ -434,9 +434,9 @@ const char *tox_err_key_derivation_to_string(Tox_Err_Key_Derivation error)
     return "<invalid Tox_Err_Key_Derivation>";
 }
 
-const char *tox_err_encryption_to_string(Tox_Err_Encryption error)
+const char *tox_err_encryption_to_string(Tox_Err_Encryption value)
 {
-    switch (error) {
+    switch (value) {
         case TOX_ERR_ENCRYPTION_OK:
             return "TOX_ERR_ENCRYPTION_OK";
         case TOX_ERR_ENCRYPTION_NULL:
@@ -449,9 +449,9 @@ const char *tox_err_encryption_to_string(Tox_Err_Encryption error)
     return "<invalid Tox_Err_Encryption>";
 }
 
-const char *tox_err_decryption_to_string(Tox_Err_Decryption error)
+const char *tox_err_decryption_to_string(Tox_Err_Decryption value)
 {
-    switch (error) {
+    switch (value) {
         case TOX_ERR_DECRYPTION_OK:
             return "TOX_ERR_DECRYPTION_OK";
         case TOX_ERR_DECRYPTION_NULL:
@@ -468,9 +468,9 @@ const char *tox_err_decryption_to_string(Tox_Err_Decryption error)
     return "<invalid Tox_Err_Decryption>";
 }
 
-const char *tox_err_get_salt_to_string(Tox_Err_Get_Salt error)
+const char *tox_err_get_salt_to_string(Tox_Err_Get_Salt value)
 {
-    switch (error) {
+    switch (value) {
         case TOX_ERR_GET_SALT_OK:
             return "TOX_ERR_GET_SALT_OK";
         case TOX_ERR_GET_SALT_NULL:

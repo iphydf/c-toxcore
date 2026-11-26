@@ -35,7 +35,7 @@ Announcements *_Nullable new_announcements(
  *
  * @return true if data is stored, false otherwise.
  */
-bool announce_on_stored(const Announcements *_Nonnull announce, const uint8_t *_Nonnull data_public_key,
+bool announce_on_stored(const Announcements *_Nonnull announce, const uint8_t data_public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE],
                         announce_on_retrieve_cb *_Nullable on_retrieve_callback, void *_Nullable object);
 void announce_set_synch_offset(Announcements *_Nonnull announce, int32_t synch_offset);
 
@@ -49,7 +49,7 @@ void kill_announcements(Announcements *_Nullable announce);
 uint16_t announce_get_bucketnum(const uint8_t *_Nonnull base, const uint8_t *_Nonnull pk);
 
 /** @private */
-bool announce_store_data(Announcements *_Nonnull announce, const uint8_t *_Nonnull data_public_key,
+bool announce_store_data(Announcements *_Nonnull announce, const uint8_t data_public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE],
                          const uint8_t *_Nullable data, uint32_t length, uint32_t timeout);
 /** @private */
 #define MAX_MAX_ANNOUNCEMENT_TIMEOUT 900

@@ -412,4 +412,30 @@ TEST(Tox, OneTest)
     tox_kill(tox2);
 }
 
+uint32_t no_state_size(const Messenger *_Nonnull m) { return 0; }
+uint8_t *_Nonnull no_state_save(const Messenger *_Nonnull m, uint8_t *_Nonnull data) { return data; }
+State_Load_Status no_state_load(
+    Messenger *_Nonnull m, const uint8_t *_Nonnull data, uint32_t length)
+{
+    return STATE_LOAD_STATUS_CONTINUE;
+}
+
+TEST(Tox, StatePluginsStopAtTheMostTheirCountHolds)
+{
+    Tox *tox = tox_new(nullptr, nullptr);
+    ASSERT_NE(tox, nullptr);
+    Messenger *m = tox->m;
+
+    while (m->options.state_plugins_count < UINT8_MAX) {
+        ASSERT_TRUE(m_register_state_plugin(
+            m, static_cast<State_Type>(200), no_state_size, no_state_load, no_state_save));
+    }
+
+    EXPECT_FALSE(m_register_state_plugin(
+        m, static_cast<State_Type>(200), no_state_size, no_state_load, no_state_save));
+    EXPECT_EQ(m->options.state_plugins_count, UINT8_MAX);
+
+    tox_kill(tox);
+}
+
 }  // namespace

@@ -57,14 +57,14 @@ IP_Port tcp_con_ip_port(const TCP_Client_Connection *_Nonnull con);
 TCP_Client_Status tcp_con_status(const TCP_Client_Connection *_Nonnull con);
 
 void *_Nullable tcp_con_custom_object(const TCP_Client_Connection *_Nonnull con);
-uint32_t tcp_con_custom_uint(const TCP_Client_Connection *_Nonnull con);
+int tcp_con_custom_number(const TCP_Client_Connection *_Nonnull con);
 void tcp_con_set_custom_object(TCP_Client_Connection *_Nonnull con, void *_Nonnull object);
-void tcp_con_set_custom_uint(TCP_Client_Connection *_Nonnull con, uint32_t value);
+void tcp_con_set_custom_number(TCP_Client_Connection *_Nonnull con, int value);
 
 /** Create new TCP connection to ip_port/public_key */
 TCP_Client_Connection *_Nullable new_tcp_connection(
     const Logger *_Nonnull logger, const Memory *_Nonnull mem, const Mono_Time *_Nonnull mono_time, const Random *_Nonnull rng, const Network *_Nonnull ns,
-    const IP_Port *_Nonnull ip_port, const uint8_t *_Nonnull public_key, const uint8_t *_Nonnull self_public_key, const uint8_t *_Nonnull self_secret_key,
+    const IP_Port *_Nonnull ip_port, const uint8_t *_Nonnull public_key, const uint8_t *_Nonnull self_public_key, const uint8_t self_secret_key[_Nonnull CRYPTO_SECRET_KEY_SIZE],
     const TCP_Proxy_Info *_Nullable proxy_info, Net_Profile *_Nullable net_profile);
 /** Run the TCP connection */
 void do_tcp_connection(const Logger *_Nonnull logger, const Mono_Time *_Nonnull mono_time,
@@ -84,7 +84,7 @@ void onion_response_handler(TCP_Client_Connection *_Nonnull con, tcp_onion_respo
 int send_forward_request_tcp(const Logger *_Nonnull logger, TCP_Client_Connection *_Nonnull con, const IP_Port *_Nonnull dest, const uint8_t *_Nonnull data, uint16_t length);
 void forwarding_handler(TCP_Client_Connection *_Nonnull con, forwarded_response_cb *_Nonnull forwarded_response_callback, void *_Nonnull object);
 
-typedef int tcp_routing_response_cb(void *_Nonnull object, uint8_t connection_id, const uint8_t *_Nonnull public_key);
+typedef int tcp_routing_response_cb(void *_Nonnull object, uint8_t connection_id, const uint8_t public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE]);
 typedef int tcp_routing_status_cb(void *_Nonnull object, uint32_t number, uint8_t connection_id, uint8_t status);
 
 /**
@@ -123,7 +123,7 @@ typedef int tcp_routing_data_cb(void *_Nonnull object, uint32_t number, uint8_t 
 int send_data(const Logger *_Nonnull logger, TCP_Client_Connection *_Nonnull con, uint8_t con_id, const uint8_t *_Nonnull data, uint16_t length);
 void routing_data_handler(TCP_Client_Connection *_Nonnull con, tcp_routing_data_cb *_Nonnull data_callback, void *_Nonnull object);
 
-typedef int tcp_oob_data_cb(void *_Nonnull object, const uint8_t *_Nonnull public_key, const uint8_t *_Nonnull data, uint16_t length,
+typedef int tcp_oob_data_cb(void *_Nonnull object, const uint8_t public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE], const uint8_t *_Nonnull data, uint16_t length,
                             void *_Nullable userdata);
 
 /**

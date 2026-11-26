@@ -65,7 +65,7 @@ Net_Crypto *_Nonnull friendconn_net_crypto(const Friend_Connections *_Nonnull fr
  * @return friendcon_id corresponding to the real public key on success.
  * @retval -1 on failure.
  */
-int getfriend_conn_id_pk(const Friend_Connections *_Nonnull fr_c, const uint8_t *_Nonnull real_pk);
+int getfriend_conn_id_pk(const Friend_Connections *_Nonnull fr_c, const uint8_t real_pk[_Nonnull CRYPTO_PUBLIC_KEY_SIZE]);
 
 /** @brief Increases lock_count for the connection with friendcon_id by 1.
  *
@@ -88,7 +88,7 @@ unsigned int friend_con_connected(const Friend_Connections *_Nonnull fr_c, int f
  */
 int get_friendcon_public_keys(uint8_t *_Nullable real_pk, uint8_t *_Nullable dht_temp_pk, const Friend_Connections *_Nonnull fr_c, int friendcon_id);
 /** Set temp dht key for connection. */
-void set_dht_temp_pk(Friend_Connections *_Nonnull fr_c, int friendcon_id, const uint8_t *_Nonnull dht_temp_pk, void *_Nullable userdata);
+void set_dht_temp_pk(Friend_Connections *_Nonnull fr_c, int friendcon_id, const uint8_t dht_temp_pk[_Nonnull CRYPTO_PUBLIC_KEY_SIZE], void *_Nullable userdata);
 
 typedef int global_status_cb(void *_Nullable object, int friendcon_id, bool status, void *_Nullable userdata);
 
@@ -123,7 +123,7 @@ int friend_connection_crypt_connection_id(const Friend_Connections *_Nonnull fr_
  * @retval -1 on failure.
  * @return connection id on success.
  */
-int new_friend_connection(Friend_Connections *_Nonnull fr_c, const uint8_t *_Nonnull real_public_key);
+int new_friend_connection(Friend_Connections *_Nonnull fr_c, const uint8_t real_public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE]);
 
 /** @brief Kill a friend connection.
  *
@@ -147,7 +147,7 @@ typedef int fr_request_cb(
  *
  * This function will be called every time a friend request packet is received.
  */
-void set_friend_request_callback(Friend_Connections *_Nonnull fr_c, fr_request_cb *_Nullable fr_request_callback, void *_Nullable object);
+void set_friend_request_callback(Friend_Connections *_Nonnull fr_c, fr_request_cb *_Nonnull fr_request_callback, void *_Nonnull object);
 
 /** Create new friend_connections instance. */
 Friend_Connections *_Nullable new_friend_connections(const Logger *_Nonnull logger, const Memory *_Nonnull mem, const Mono_Time *_Nonnull mono_time, const Network *_Nonnull ns,

@@ -80,11 +80,11 @@ static void on_group_moderation(const Tox_Event_Group_Moderation *event, void *u
 static void common_init(ToxNode *self, TopicState *state)
 {
     Tox_Dispatch *dispatch = tox_node_get_dispatch(self);
-    tox_events_callback_group_self_join(dispatch, on_group_self_join);
-    tox_events_callback_group_peer_join(dispatch, on_group_peer_join);
-    tox_events_callback_group_topic(dispatch, on_group_topic);
-    tox_events_callback_group_topic_lock(dispatch, on_group_topic_lock);
-    tox_events_callback_group_moderation(dispatch, on_group_moderation);
+    tox_dispatch_callback_group_self_join(dispatch, on_group_self_join);
+    tox_dispatch_callback_group_peer_join(dispatch, on_group_peer_join);
+    tox_dispatch_callback_group_topic(dispatch, on_group_topic);
+    tox_dispatch_callback_group_topic_lock(dispatch, on_group_topic_lock);
+    tox_dispatch_callback_group_moderation(dispatch, on_group_moderation);
 
     for (uint32_t i = 0; i < NUM_PEERS; ++i) {
         state->peer_ids[i] = UINT32_MAX;

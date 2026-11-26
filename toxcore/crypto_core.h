@@ -39,6 +39,11 @@ extern "C" {
 #define CRYPTO_SIGN_SECRET_KEY_SIZE    64
 
 /**
+ * @brief The number of bytes in the seed a signature key pair is made from.
+ */
+#define CRYPTO_SIGN_SEED_SIZE          32
+
+/**
  * @brief The number of bytes in a Tox public key used for encryption.
  */
 #define CRYPTO_PUBLIC_KEY_SIZE         32

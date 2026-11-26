@@ -14,10 +14,10 @@ static void *_Nullable os_malloc(void *_Nonnull self, uint32_t size)
     return malloc(size);
 }
 
-static void *_Nullable os_realloc(void *_Nonnull self, void *_Nullable ptr, uint32_t size)
+static void *_Nullable os_realloc(void *_Nonnull self, void *_Nullable ptr, uint32_t new_size)
 {
     // cppcheck-suppress misra-c2012-21.3
-    return realloc(ptr, size);
+    return realloc(ptr, new_size);
 }
 
 static void os_dealloc(void *_Nonnull self, void *_Nullable ptr)

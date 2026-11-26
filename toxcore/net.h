@@ -99,28 +99,41 @@ typedef int net_getsockopt_cb(void *_Nullable obj, Socket sock, int level, int o
 typedef int net_setsockopt_cb(void *_Nullable obj, Socket sock, int level, int optname, const void *_Nonnull optval, size_t optlen);
 typedef int net_getaddrinfo_cb(void *_Nullable obj, const Memory *_Nonnull mem, const char *_Nonnull address, int family, int protocol, IP_Port *_Nullable *_Nonnull addrs);
 typedef int net_freeaddrinfo_cb(void *_Nullable obj, const Memory *_Nonnull mem, IP_Port *_Nullable addrs);
+/** @brief The broadcast addresses of the IPv4 network interfaces.
+ *
+ * An interface without a broadcast address that is the loopback gives its
+ * own address.
+ *
+ * @param ips Where the addresses go.
+ * @param ips_count How many addresses fit in `ips`.
+ *
+ * @return how many addresses were put in `ips`, or -1 if the interfaces
+ *   couldn't be found.
+ */
+typedef int net_broadcast_addresses_cb(void *_Nullable obj, const Memory *_Nonnull mem, IP ips[_Nonnull], uint32_t ips_count);
 
 typedef struct Network_Funcs {
-    net_close_cb *_Nullable close;
-    net_accept_cb *_Nullable accept;
-    net_bind_cb *_Nullable bind;
-    net_listen_cb *_Nullable listen;
-    net_connect_cb *_Nullable connect;
-    net_recvbuf_cb *_Nullable recvbuf;
-    net_recv_cb *_Nullable recv;
-    net_recvfrom_cb *_Nullable recvfrom;
-    net_send_cb *_Nullable send;
-    net_sendto_cb *_Nullable sendto;
-    net_socket_cb *_Nullable socket;
-    net_socket_nonblock_cb *_Nullable socket_nonblock;
-    net_getsockopt_cb *_Nullable getsockopt;
-    net_setsockopt_cb *_Nullable setsockopt;
-    net_getaddrinfo_cb *_Nullable getaddrinfo;
-    net_freeaddrinfo_cb *_Nullable freeaddrinfo;
+    net_close_cb *_Nonnull close;
+    net_accept_cb *_Nonnull accept;
+    net_bind_cb *_Nonnull bind;
+    net_listen_cb *_Nonnull listen;
+    net_connect_cb *_Nonnull connect;
+    net_recvbuf_cb *_Nonnull recvbuf;
+    net_recv_cb *_Nonnull recv;
+    net_recvfrom_cb *_Nonnull recvfrom;
+    net_send_cb *_Nonnull send;
+    net_sendto_cb *_Nonnull sendto;
+    net_socket_cb *_Nonnull socket;
+    net_socket_nonblock_cb *_Nonnull socket_nonblock;
+    net_getsockopt_cb *_Nonnull getsockopt;
+    net_setsockopt_cb *_Nonnull setsockopt;
+    net_getaddrinfo_cb *_Nonnull getaddrinfo;
+    net_freeaddrinfo_cb *_Nonnull freeaddrinfo;
+    net_broadcast_addresses_cb *_Nonnull broadcast_addresses;
 } Network_Funcs;
 
 typedef struct Network {
-    const Network_Funcs *_Nullable funcs;
+    const Network_Funcs *_Nonnull funcs;
     void *_Nullable obj;
 } Network;
 
@@ -140,6 +153,7 @@ int ns_getsockopt(const Network *_Nonnull ns, Socket sock, int level, int optnam
 int ns_setsockopt(const Network *_Nonnull ns, Socket sock, int level, int optname, const void *_Nonnull optval, size_t optlen);
 int ns_getaddrinfo(const Network *_Nonnull ns, const Memory *_Nonnull mem, const char *_Nonnull address, int family, int protocol, IP_Port *_Nullable *_Nonnull addrs);
 int ns_freeaddrinfo(const Network *_Nonnull ns, const Memory *_Nonnull mem, IP_Port *_Nullable addrs);
+int ns_broadcast_addresses(const Network *_Nonnull ns, const Memory *_Nonnull mem, IP ips[_Nonnull], uint32_t ips_count);
 
 bool net_family_is_unspec(Family family);
 bool net_family_is_ipv4(Family family);

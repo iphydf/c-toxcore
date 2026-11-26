@@ -13,6 +13,7 @@
 #include <stdint.h>
 
 #include "attributes.h"
+#include "crypto_core.h"
 #include "mem.h"
 #include "net.h"
 #include "network.h"
@@ -29,7 +30,7 @@ typedef struct Broadcast_Info Broadcast_Info;
  *
  * @return true on success, false on failure.
  */
-bool lan_discovery_send(const Networking_Core *_Nonnull net, const Broadcast_Info *_Nonnull broadcast, const uint8_t *_Nonnull dht_pk, uint16_t port);
+bool lan_discovery_send(const Networking_Core *_Nonnull net, const Broadcast_Info *_Nonnull broadcast, const uint8_t dht_pk[_Nonnull CRYPTO_PUBLIC_KEY_SIZE], uint16_t port);
 
 /**
  * Discovers broadcast devices and IP addresses.

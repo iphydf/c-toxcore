@@ -52,21 +52,21 @@ void bs_list_free(BS_List *_Nullable list);
  * @retval >=0 id associated with data
  * @retval -1 failure
  */
-int bs_list_find(const BS_List *_Nonnull list, const uint8_t *_Nonnull data);
+int bs_list_find(const BS_List *_Nonnull list, const void *_Nonnull data);
 
 /** @brief Add an element with associated id to the list
  *
  * @retval true  success
  * @retval false failure (data already in list)
  */
-bool bs_list_add(BS_List *_Nonnull list, const uint8_t *_Nonnull data, int id);
+bool bs_list_add(BS_List *_Nonnull list, const void *_Nonnull data, int id);
 
 /** @brief Remove element from the list
  *
  * @retval true  success
  * @retval false failure (element not found or id does not match)
  */
-bool bs_list_remove(BS_List *_Nonnull list, const uint8_t *_Nonnull data, int id);
+bool bs_list_remove(BS_List *_Nonnull list, const void *_Nonnull data, int id);
 
 #ifdef __cplusplus
 } /* extern "C" */

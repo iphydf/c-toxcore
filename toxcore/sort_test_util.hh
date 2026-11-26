@@ -32,13 +32,13 @@ constexpr Sort_Funcs sort_funcs()
         const T *value = static_cast<const T *>(val);
         vec[index] = *value;
     },
-    [](void *_Nonnull arr, std::uint32_t index, std::uint32_t size) -> void *_Nonnull
+    [](void *_Nonnull arr, std::uint32_t index, std::uint32_t count) -> void *_Nonnull
 {
     T *vec = static_cast<T *>(arr);
     return &vec[index];
 }
-, [](const void *_Nonnull object, std::uint32_t size) -> void *_Nonnull { return new T[size]; }
-, [](const void *_Nonnull object, void *_Nonnull arr, std::uint32_t size) {
+, [](const void *_Nonnull object, std::uint32_t count) -> void *_Nonnull { return new T[count]; }
+, [](const void *_Nonnull object, void *_Nonnull arr, std::uint32_t count) {
     delete[] static_cast<T *>(arr);
 },
 }

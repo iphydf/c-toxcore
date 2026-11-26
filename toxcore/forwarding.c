@@ -91,10 +91,14 @@ static uint16_t forwarding_packet_length(uint16_t sendback_data_len, uint16_t da
 static bool create_forwarding_packet(const Forwarding *_Nonnull forwarding,
                                      const uint8_t *_Nullable sendback_data, uint16_t sendback_data_len,
                                      const uint8_t *_Nonnull data, uint16_t length,
-                                     uint8_t *_Nonnull packet)
+                                     uint8_t packet[_Nonnull], uint16_t packet_length)
 {
     packet[0] = NET_PACKET_FORWARDING;
     if (sendback_data_len == 0) {
+        if (packet_length < 1 + 1 + length) {
+            return false;
+        }
+
         packet[1] = 0;
         memcpy(packet + 1 + 1, data, length);
     } else {
@@ -103,6 +107,11 @@ static bool create_forwarding_packet(const Forwarding *_Nonnull forwarding,
         }
 
         const uint16_t sendback_len = TIMED_AUTH_SIZE + sendback_data_len;
+
+        if (packet_length < 1 + 1 + sendback_len + length) {
+            return false;
+        }
+
         packet[1] = sendback_len;
         generate_timed_auth(forwarding->mono_time, SENDBACK_TIMEOUT, forwarding->hmac_key, sendback_data,
                             sendback_data_len, packet + 1 + 1);
@@ -128,7 +137,7 @@ bool send_forwarding(const Forwarding *forwarding, const IP_Port *dest,
 
     const uint16_t len = forwarding_packet_length(sendback_data_len, length);
     VLA(uint8_t, packet, len);
-    create_forwarding_packet(forwarding, sendback_data, sendback_data_len, data, length, packet);
+    create_forwarding_packet(forwarding, sendback_data, sendback_data_len, data, length, packet, len);
     return sendpacket(forwarding->net, dest, packet, len) == len;
 }
 
@@ -155,7 +164,7 @@ static bool handle_forward_request_dht(const Forwarding *_Nonnull forwarding,
     VLA(uint8_t, forwarding_packet, len);
 
     create_forwarding_packet(forwarding, sendback_data, sendback_data_len, forward_data, forward_data_len,
-                             forwarding_packet);
+                             forwarding_packet, len);
 
     return route_packet(forwarding->dht, public_key, forwarding_packet, len) == len;
 }

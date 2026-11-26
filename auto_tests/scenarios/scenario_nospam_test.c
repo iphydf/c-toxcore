@@ -34,7 +34,7 @@ static void alice_script(ToxNode *self, void *ctx)
     state->nospam_changed = true;
 
     tox_node_log(self, "Waiting for friend request from Bob...");
-    WAIT_FOR_EVENT(TOX_EVENT_FRIEND_REQUEST);
+    WAIT_FOR_EVENT(TOX_EVENT_TYPE_FRIEND_REQUEST);
     tox_node_log(self, "Received friend request from Bob!");
 }
 

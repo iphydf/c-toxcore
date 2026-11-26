@@ -85,14 +85,14 @@ bool bin_pack_obj(bin_pack_cb *callback, const void *obj, const Logger *logger, 
     return callback(obj, logger, &bp);
 }
 
-uint32_t bin_pack_obj_array_b_size(bin_pack_array_cb *callback, const void *arr, uint32_t arr_size, const Logger *logger)
+uint32_t bin_pack_obj_array_b_size(bin_pack_array_cb *callback, const void *arr, uint32_t arr_count, const Logger *logger)
 {
     Bin_Pack bp;
     bin_pack_init(&bp, nullptr, 0);
     if (arr == nullptr) {
-        assert(arr_size == 0);
+        assert(arr_count == 0);
     }
-    for (uint32_t i = 0; i < arr_size; ++i) {
+    for (uint32_t i = 0; i < arr_count; ++i) {
         if (!callback(arr, i, logger, &bp)) {
             return UINT32_MAX;
         }
@@ -100,14 +100,14 @@ uint32_t bin_pack_obj_array_b_size(bin_pack_array_cb *callback, const void *arr,
     return bp.bytes_pos;
 }
 
-bool bin_pack_obj_array_b(bin_pack_array_cb *callback, const void *arr, uint32_t arr_size, const Logger *logger, uint8_t *buf, uint32_t buf_size)
+bool bin_pack_obj_array_b(bin_pack_array_cb *callback, const void *arr, uint32_t arr_count, const Logger *logger, uint8_t *buf, uint32_t buf_size)
 {
     Bin_Pack bp;
     bin_pack_init(&bp, buf, buf_size);
     if (arr == nullptr) {
-        assert(arr_size == 0);
+        assert(arr_count == 0);
     }
-    for (uint32_t i = 0; i < arr_size; ++i) {
+    for (uint32_t i = 0; i < arr_count; ++i) {
         if (!callback(arr, i, logger, &bp)) {
             return false;
         }
@@ -115,18 +115,18 @@ bool bin_pack_obj_array_b(bin_pack_array_cb *callback, const void *arr, uint32_t
     return true;
 }
 
-bool bin_pack_obj_array(Bin_Pack *bp, bin_pack_array_cb *callback, const void *arr, uint32_t arr_size, const Logger *logger)
+bool bin_pack_obj_array(Bin_Pack *bp, bin_pack_array_cb *callback, const void *arr, uint32_t arr_count, const Logger *logger)
 {
     if (arr == nullptr) {
-        assert(arr_size == 0);
+        assert(arr_count == 0);
         return bin_pack_array(bp, 0);
     }
 
-    if (!bin_pack_array(bp, arr_size)) {
+    if (!bin_pack_array(bp, arr_count)) {
         return false;
     }
 
-    for (uint32_t i = 0; i < arr_size; ++i) {
+    for (uint32_t i = 0; i < arr_count; ++i) {
         if (!callback(arr, i, logger, bp)) {
             return false;
         }

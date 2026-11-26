@@ -521,32 +521,32 @@ uint32_t tox_group_peer_ip_string_max_length(void);
  * number or ID is invalid, the return value is unspecified.
  *
  * @param group_number The group number of the group we wish to query.
- * @param peer_id The ID of the peer whose IP address length we want to
+ * @param peer_number The number of the peer whose IP address length we want to
  *   retrieve.
  */
-size_t tox_group_peer_get_ip_address_size(const Tox *_Nonnull tox, uint32_t group_number, uint32_t peer_id,
+size_t tox_group_peer_get_ip_address_size(const Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_number,
         Tox_Err_Group_Peer_Query *_Nullable error);
 /**
- * Write the IP address associated with the designated peer_id for the
+ * Write the IP address associated with the designated peer_number for the
  * designated group number to ip_addr.
  *
  * If the peer is forcing TCP connections a placeholder value will be written
  * instead, indicating that their real IP address is unknown to us.
  *
- * If `peer_id` designates ourself, it will write either our own IP address or a
+ * If `peer_number` designates ourself, it will write either our own IP address or a
  * placeholder value, depending on whether or not we're forcing TCP connections.
  *
  * Call tox_group_peer_get_ip_address_size to determine the allocation size for
  * the `ip_addr` parameter.
  *
  * @param group_number The group number of the group we wish to query.
- * @param peer_id The ID of the peer whose public key we wish to retrieve.
+ * @param peer_number The number of the peer whose public key we wish to retrieve.
  * @param ip_addr A valid memory region large enough to store the IP address
  *   string. If this parameter is NULL, this function call has no effect.
  *
  * @return true on success.
  */
-bool tox_group_peer_get_ip_address(const Tox *_Nonnull tox, uint32_t group_number, uint32_t peer_id, uint8_t *_Nonnull ip_addr,
+bool tox_group_peer_get_ip_address(const Tox *_Nonnull tox, Tox_Group_Number group_number, Tox_Group_Peer_Number peer_number, uint8_t *_Nonnull ip_addr,
                                    Tox_Err_Group_Peer_Query *_Nullable error);
 
 #ifdef __cplusplus

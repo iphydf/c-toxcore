@@ -17,7 +17,7 @@ extern "C" {
 /** @brief Compare elements with a less-than ordering: `a < b`. */
 typedef bool sort_less_cb(const void *_Nonnull object, const void *_Nonnull a, const void *_Nonnull b);
 /** @brief Get element from array at index. */
-typedef const void *sort_get_cb(const void *_Nonnull arr, uint32_t index);
+typedef const void *_Nonnull sort_get_cb(const void *_Nonnull arr, uint32_t index);
 /** @brief Set element in array at index to new value (perform copy). */
 typedef void sort_set_cb(void *_Nonnull arr, uint32_t index, const void *_Nonnull val);
 /** @brief Get a sub-array at an index of a given size (mutable pointer).
@@ -25,15 +25,15 @@ typedef void sort_set_cb(void *_Nonnull arr, uint32_t index, const void *_Nonnul
  * Used to index in the temporary array allocated by `sort_alloc_cb` and get
  * a sub-array for working memory.
  */
-typedef void *sort_subarr_cb(void *_Nonnull arr, uint32_t index, uint32_t size);
+typedef void *_Nonnull sort_subarr_cb(void *_Nonnull arr, uint32_t index, uint32_t count);
 /** @brief Allocate a new array of the element type.
  *
- * @param size The array size in elements of type T (not byte size). This value
+ * @param count The array size in elements of type T (not byte size). This value
  *   is always exactly the input array size as passed to `merge_sort`.
  */
-typedef void *sort_alloc_cb(const void *_Nonnull object, uint32_t size);
+typedef void *sort_alloc_cb(const void *_Nonnull object, uint32_t count);
 /** @brief Free the element type array. */
-typedef void sort_delete_cb(const void *_Nonnull object, void *_Nonnull arr, uint32_t size);
+typedef void sort_delete_cb(const void *_Nonnull object, void *_Nonnull arr, uint32_t count);
 
 /** @brief Virtual function table for getting/setting elements in an array and
  * comparing them.
@@ -54,7 +54,7 @@ typedef struct Sort_Funcs {
     sort_delete_cb *_Nonnull delete_callback;
 } Sort_Funcs;
 
-/** @brief Non-recursive merge sort function to sort `arr[0...arr_size-1]`.
+/** @brief Non-recursive merge sort function to sort `arr[0...arr_count-1]`.
  *
  * Avoids `memcpy` and avoids treating elements as byte arrays. Instead, uses
  * callbacks to index in arrays and copy elements. This makes it quite a bit
@@ -78,11 +78,11 @@ typedef struct Sort_Funcs {
  * arrays (up to 16 elements), it's about 50% faster than `qsort`.
  *
  * @param[in,out] arr An array of type T.
- * @param arr_size Number of elements in @p arr (count, not byte size).
+ * @param arr_count Number of elements in @p arr (count, not byte size).
  * @param[in] object Comparator object.
  * @param[in] funcs Callback struct for elements of type T.
  */
-bool merge_sort(void *_Nonnull arr, uint32_t arr_size, const void *_Nonnull object, const Sort_Funcs *_Nonnull funcs);
+bool merge_sort(void *_Nonnull arr, uint32_t arr_count, const void *_Nonnull object, const Sort_Funcs *_Nonnull funcs);
 
 /**
  * @brief Merge sort like above but with a pre-allocated buffer.
@@ -98,14 +98,14 @@ bool merge_sort(void *_Nonnull arr, uint32_t arr_size, const void *_Nonnull obje
  * implemented, and the caller can use a stack-allocated buffer.
  *
  * @param[in,out] arr An array of type T.
- * @param arr_size Number of elements in @p arr (count, not byte size).
- * @param[in,out] tmp A buffer of size `tmp_size` for temporary storage.
- * @param tmp_size Number of elements in @p tmp (count, not byte size). Must be
- *   at least as large as `arr_size`.
+ * @param arr_count Number of elements in @p arr (count, not byte size).
+ * @param[in,out] tmp A buffer of `tmp_count` elements for temporary storage.
+ * @param tmp_count Number of elements in @p tmp (count, not byte size). Must be
+ *   at least as large as `arr_count`.
  * @param[in] object Comparator object.
  * @param[in] funcs Callback struct for elements of type T.
  */
-void merge_sort_with_buf(void *_Nonnull arr, uint32_t arr_size, void *_Nonnull tmp, uint32_t tmp_size, const void *_Nonnull object, const Sort_Funcs *_Nonnull funcs);
+void merge_sort_with_buf(void *_Nonnull arr, uint32_t arr_count, void *_Nonnull tmp, uint32_t tmp_count, const void *_Nonnull object, const Sort_Funcs *_Nonnull funcs);
 
 #ifdef __cplusplus
 } /* extern "C" */

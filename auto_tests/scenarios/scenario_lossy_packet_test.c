@@ -26,7 +26,7 @@ static void bob_script(ToxNode *self, void *ctx)
     WAIT_UNTIL(tox_node_is_friend_connected(self, 0));
 
     tox_node_log(self, "Waiting for lossy packet from Alice...");
-    WAIT_FOR_EVENT(TOX_EVENT_FRIEND_LOSSY_PACKET);
+    WAIT_FOR_EVENT(TOX_EVENT_TYPE_FRIEND_LOSSY_PACKET);
     tox_node_log(self, "Received lossy packet from Alice!");
 }
 

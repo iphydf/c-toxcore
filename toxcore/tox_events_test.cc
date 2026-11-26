@@ -12,7 +12,7 @@
 #include "crypto_core.h"
 #include "events/events_alloc.h"
 #include "mem.h"
-#include "tox_event.h"
+#include "tox_event_struct.h"
 #include "tox_private.h"
 
 namespace {
@@ -53,7 +53,7 @@ TEST(ToxEvents, NullEventsPacksToEmptyArray)
 {
     std::array<std::uint8_t, 1> bytes;
     ASSERT_EQ(tox_events_bytes_size(nullptr), bytes.size());
-    tox_events_get_bytes(nullptr, bytes.data());
+    EXPECT_TRUE(tox_events_get_bytes(nullptr, bytes.data(), bytes.size(), nullptr));
     EXPECT_EQ(bytes, (std::array<std::uint8_t, 1>{0x90}));
 }
 
@@ -67,8 +67,12 @@ TEST(ToxEvents, PackedEventsCanBeUnpacked)
     ASSERT_NE(events, nullptr);
     std::array<std::uint8_t, 4> bytes;
     ASSERT_EQ(tox_events_bytes_size(events), bytes.size());
-    tox_events_get_bytes(events, bytes.data());
+    EXPECT_TRUE(tox_events_get_bytes(events, bytes.data(), bytes.size(), nullptr));
     EXPECT_EQ(bytes, (std::array<std::uint8_t, 4>{0x91, 0x92, 0x00, 0x01}));
+
+    Tox_Err_Events_Get_Bytes error;
+    EXPECT_FALSE(tox_events_get_bytes(events, bytes.data(), bytes.size() - 1, &error));
+    EXPECT_EQ(error, TOX_ERR_EVENTS_GET_BYTES_TOO_SMALL);
     tox_events_free(events);
 }
 

@@ -25,10 +25,10 @@ static void *_Nullable os_secure_malloc(void *_Nullable self, uint32_t size)
     return sodium_malloc(units * OS_SECURE_MEMORY_ALIGNMENT);
 }
 
-static void *_Nullable os_secure_realloc(void *_Nullable self, void *_Nullable ptr, uint32_t size)
+static void *_Nullable os_secure_realloc(void *_Nullable self, void *_Nullable ptr, uint32_t new_size)
 {
     // We can't resize, because libsodium doesn't tell us the size of the old allocation.
-    return ptr == nullptr ? os_secure_malloc(self, size) : nullptr;
+    return ptr == nullptr ? os_secure_malloc(self, new_size) : nullptr;
 }
 
 static void os_secure_dealloc(void *_Nullable self, void *_Nullable ptr)

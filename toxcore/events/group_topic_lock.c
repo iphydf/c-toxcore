@@ -13,6 +13,7 @@
 #include "../mem.h"
 #include "../tox.h"
 #include "../tox_event.h"
+#include "../tox_event_struct.h"
 #include "../tox_events.h"
 #include "../tox_pack.h"
 #include "../tox_struct.h"
@@ -89,7 +90,7 @@ static bool tox_event_group_topic_lock_unpack_into(Tox_Event_Group_Topic_Lock *_
 
 const Tox_Event_Group_Topic_Lock *tox_event_get_group_topic_lock(const Tox_Event *event)
 {
-    return event->type == TOX_EVENT_GROUP_TOPIC_LOCK ? event->data.group_topic_lock : nullptr;
+    return event->type == TOX_EVENT_TYPE_GROUP_TOPIC_LOCK ? event->data.group_topic_lock : nullptr;
 }
 
 Tox_Event_Group_Topic_Lock *tox_event_group_topic_lock_new(const Memory *mem)
@@ -121,7 +122,7 @@ static void tox_events_add_group_topic_lock(Tox_Events_State *_Nonnull state, To
     }
 
     Tox_Event event;
-    event.type = TOX_EVENT_GROUP_TOPIC_LOCK;
+    event.type = TOX_EVENT_TYPE_GROUP_TOPIC_LOCK;
     event.data.group_topic_lock = group_topic_lock;
 
     if (!tox_events_add(state->events, &event)) {
@@ -134,14 +135,19 @@ bool tox_event_group_topic_lock_unpack(
     Tox_Event_Group_Topic_Lock **event, Bin_Unpack *bu, const Memory *mem)
 {
     assert(event != nullptr);
-    assert(*event == nullptr);
-    *event = tox_event_group_topic_lock_new(mem);
+    Tox_Event_Group_Topic_Lock *const unpacked = tox_event_group_topic_lock_new(mem);
 
-    if (*event == nullptr) {
+    if (unpacked == nullptr) {
         return false;
     }
 
-    return tox_event_group_topic_lock_unpack_into(*event, bu);
+    if (!tox_event_group_topic_lock_unpack_into(unpacked, bu)) {
+        tox_event_group_topic_lock_free(unpacked, mem);
+        return false;
+    }
+
+    *event = unpacked;
+    return true;
 }
 
 /*****************************************************

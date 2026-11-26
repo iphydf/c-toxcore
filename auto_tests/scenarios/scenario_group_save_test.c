@@ -84,7 +84,7 @@ static void founder_script(ToxNode *self, void *ctx)
 {
     const State *state = (const State *)ctx;
     Tox *tox = tox_node_get_tox(self);
-    tox_events_callback_group_peer_join(tox_node_get_dispatch(self), on_group_peer_join);
+    tox_dispatch_callback_group_peer_join(tox_node_get_dispatch(self), on_group_peer_join);
 
     tox_node_wait_for_self_connected(self);
     tox_node_wait_for_friend_connected(self, 0);
@@ -124,7 +124,7 @@ static void founder_script(ToxNode *self, void *ctx)
 
 static void bob_script(ToxNode *self, void *ctx)
 {
-    tox_events_callback_group_invite(tox_node_get_dispatch(self), on_group_invite);
+    tox_dispatch_callback_group_invite(tox_node_get_dispatch(self), on_group_invite);
     tox_node_wait_for_self_connected(self);
     tox_node_wait_for_friend_connected(self, 0);
 

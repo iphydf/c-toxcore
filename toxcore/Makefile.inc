@@ -155,6 +155,7 @@ libtoxcore_la_SOURCES = ../third_party/cmp/cmp.c \
                         ../toxcore/tox_dispatch.h \
                         ../toxcore/tox_event.c \
                         ../toxcore/tox_event.h \
+                        ../toxcore/tox_event_struct.h \
                         ../toxcore/tox_events.c \
                         ../toxcore/tox_events.h \
                         ../toxcore/tox_log_level.c \

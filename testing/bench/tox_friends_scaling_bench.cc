@@ -306,7 +306,7 @@ struct GroupScalingContext {
                             std::size_t size = tox_events_get_size(batch.get());
                             for (std::size_t k = 0; k < size; ++k) {
                                 const Tox_Event *e = tox_events_get(batch.get(), k);
-                                if (tox_event_get_type(e) == TOX_EVENT_GROUP_INVITE) {
+                                if (tox_event_get_type(e) == TOX_EVENT_TYPE_GROUP_INVITE) {
                                     auto *ev = tox_event_get_group_invite(e);
                                     uint32_t friend_number
                                         = tox_event_group_invite_get_friend_number(ev);
@@ -321,7 +321,8 @@ struct GroupScalingContext {
                                             reinterpret_cast<const uint8_t *>("peer"), 4, nullptr,
                                             0, nullptr);
                                     });
-                                } else if (tox_event_get_type(e) == TOX_EVENT_GROUP_SELF_JOIN) {
+                                } else if (tox_event_get_type(e)
+                                    == TOX_EVENT_TYPE_GROUP_SELF_JOIN) {
                                     auto *ev = tox_event_get_group_self_join(e);
                                     peer_group_numbers[i]
                                         = tox_event_group_self_join_get_group_number(ev);

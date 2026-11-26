@@ -96,7 +96,7 @@ static void delete_entry(Announce_Entry *_Nonnull entry)
 }
 
 /** Return bits (at most 8) from pk starting at index as uint8_t */
-static uint8_t truncate_pk_at_index(const uint8_t *_Nonnull pk, uint16_t index, uint16_t bits)
+static uint8_t truncate_pk_at_index(const uint8_t pk[_Nonnull CRYPTO_PUBLIC_KEY_SIZE], uint16_t index, uint16_t bits)
 {
     assert(bits < 8);
     const uint8_t i = index / 8;
@@ -118,7 +118,7 @@ static Announce_Entry *_Nonnull bucket_of_key(Announcements *_Nonnull announce, 
     return &announce->entries[announce_get_bucketnum(announce->public_key, pk) * ANNOUNCE_BUCKET_SIZE];
 }
 
-static Announce_Entry *_Nullable get_stored(Announcements *_Nonnull announce, const uint8_t *_Nonnull data_public_key)
+static Announce_Entry *_Nullable get_stored(Announcements *_Nonnull announce, const uint8_t data_public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE])
 {
     Announce_Entry *const bucket = bucket_of_key(announce, data_public_key);
 
@@ -140,7 +140,7 @@ static const Announce_Entry *_Nonnull bucket_of_key_const(const Announcements *_
     return &announce->entries[announce_get_bucketnum(announce->public_key, pk) * ANNOUNCE_BUCKET_SIZE];
 }
 
-static const Announce_Entry *_Nullable get_stored_const(const Announcements *_Nonnull announce, const uint8_t *_Nonnull data_public_key)
+static const Announce_Entry *_Nullable get_stored_const(const Announcements *_Nonnull announce, const uint8_t data_public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE])
 {
     const Announce_Entry *const bucket = bucket_of_key_const(announce, data_public_key);
 
@@ -157,7 +157,7 @@ static const Announce_Entry *_Nullable get_stored_const(const Announcements *_No
     return nullptr;
 }
 
-bool announce_on_stored(const Announcements *announce, const uint8_t *data_public_key,
+bool announce_on_stored(const Announcements *announce, const uint8_t data_public_key[CRYPTO_PUBLIC_KEY_SIZE],
                         announce_on_retrieve_cb *on_retrieve_callback, void *object)
 {
     const Announce_Entry *const entry = get_stored_const(announce, data_public_key);
@@ -179,7 +179,7 @@ bool announce_on_stored(const Announcements *announce, const uint8_t *data_publi
  * of greatest 2-adic distance greater than that of the key bucket if one
  * exists, else nullptr.
  */
-static Announce_Entry *_Nullable find_entry_slot(Announcements *_Nonnull announce, const uint8_t *_Nonnull data_public_key)
+static Announce_Entry *_Nullable find_entry_slot(Announcements *_Nonnull announce, const uint8_t data_public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE])
 {
     Announce_Entry *const bucket = bucket_of_key(announce, data_public_key);
 
@@ -208,12 +208,12 @@ static Announce_Entry *_Nullable find_entry_slot(Announcements *_Nonnull announc
     return slot;
 }
 
-static bool would_accept_store_request(Announcements *_Nonnull announce, const uint8_t *_Nonnull data_public_key)
+static bool would_accept_store_request(Announcements *_Nonnull announce, const uint8_t data_public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE])
 {
     return find_entry_slot(announce, data_public_key) != nullptr;
 }
 
-bool announce_store_data(Announcements *announce, const uint8_t *data_public_key,
+bool announce_store_data(Announcements *announce, const uint8_t data_public_key[CRYPTO_PUBLIC_KEY_SIZE],
                          const uint8_t *data, uint32_t length, uint32_t timeout)
 {
     if (length > MAX_ANNOUNCEMENT_SIZE) {
@@ -235,6 +235,8 @@ bool announce_store_data(Announcements *announce, const uint8_t *data_public_key
 
         if (entry_data == nullptr) {
             entry->data = nullptr;  // TODO(iphydf): Is this necessary?
+            entry->length = 0;
+            delete_entry(entry);
             return false;
         }
 
@@ -547,6 +549,10 @@ static int create_reply(Announcements *_Nonnull announce, const IP_Port *_Nonnul
 
     VLA(uint8_t, plain, plain_len);
     const uint8_t *shared_key = dht_get_shared_key_recv(announce->dht, data + 1);
+
+    if (shared_key == nullptr) {
+        return -1;
+    }
 
     if (decrypt_data_symmetric(announce->mem, shared_key,
                                data + 1 + CRYPTO_PUBLIC_KEY_SIZE,

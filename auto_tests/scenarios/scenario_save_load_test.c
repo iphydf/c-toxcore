@@ -42,7 +42,7 @@ static void peer_script(ToxNode *self, void *ctx)
     uint32_t my_index = tox_node_get_index(self);
 
     if (my_index == 1) {
-        tox_events_callback_friend_request(tox_node_get_dispatch(self), on_friend_request);
+        tox_dispatch_callback_friend_request(tox_node_get_dispatch(self), on_friend_request);
     }
 
     WAIT_UNTIL(tox_node_is_self_connected(self));

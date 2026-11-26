@@ -96,6 +96,11 @@ int ns_freeaddrinfo(const Network *ns, const Memory *mem, IP_Port *addrs)
     return ns->funcs->freeaddrinfo(ns->obj, mem, addrs);
 }
 
+int ns_broadcast_addresses(const Network *ns, const Memory *mem, IP ips[], uint32_t ips_count)
+{
+    return ns->funcs->broadcast_addresses(ns->obj, mem, ips, ips_count);
+}
+
 size_t net_pack_bool(uint8_t *bytes, bool v)
 {
     bytes[0] = v ? 1 : 0;

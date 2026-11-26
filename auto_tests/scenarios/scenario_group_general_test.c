@@ -88,8 +88,8 @@ static void founder_script(ToxNode *self, void *ctx)
     Tox *tox = tox_node_get_tox(self);
     Tox_Dispatch *dispatch = tox_node_get_dispatch(self);
 
-    tox_events_callback_group_peer_join(dispatch, on_group_peer_join);
-    tox_events_callback_group_self_join(dispatch, on_group_self_join);
+    tox_dispatch_callback_group_peer_join(dispatch, on_group_peer_join);
+    tox_dispatch_callback_group_self_join(dispatch, on_group_self_join);
 
     tox_node_log(self, "Waiting for self connection...");
     WAIT_UNTIL(tox_node_is_self_connected(self));
@@ -152,11 +152,11 @@ static void peer1_script(ToxNode *self, void *ctx)
     Tox *tox = tox_node_get_tox(self);
     Tox_Dispatch *dispatch = tox_node_get_dispatch(self);
 
-    tox_events_callback_group_peer_join(dispatch, on_group_peer_join);
-    tox_events_callback_group_self_join(dispatch, on_group_self_join);
-    tox_events_callback_group_peer_name(dispatch, on_group_peer_name);
-    tox_events_callback_group_peer_status(dispatch, on_group_peer_status);
-    tox_events_callback_group_peer_exit(dispatch, on_group_peer_exit);
+    tox_dispatch_callback_group_peer_join(dispatch, on_group_peer_join);
+    tox_dispatch_callback_group_self_join(dispatch, on_group_self_join);
+    tox_dispatch_callback_group_peer_name(dispatch, on_group_peer_name);
+    tox_dispatch_callback_group_peer_status(dispatch, on_group_peer_status);
+    tox_dispatch_callback_group_peer_exit(dispatch, on_group_peer_exit);
 
     tox_node_log(self, "Waiting for self connection...");
     WAIT_UNTIL(tox_node_is_self_connected(self));

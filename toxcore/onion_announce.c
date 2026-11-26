@@ -104,9 +104,9 @@ void onion_announce_entry_set_time(Onion_Announce *onion_a, uint32_t entry, uint
  * return -1 on failure.
  * return packet length on success.
  */
-int create_announce_request(const Memory *mem, const Random *rng, uint8_t *packet, uint16_t max_packet_length, const uint8_t *dest_client_id,
-                            const uint8_t *public_key, const uint8_t *secret_key, const uint8_t *ping_id, const uint8_t *client_id,
-                            const uint8_t *data_public_key, uint64_t sendback_data)
+int create_announce_request(const Memory *mem, const Random *rng, uint8_t *packet, uint16_t max_packet_length, const uint8_t dest_client_id[CRYPTO_PUBLIC_KEY_SIZE],
+                            const uint8_t public_key[CRYPTO_PUBLIC_KEY_SIZE], const uint8_t secret_key[CRYPTO_SECRET_KEY_SIZE], const uint8_t ping_id[ONION_PING_ID_SIZE], const uint8_t client_id[CRYPTO_PUBLIC_KEY_SIZE],
+                            const uint8_t data_public_key[CRYPTO_PUBLIC_KEY_SIZE], uint64_t sendback_data)
 {
     if (max_packet_length < ONION_ANNOUNCE_REQUEST_MIN_SIZE) {
         return -1;
@@ -126,7 +126,7 @@ int create_announce_request(const Memory *mem, const Random *rng, uint8_t *packe
     const int len = encrypt_data(mem, dest_client_id, secret_key, packet + 1, plain, sizeof(plain),
                                  packet + 1 + CRYPTO_NONCE_SIZE + CRYPTO_PUBLIC_KEY_SIZE);
 
-    if ((uint32_t)len + 1 + CRYPTO_NONCE_SIZE + CRYPTO_PUBLIC_KEY_SIZE != ONION_ANNOUNCE_REQUEST_MIN_SIZE) {
+    if (len < 0 || (uint32_t)len + 1 + CRYPTO_NONCE_SIZE + CRYPTO_PUBLIC_KEY_SIZE != ONION_ANNOUNCE_REQUEST_MIN_SIZE) {
         return -1;
     }
 
@@ -147,8 +147,8 @@ int create_announce_request(const Memory *mem, const Random *rng, uint8_t *packe
  * return -1 on failure.
  * return 0 on success.
  */
-int create_data_request(const Memory *mem, const Random *rng, uint8_t *packet, uint16_t max_packet_length, const uint8_t *public_key,
-                        const uint8_t *encrypt_public_key, const uint8_t *nonce, const uint8_t *data, uint16_t length)
+int create_data_request(const Memory *mem, const Random *rng, uint8_t *packet, uint16_t max_packet_length, const uint8_t public_key[CRYPTO_PUBLIC_KEY_SIZE],
+                        const uint8_t encrypt_public_key[CRYPTO_PUBLIC_KEY_SIZE], const uint8_t nonce[CRYPTO_NONCE_SIZE], const uint8_t *data, uint16_t length)
 {
     if (DATA_REQUEST_MIN_SIZE + length > max_packet_length) {
         return -1;
@@ -197,9 +197,9 @@ int create_data_request(const Memory *mem, const Random *rng, uint8_t *packet, u
 int send_announce_request(
     const Logger *log, const Memory *mem, const Networking_Core *net, const Random *rng,
     const Onion_Path *path, const Node_format *dest,
-    const uint8_t *public_key, const uint8_t *secret_key,
-    const uint8_t *ping_id, const uint8_t *client_id,
-    const uint8_t *data_public_key, uint64_t sendback_data)
+    const uint8_t public_key[CRYPTO_PUBLIC_KEY_SIZE], const uint8_t secret_key[CRYPTO_SECRET_KEY_SIZE],
+    const uint8_t ping_id[ONION_PING_ID_SIZE], const uint8_t client_id[CRYPTO_PUBLIC_KEY_SIZE],
+    const uint8_t data_public_key[CRYPTO_PUBLIC_KEY_SIZE], uint64_t sendback_data)
 {
     uint8_t request[ONION_ANNOUNCE_REQUEST_MIN_SIZE];
     int len = create_announce_request(mem, rng, request, sizeof(request), dest->public_key, public_key, secret_key, ping_id,
@@ -241,7 +241,7 @@ int send_announce_request(
  */
 int send_data_request(
     const Logger *log, const Memory *mem, const Networking_Core *net, const Random *rng, const Onion_Path *path, const IP_Port *dest,
-    const uint8_t *public_key, const uint8_t *encrypt_public_key, const uint8_t *nonce,
+    const uint8_t public_key[CRYPTO_PUBLIC_KEY_SIZE], const uint8_t encrypt_public_key[CRYPTO_PUBLIC_KEY_SIZE], const uint8_t nonce[CRYPTO_NONCE_SIZE],
     const uint8_t *data, uint16_t length)
 {
     uint8_t request[ONION_MAX_DATA_SIZE];
@@ -270,7 +270,7 @@ int send_data_request(
  * return -1 if no
  * return position in list if yes
  */
-static int in_entries(const Onion_Announce *_Nonnull onion_a, const uint8_t *_Nonnull public_key)
+static int in_entries(const Onion_Announce *_Nonnull onion_a, const uint8_t public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE])
 {
     for (unsigned int i = 0; i < ONION_ANNOUNCE_MAX_ENTRIES; ++i) {
         if (!mono_time_is_timeout(onion_a->mono_time, onion_a->entries[i].announce_time, ONION_ANNOUNCE_TIMEOUT)
@@ -340,16 +340,16 @@ static void onion_announce_entry_set_handler(void *_Nonnull arr, uint32_t index,
     entries[index] = *entry;
 }
 
-static void *_Nonnull onion_announce_entry_subarr_handler(void *_Nonnull arr, uint32_t index, uint32_t size)
+static void *_Nonnull onion_announce_entry_subarr_handler(void *_Nonnull arr, uint32_t index, uint32_t count)
 {
     Onion_Announce_Entry *entries = (Onion_Announce_Entry *)arr;
     return &entries[index];
 }
 
-static void *_Nullable onion_announce_entry_alloc_handler(const void *_Nonnull object, uint32_t size)
+static void *_Nullable onion_announce_entry_alloc_handler(const void *_Nonnull object, uint32_t count)
 {
     const Onion_Announce_Entry_Cmp *cmp = (const Onion_Announce_Entry_Cmp *)object;
-    Onion_Announce_Entry *tmp = (Onion_Announce_Entry *)mem_valloc(cmp->mem, size, sizeof(Onion_Announce_Entry));
+    Onion_Announce_Entry *tmp = (Onion_Announce_Entry *)mem_valloc(cmp->mem, count, sizeof(Onion_Announce_Entry));
 
     if (tmp == nullptr) {
         return nullptr;
@@ -358,7 +358,7 @@ static void *_Nullable onion_announce_entry_alloc_handler(const void *_Nonnull o
     return tmp;
 }
 
-static void onion_announce_entry_delete_handler(const void *_Nonnull object, void *_Nonnull arr, uint32_t size)
+static void onion_announce_entry_delete_handler(const void *_Nonnull object, void *_Nonnull arr, uint32_t count)
 {
     const Onion_Announce_Entry_Cmp *cmp = (const Onion_Announce_Entry_Cmp *)object;
     mem_delete(cmp->mem, arr);
@@ -374,7 +374,7 @@ static const Sort_Funcs onion_announce_entry_cmp_funcs = {
 };
 
 static void sort_onion_announce_list(const Memory *_Nonnull mem, const Mono_Time *_Nonnull mono_time, Onion_Announce_Entry *_Nonnull list, unsigned int length,
-                                     const uint8_t *_Nonnull comp_public_key)
+                                     const uint8_t comp_public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE])
 {
     // Pass comp_public_key to sort with each Onion_Announce_Entry entry, so the
     // comparison function can use it as the base of comparison.
@@ -392,7 +392,7 @@ static void sort_onion_announce_list(const Memory *_Nonnull mem, const Mono_Time
  * return -1 if failure
  * return position if added
  */
-static int add_to_entries(Onion_Announce *_Nonnull onion_a, const IP_Port *_Nonnull ret_ip_port, const uint8_t *_Nonnull public_key, const uint8_t *_Nonnull data_public_key,
+static int add_to_entries(Onion_Announce *_Nonnull onion_a, const IP_Port *_Nonnull ret_ip_port, const uint8_t public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE], const uint8_t *_Nonnull data_public_key,
                           const uint8_t *_Nonnull ret)
 {
     int pos = in_entries(onion_a, public_key);
@@ -428,7 +428,7 @@ static int add_to_entries(Onion_Announce *_Nonnull onion_a, const IP_Port *_Nonn
 }
 
 static void make_announce_payload_helper(const Onion_Announce *_Nonnull onion_a, const uint8_t *_Nonnull ping_id, uint8_t *_Nonnull response, int index,
-        const uint8_t *_Nonnull packet_public_key, const uint8_t *_Nonnull data_public_key)
+        const uint8_t packet_public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE], const uint8_t data_public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE])
 {
     if (index < 0) {
         response[0] = 0;
@@ -494,7 +494,7 @@ static int handle_announce_request_common(
     const int decrypted_len = decrypt_data_symmetric(onion_a->mem, shared_key, packet + 1,
                               packet + 1 + CRYPTO_NONCE_SIZE + CRYPTO_PUBLIC_KEY_SIZE, plain_size + CRYPTO_MAC_SIZE, plain);
 
-    if ((uint32_t)decrypted_len != plain_size) {
+    if (decrypted_len < 0 || (uint32_t)decrypted_len != plain_size) {
         mem_delete(onion_a->mem, plain);
         return 1;
     }

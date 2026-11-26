@@ -64,9 +64,9 @@ static void on_group_topic(const Tox_Event_Group_Topic *event, void *user_data)
 static void common_init(ToxNode *self, SyncState *state)
 {
     Tox_Dispatch *dispatch = tox_node_get_dispatch(self);
-    tox_events_callback_group_self_join(dispatch, on_group_self_join);
-    tox_events_callback_group_peer_join(dispatch, on_group_peer_join);
-    tox_events_callback_group_topic(dispatch, on_group_topic);
+    tox_dispatch_callback_group_self_join(dispatch, on_group_self_join);
+    tox_dispatch_callback_group_peer_join(dispatch, on_group_peer_join);
+    tox_dispatch_callback_group_topic(dispatch, on_group_topic);
 
     tox_node_log(self, "Waiting for self connection...");
     tox_node_wait_for_self_connected(self);

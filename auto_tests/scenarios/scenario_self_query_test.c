@@ -22,7 +22,7 @@ static void alice_script(ToxNode *self, void *ctx)
     State *state = (State *)ctx;
 
     // Register dispatch callback
-    tox_events_callback_self_connection_status(tox_node_get_dispatch(self), on_self_connection_status);
+    tox_dispatch_callback_self_connection_status(tox_node_get_dispatch(self), on_self_connection_status);
 
     tox_node_wait_for_self_connected(self);
     ck_assert(state->connection_status_called);

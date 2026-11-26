@@ -40,7 +40,7 @@ void alice_script(ToxNode *self, void *ctx) {
     tox_friend_send_message(tox_node_get_tox(self), 0, TOX_MESSAGE_TYPE_NORMAL, msg, sizeof(msg), NULL);
 
     // Step 3: Wait for a specific response event
-    WAIT_FOR_EVENT(TOX_EVENT_FRIEND_MESSAGE);
+    WAIT_FOR_EVENT(TOX_EVENT_TYPE_FRIEND_MESSAGE);
 }
 
 void test_simple_interaction() {

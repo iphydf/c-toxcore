@@ -123,7 +123,7 @@ protected:
 
 TEST_F(GroupHandshake, FloodDoesNotAddUnboundedPeers)
 {
-    const uint32_t peers_before = chat_->numpeers;
+    const uint32_t peers_before = chat_->num_peers;
 
     constexpr int kFloodCount = 256;
     for (int i = 0; i < kFloodCount; ++i) {
@@ -139,13 +139,13 @@ TEST_F(GroupHandshake, FloodDoesNotAddUnboundedPeers)
 
     tox_iterate(tox_, nullptr);
 
-    const uint32_t added = chat_->numpeers - peers_before;
+    const uint32_t added = chat_->num_peers - peers_before;
     EXPECT_LT(added, 64u);
 }
 
 TEST_F(GroupHandshake, KeepsAtMostThePeerLimitOfUnconfirmedPeers)
 {
-    const uint32_t peers_before = chat_->numpeers;
+    const uint32_t peers_before = chat_->num_peers;
 
     for (int i = 0; i < 2 * chat_->shared_state.maxpeers; ++i) {
         uint8_t peer_pk[ENC_PUBLIC_KEY_SIZE];
@@ -153,12 +153,12 @@ TEST_F(GroupHandshake, KeepsAtMostThePeerLimitOfUnconfirmedPeers)
         peer_add(chat_, nullptr, peer_pk);
     }
 
-    EXPECT_EQ(chat_->numpeers - peers_before, chat_->shared_state.maxpeers);
+    EXPECT_EQ(chat_->num_peers - peers_before, chat_->shared_state.maxpeers);
 }
 
 TEST_F(GroupHandshake, AddsANewPeer)
 {
-    const uint32_t peers_before = chat_->numpeers;
+    const uint32_t peers_before = chat_->num_peers;
 
     Extended_Public_Key joiner_pk;
     Extended_Secret_Key joiner_sk;
@@ -169,12 +169,12 @@ TEST_F(GroupHandshake, AddsANewPeer)
         tox_iterate(tox_, nullptr);
     }
 
-    EXPECT_EQ(chat_->numpeers, peers_before + 1);
+    EXPECT_EQ(chat_->num_peers, peers_before + 1);
 }
 
 TEST_F(GroupHandshake, DropsANewPeerWithTheWrongSignatureKey)
 {
-    const uint32_t peers_before = chat_->numpeers;
+    const uint32_t peers_before = chat_->num_peers;
 
     Extended_Public_Key joiner_pk;
     Extended_Secret_Key joiner_sk;
@@ -188,7 +188,7 @@ TEST_F(GroupHandshake, DropsANewPeerWithTheWrongSignatureKey)
         tox_iterate(tox_, nullptr);
     }
 
-    EXPECT_EQ(chat_->numpeers, peers_before);
+    EXPECT_EQ(chat_->num_peers, peers_before);
 }
 
 class GroupInviteAccepted : public ::testing::Test {
@@ -249,9 +249,9 @@ protected:
 
 TEST_F(GroupInviteAccepted, IgnoresAFriendWeDidNotInvite)
 {
-    const uint32_t peers_before = chat_->numpeers;
+    const uint32_t peers_before = chat_->num_peers;
     EXPECT_FALSE(accept());
-    EXPECT_EQ(chat_->numpeers, peers_before);
+    EXPECT_EQ(chat_->num_peers, peers_before);
 }
 
 TEST_F(GroupInviteAccepted, KeepsTheInvitedPeerUntilItsAddressIsKnown)
@@ -259,16 +259,16 @@ TEST_F(GroupInviteAccepted, KeepsTheInvitedPeerUntilItsAddressIsKnown)
     // Record the invite the way tox_group_invite_friend does.
     chat_->saved_invites[0] = static_cast<int32_t>(friend_number_);
 
-    const uint32_t peers_before = chat_->numpeers;
+    const uint32_t peers_before = chat_->num_peers;
     accept();
-    ASSERT_EQ(chat_->numpeers, peers_before + 1);
+    ASSERT_EQ(chat_->num_peers, peers_before + 1);
 
     for (int i = 0; i < 5; ++i) {
         tox_iterate(tox_, nullptr);
     }
 
     // The peer stays until do_handshakes can get the friend's IP address.
-    ASSERT_EQ(chat_->numpeers, peers_before + 1);
+    ASSERT_EQ(chat_->num_peers, peers_before + 1);
     const GC_Connection *gconn = get_gc_connection(chat_, static_cast<int>(peers_before));
     ASSERT_NE(gconn, nullptr);
     EXPECT_FALSE(gconn->pending_delete);
@@ -313,9 +313,9 @@ protected:
 
 TEST_F(GroupSyncFlood, IgnoresSyncResponsesItDidNotRequest)
 {
-    const uint32_t peers_before = chat_->numpeers;
+    const uint32_t peers_before = chat_->num_peers;
     send_sync_responses(256);
-    EXPECT_EQ(chat_->numpeers, peers_before);
+    EXPECT_EQ(chat_->num_peers, peers_before);
 }
 
 TEST_F(GroupSyncFlood, AcceptsAtMostThePeerLimitForOneRequest)
@@ -326,9 +326,9 @@ TEST_F(GroupSyncFlood, AcceptsAtMostThePeerLimitForOneRequest)
     gconn->confirmed = true;
     gconn->sync_requested = true;
 
-    const uint32_t peers_before = chat_->numpeers;
+    const uint32_t peers_before = chat_->num_peers;
     send_sync_responses(256);
-    EXPECT_EQ(chat_->numpeers - peers_before, chat_->shared_state.maxpeers);
+    EXPECT_EQ(chat_->num_peers - peers_before, chat_->shared_state.maxpeers);
 }
 
 TEST(GcGroupLoad, LeavesNoGroupWhenTheSavedStateIsCutShort)

@@ -113,7 +113,7 @@ std::vector<ConnectedFriend> setup_connected_friends(Simulation &sim, Tox *_Nonn
                     std::size_t size = tox_events_get_size(batch.get());
                     for (std::size_t k = 0; k < size; ++k) {
                         const Tox_Event *e = tox_events_get(batch.get(), k);
-                        if (tox_event_get_type(e) == TOX_EVENT_FRIEND_CONNECTION_STATUS) {
+                        if (tox_event_get_type(e) == TOX_EVENT_TYPE_FRIEND_CONNECTION_STATUS) {
                             auto *ev = tox_event_get_friend_connection_status(e);
                             if (tox_event_friend_connection_status_get_connection_status(ev)
                                 != TOX_CONNECTION_NONE) {
@@ -271,7 +271,7 @@ uint32_t setup_connected_group(
                         const Tox_Event *e = tox_events_get(batch.get(), k);
                         Tox_Event_Type type = tox_event_get_type(e);
 
-                        if (type == TOX_EVENT_GROUP_INVITE) {
+                        if (type == TOX_EVENT_TYPE_GROUP_INVITE) {
                             auto *ev = tox_event_get_group_invite(e);
                             uint32_t friend_number = tox_event_group_invite_get_friend_number(ev);
                             const uint8_t *data = tox_event_group_invite_get_invite_data(ev);
@@ -287,9 +287,9 @@ uint32_t setup_connected_group(
                                     invite_data.size(), reinterpret_cast<const uint8_t *>("peer"),
                                     4, nullptr, 0, &err);
                             });
-                        } else if (type == TOX_EVENT_GROUP_PEER_JOIN) {
+                        } else if (type == TOX_EVENT_TYPE_GROUP_PEER_JOIN) {
                             friend_states[i].peer_count++;
-                        } else if (type == TOX_EVENT_GROUP_SELF_JOIN) {
+                        } else if (type == TOX_EVENT_TYPE_GROUP_SELF_JOIN) {
                             auto *ev = tox_event_get_group_self_join(e);
                             friend_states[i].group_number
                                 = tox_event_group_self_join_get_group_number(ev);

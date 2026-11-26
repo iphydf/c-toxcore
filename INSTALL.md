@@ -370,7 +370,8 @@ result
 │   │   └── [4.0K]  tox
 │   │       ├── [177K]  tox.h
 │   │       ├── [ 10K]  tox_dispatch.h
-│   │       ├── [ 26K]  tox_events.h
+│   │       ├── [ 27K]  tox_event.h
+│   │       ├── [4.2K]  tox_events.h
 │   │       ├── [6.4K]  tox_private.h
 │   │       ├── [ 26K]  toxav.h
 │   │       └── [ 12K]  toxencryptsave.h
@@ -406,7 +407,8 @@ result
     │   └── [4.0K]  tox
     │       ├── [177K]  tox.h
     │       ├── [ 10K]  tox_dispatch.h
-    │       ├── [ 26K]  tox_events.h
+    │       ├── [ 27K]  tox_event.h
+    │       ├── [4.2K]  tox_events.h
     │       ├── [6.4K]  tox_private.h
     │       ├── [ 26K]  toxav.h
     │       └── [ 12K]  toxencryptsave.h

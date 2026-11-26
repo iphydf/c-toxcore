@@ -242,7 +242,7 @@ static int receivepacket(const Network *_Nonnull ns, const Logger *_Nonnull log,
 
         if (!net_should_ignore_recv_error(error)) {
             Net_Strerror error_str;
-            LOGGER_ERROR(log, "unexpected error reading from socket: %u, %s", (unsigned int)error, net_strerror(error, &error_str));
+            LOGGER_ERROR(log, "unexpected error reading from socket: %d, %s", error, net_strerror(error, &error_str));
         }
 
         return -1; /* Nothing received. */

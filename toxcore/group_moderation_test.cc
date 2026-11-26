@@ -101,6 +101,16 @@ TEST(ModList, UnpackingFromEmptyBufferFails)
     EXPECT_EQ(mod_list_unpack(&mods, packed.data(), 0, 1), -1);
 }
 
+TEST(ModList, UnpackingMoreThanTheMostModeratorsFails)
+{
+    SimulatedEnvironment env{12345};
+    auto c_mem = env.fake_memory().c_memory();
+    Moderation mods{&c_mem};
+    std::vector<std::uint8_t> packed((MOD_MAX_NUM_MODERATORS + 1) * MOD_LIST_ENTRY_SIZE);
+    EXPECT_EQ(mod_list_unpack(&mods, packed.data(), packed.size(), MOD_MAX_NUM_MODERATORS + 1), -1);
+    mod_list_cleanup(&mods);
+}
+
 TEST(ModList, HashOfEmptyModListZeroesOutBuffer)
 {
     SimulatedEnvironment env{12345};

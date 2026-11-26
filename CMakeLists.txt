@@ -380,6 +380,7 @@ set(toxcore_SOURCES
   toxcore/tox_dispatch.h
   toxcore/tox_event.c
   toxcore/tox_event.h
+  toxcore/tox_event_struct.h
   toxcore/tox_events.c
   toxcore/tox_events.h
   toxcore/tox_log_level.c
@@ -413,6 +414,7 @@ if(EXPERIMENTAL_API)
   set(toxcore_API_HEADERS ${toxcore_API_HEADERS}
     ${toxcore_SOURCE_DIR}/toxcore/tox_attributes.h^tox
     ${toxcore_SOURCE_DIR}/toxcore/tox_dispatch.h^tox
+    ${toxcore_SOURCE_DIR}/toxcore/tox_event.h^tox
     ${toxcore_SOURCE_DIR}/toxcore/tox_events.h^tox
     ${toxcore_SOURCE_DIR}/toxcore/tox_private.h^tox)
 endif()
@@ -637,6 +639,7 @@ if(UNITTEST AND TARGET GTest::gtest AND TARGET GTest::gmock)
   unit_test(toxcore TCP_connection)
   unit_test(toxcore TCP_server)
   unit_test(toxcore bin_pack)
+  unit_test(toxcore conference_limit)
   unit_test(toxcore crypto_core)
   unit_test(toxcore ev)
   unit_test(toxcore friend_connection)

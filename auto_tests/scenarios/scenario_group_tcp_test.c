@@ -72,7 +72,7 @@ static void alice_script(ToxNode *self, void *ctx)
     State *state = (State *)ctx;
     Tox *tox = tox_node_get_tox(self);
 
-    tox_events_callback_group_peer_join(tox_node_get_dispatch(self), on_group_peer_join);
+    tox_dispatch_callback_group_peer_join(tox_node_get_dispatch(self), on_group_peer_join);
 
     Tox_Err_Group_New new_err;
     state->group_number = tox_group_new(tox, TOX_GROUP_PRIVACY_STATE_PUBLIC, (const uint8_t *)"test", 4,
@@ -128,9 +128,9 @@ static void bob_script(ToxNode *self, void *ctx)
     State *state = (State *)ctx;
     Tox *tox = tox_node_get_tox(self);
 
-    tox_events_callback_group_private_message(tox_node_get_dispatch(self), on_group_private_message);
-    tox_events_callback_group_message(tox_node_get_dispatch(self), on_group_message);
-    tox_events_callback_group_invite(tox_node_get_dispatch(self), on_group_invite);
+    tox_dispatch_callback_group_private_message(tox_node_get_dispatch(self), on_group_private_message);
+    tox_dispatch_callback_group_message(tox_node_get_dispatch(self), on_group_message);
+    tox_dispatch_callback_group_invite(tox_node_get_dispatch(self), on_group_invite);
 
     tox_node_log(self, "Waiting for TCP connection...");
     WAIT_UNTIL(tox_node_get_connection_status(self) == TOX_CONNECTION_TCP);

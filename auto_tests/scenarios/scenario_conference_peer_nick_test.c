@@ -38,7 +38,7 @@ static void alice_script(ToxNode *self, void *ctx)
 {
     Tox *tox = tox_node_get_tox(self);
     State *state = (State *)ctx;
-    tox_events_callback_conference_peer_list_changed(tox_node_get_dispatch(self), on_peer_list_changed);
+    tox_dispatch_callback_conference_peer_list_changed(tox_node_get_dispatch(self), on_peer_list_changed);
 
     WAIT_UNTIL(tox_node_is_self_connected(self));
     WAIT_UNTIL(tox_node_is_friend_connected(self, 0));
@@ -67,8 +67,8 @@ static void bob_script(ToxNode *self, void *ctx)
 {
     Tox *tox = tox_node_get_tox(self);
     const State *state = (const State *)ctx;
-    tox_events_callback_conference_invite(tox_node_get_dispatch(self), on_conference_invite);
-    tox_events_callback_conference_peer_list_changed(tox_node_get_dispatch(self), on_peer_list_changed);
+    tox_dispatch_callback_conference_invite(tox_node_get_dispatch(self), on_conference_invite);
+    tox_dispatch_callback_conference_peer_list_changed(tox_node_get_dispatch(self), on_peer_list_changed);
 
     WAIT_UNTIL(tox_node_is_self_connected(self));
     tox_self_set_name(tox, (const uint8_t *)"Bob", 3, nullptr);

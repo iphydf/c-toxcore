@@ -65,7 +65,7 @@ static void sender_script(ToxNode *self, void *ctx)
 static void receiver_script(ToxNode *self, void *ctx)
 {
     const MessageState *state = (const MessageState *)ctx;
-    tox_events_callback_friend_message(tox_node_get_dispatch(self), on_friend_message);
+    tox_dispatch_callback_friend_message(tox_node_get_dispatch(self), on_friend_message);
 
     WAIT_UNTIL(tox_node_is_self_connected(self));
     WAIT_UNTIL(tox_node_is_friend_connected(self, 0));

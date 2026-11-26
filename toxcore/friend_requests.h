@@ -30,13 +30,13 @@ uint32_t get_nospam(const Friend_Requests *_Nonnull fr);
  * @retval 0 if it removed it successfully.
  * @retval -1 if it didn't find it.
  */
-int remove_request_received(Friend_Requests *_Nonnull fr, const uint8_t *_Nonnull real_pk);
+int remove_request_received(Friend_Requests *_Nonnull fr, const uint8_t real_pk[_Nonnull CRYPTO_PUBLIC_KEY_SIZE]);
 
 typedef void fr_friend_request_cb(void *_Nonnull object, const uint8_t *_Nonnull public_key, const uint8_t *_Nonnull message, size_t length,
                                   void *_Nullable user_data);
 
 /** Set the function that will be executed when a friend request for us is received. */
-void callback_friendrequest(Friend_Requests *_Nonnull fr, fr_friend_request_cb *_Nullable function, void *_Nullable object);
+void callback_friendrequest(Friend_Requests *_Nonnull fr, fr_friend_request_cb *_Nonnull function, void *_Nonnull object);
 
 typedef int filter_function_cb(void *_Nonnull object, const uint8_t *_Nonnull public_key);
 

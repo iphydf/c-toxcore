@@ -45,14 +45,16 @@ static_assert(CRYPTO_SIGN_PUBLIC_KEY_SIZE == crypto_sign_PUBLICKEYBYTES,
               "CRYPTO_SIGN_PUBLIC_KEY_SIZE should be equal to crypto_sign_PUBLICKEYBYTES");
 static_assert(CRYPTO_SIGN_SECRET_KEY_SIZE == crypto_sign_SECRETKEYBYTES,
               "CRYPTO_SIGN_SECRET_KEY_SIZE should be equal to crypto_sign_SECRETKEYBYTES");
+static_assert(CRYPTO_SIGN_SEED_SIZE == crypto_sign_SEEDBYTES,
+              "CRYPTO_SIGN_SEED_SIZE should be equal to crypto_sign_SEEDBYTES");
 
 bool create_extended_keypair(Extended_Public_Key *pk, Extended_Secret_Key *sk, const Random *rng)
 {
     /* create signature key pair */
-    uint8_t seed[crypto_sign_SEEDBYTES];
-    random_bytes(rng, seed, crypto_sign_SEEDBYTES);
+    uint8_t seed[CRYPTO_SIGN_SEED_SIZE];
+    random_bytes(rng, seed, sizeof(seed));
     crypto_sign_seed_keypair(pk->sig, sk->sig, seed);
-    crypto_memzero(seed, crypto_sign_SEEDBYTES);
+    crypto_memzero(seed, sizeof(seed));
 
     /* convert public signature key to public encryption key */
     const int res1 = crypto_sign_ed25519_pk_to_curve25519(pk->enc, pk->sig);
@@ -102,7 +104,7 @@ const uint8_t *get_chat_id(const Extended_Public_Key *key)
 void crypto_memzero(void *data, size_t length)
 {
 #if defined(FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION)
-    memzero((uint8_t *)data, length);
+    memset(data, 0, length);
 #else
     sodium_memzero(data, length);
 #endif /* FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION */
@@ -142,23 +144,23 @@ uint8_t random_u08(const Random *rng)
 
 uint16_t random_u16(const Random *rng)
 {
-    uint16_t randnum;
-    random_bytes(rng, (uint8_t *)&randnum, sizeof(randnum));
-    return randnum;
+    uint8_t bytes[sizeof(uint16_t)];
+    random_bytes(rng, bytes, sizeof(bytes));
+    return (uint16_t)((bytes[0] << 8) | bytes[1]);
 }
 
 uint32_t random_u32(const Random *rng)
 {
-    uint32_t randnum;
-    random_bytes(rng, (uint8_t *)&randnum, sizeof(randnum));
-    return randnum;
+    const uint16_t high = random_u16(rng);
+    const uint16_t low = random_u16(rng);
+    return ((uint32_t)high << 16) | low;
 }
 
 uint64_t random_u64(const Random *rng)
 {
-    uint64_t randnum;
-    random_bytes(rng, (uint8_t *)&randnum, sizeof(randnum));
-    return randnum;
+    const uint32_t high = random_u32(rng);
+    const uint32_t low = random_u32(rng);
+    return ((uint64_t)high << 32) | low;
 }
 
 uint32_t random_range_u32(const Random *rng, uint32_t upper_bound)
@@ -211,14 +213,14 @@ int32_t encrypt_data_symmetric(const Memory *mem,
     // Don't encrypt anything.
     memcpy(encrypted, plain, length);
     // Zero MAC to avoid uninitialized memory reads.
-    memzero(encrypted + length, crypto_box_MACBYTES);
+    memzero(encrypted + length, CRYPTO_MAC_SIZE);
 #else
     if (crypto_box_easy_afternm(encrypted, plain, length, nonce, shared_key) != 0) {
         return -1;
     }
 #endif /* FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION */
-    assert(length < INT32_MAX - crypto_box_MACBYTES);
-    return (int32_t)(length + crypto_box_MACBYTES);
+    assert(length < INT32_MAX - CRYPTO_MAC_SIZE);
+    return (int32_t)(length + CRYPTO_MAC_SIZE);
 }
 
 int32_t decrypt_data_symmetric(const Memory *mem,
@@ -226,22 +228,22 @@ int32_t decrypt_data_symmetric(const Memory *mem,
                                const uint8_t nonce[CRYPTO_NONCE_SIZE],
                                const uint8_t *encrypted, size_t length, uint8_t *plain)
 {
-    if (length <= crypto_box_MACBYTES || shared_key == nullptr || nonce == nullptr || encrypted == nullptr
+    if (length <= CRYPTO_MAC_SIZE || shared_key == nullptr || nonce == nullptr || encrypted == nullptr
             || plain == nullptr) {
         return -1;
     }
 
 #ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
-    assert(length >= crypto_box_MACBYTES);
-    memcpy(plain, encrypted, length - crypto_box_MACBYTES);  // Don't encrypt anything
+    assert(length >= CRYPTO_MAC_SIZE);
+    memcpy(plain, encrypted, length - CRYPTO_MAC_SIZE);  // Don't encrypt anything
 #else
     if (crypto_box_open_easy_afternm(plain, encrypted, length, nonce, shared_key) != 0) {
         return -1;
     }
 #endif /* FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION */
-    assert(length > crypto_box_MACBYTES);
+    assert(length > CRYPTO_MAC_SIZE);
     assert(length < INT32_MAX);
-    return (int32_t)(length - crypto_box_MACBYTES);
+    return (int32_t)(length - CRYPTO_MAC_SIZE);
 }
 
 int32_t encrypt_data(const Memory *mem,
@@ -254,7 +256,7 @@ int32_t encrypt_data(const Memory *mem,
         return -1;
     }
 
-    uint8_t k[crypto_box_BEFORENMBYTES];
+    uint8_t k[CRYPTO_SHARED_KEY_SIZE];
     if (encrypt_precompute(public_key, secret_key, k) != 0) {
         return -1;
     }
@@ -273,7 +275,7 @@ int32_t decrypt_data(const Memory *mem,
         return -1;
     }
 
-    uint8_t k[crypto_box_BEFORENMBYTES];
+    uint8_t k[CRYPTO_SHARED_KEY_SIZE];
     if (encrypt_precompute(public_key, secret_key, k) != 0) {
         return -1;
     }
@@ -294,15 +296,15 @@ void increment_nonce_number(uint8_t nonce[CRYPTO_NONCE_SIZE], uint32_t increment
      * that loop bounds and their potential underflow or overflow
      * are independent of user-controlled input (you may have heard of the Heartbleed bug).
      */
-    uint8_t num_as_nonce[crypto_box_NONCEBYTES] = {0};
-    num_as_nonce[crypto_box_NONCEBYTES - 4] = increment >> 24;
-    num_as_nonce[crypto_box_NONCEBYTES - 3] = increment >> 16;
-    num_as_nonce[crypto_box_NONCEBYTES - 2] = increment >> 8;
-    num_as_nonce[crypto_box_NONCEBYTES - 1] = increment;
+    uint8_t num_as_nonce[CRYPTO_NONCE_SIZE] = {0};
+    num_as_nonce[CRYPTO_NONCE_SIZE - 4] = increment >> 24;
+    num_as_nonce[CRYPTO_NONCE_SIZE - 3] = increment >> 16;
+    num_as_nonce[CRYPTO_NONCE_SIZE - 2] = increment >> 8;
+    num_as_nonce[CRYPTO_NONCE_SIZE - 1] = increment;
 
     uint_fast16_t carry = 0U;
 
-    for (uint32_t i = crypto_box_NONCEBYTES; i != 0; --i) {
+    for (uint32_t i = CRYPTO_NONCE_SIZE; i != 0; --i) {
         carry += (uint_fast16_t)nonce[i - 1] + (uint_fast16_t)num_as_nonce[i - 1];
         nonce[i - 1] = (uint8_t)carry;
         carry >>= 8;
@@ -311,7 +313,7 @@ void increment_nonce_number(uint8_t nonce[CRYPTO_NONCE_SIZE], uint32_t increment
 
 void random_nonce(const Random *rng, uint8_t nonce[CRYPTO_NONCE_SIZE])
 {
-    random_bytes(rng, nonce, crypto_box_NONCEBYTES);
+    random_bytes(rng, nonce, CRYPTO_NONCE_SIZE);
 }
 
 void new_symmetric_key(const Random *rng, uint8_t key[CRYPTO_SYMMETRIC_KEY_SIZE])

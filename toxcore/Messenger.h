@@ -36,6 +36,10 @@
 #include "onion_client.h"
 #include "state.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define MAX_NAME_LENGTH 128
 /* TODO(irungentoo): this must depend on other variable. */
 #define MAX_STATUSMESSAGE_LENGTH 1007
@@ -61,16 +65,16 @@ typedef struct Messenger Messenger;
 typedef uint32_t m_state_size_cb(const Messenger *_Nonnull m);
 
 // Returns the new pointer to data
-typedef uint8_t *m_state_save_cb(const Messenger *_Nonnull m, uint8_t *_Nonnull data);
+typedef uint8_t *_Nonnull m_state_save_cb(const Messenger *_Nonnull m, uint8_t *_Nonnull data);
 
 // Returns if there were any erros during loading
 typedef State_Load_Status m_state_load_cb(Messenger *_Nonnull m, const uint8_t *_Nonnull data, uint32_t length);
 
 typedef struct Messenger_State_Plugin {
     State_Type type;
-    m_state_size_cb *_Nullable size;
-    m_state_save_cb *_Nullable save;
-    m_state_load_cb *_Nullable load;
+    m_state_size_cb *_Nonnull size;
+    m_state_save_cb *_Nonnull save;
+    m_state_load_cb *_Nonnull load;
 } Messenger_State_Plugin;
 
 typedef struct Messenger_Options {
@@ -88,7 +92,7 @@ typedef struct Messenger_Options {
     bool groups_persistence_enabled;
 
     Messenger_State_Plugin *_Nullable state_plugins;
-    uint8_t state_plugins_length;
+    uint8_t state_plugins_count;
 
     bool dns_enabled;
 } Messenger_Options;
@@ -274,8 +278,8 @@ struct Messenger {
 
     Userstatus userstatus;
 
-    Friend *_Nullable friendlist;
-    uint32_t numfriends;
+    Friend *_Nullable friends;
+    uint32_t num_friends;
 
     uint64_t lastdump;
     uint8_t is_receiving_file;
@@ -297,7 +301,8 @@ struct Messenger {
     m_friend_read_receipt_cb *_Nullable read_receipt;
     m_friend_connection_status_cb *_Nullable friend_connectionstatuschange;
 
-    struct Group_Chats *_Nullable conferences_object;
+    struct Group_Chats *_Nonnull conferences_object;
+    struct Tox_Events_State *_Nonnull events_state;
     m_conference_invite_cb *_Nullable conference_invite;
 
     m_group_invite_cb *_Nullable group_invite;
@@ -328,7 +333,7 @@ bool friend_is_valid(const Messenger *_Nonnull m, int32_t friendnumber);
  *
  * @param[out] address FRIEND_ADDRESS_SIZE byte address to give to others.
  */
-void getaddress(const Messenger *_Nonnull m, uint8_t *_Nonnull address);
+void getaddress(const Messenger *_Nonnull m, uint8_t address[_Nonnull FRIEND_ADDRESS_SIZE]);
 
 /**
  * Add a friend.
@@ -350,7 +355,7 @@ void getaddress(const Messenger *_Nonnull m, uint8_t *_Nonnull address);
  *   (the nospam for that friend was set to the new one).
  * @retval FAERR_NOMEM if increasing the friend list size fails.
  */
-int32_t m_addfriend(Messenger *_Nonnull m, const uint8_t *_Nonnull address, const uint8_t *_Nonnull data, uint16_t length);
+int32_t m_addfriend(Messenger *_Nonnull m, const uint8_t address[_Nonnull FRIEND_ADDRESS_SIZE], const uint8_t *_Nonnull data, uint16_t length);
 
 /** @brief Add a friend without sending a friendrequest.
  * @return the friend number if success.
@@ -359,7 +364,7 @@ int32_t m_addfriend(Messenger *_Nonnull m, const uint8_t *_Nonnull address, cons
  * @retval -6 if bad checksum in address.
  * @retval -8 if increasing the friend list size fails.
  */
-int32_t m_addfriend_norequest(Messenger *_Nonnull m, const uint8_t *_Nonnull real_pk);
+int32_t m_addfriend_norequest(Messenger *_Nonnull m, const uint8_t real_pk[_Nonnull CRYPTO_PUBLIC_KEY_SIZE]);
 
 /** @brief Initializes the friend connection and onion connection for a groupchat.
  *
@@ -375,7 +380,7 @@ void m_kill_group_connection(Messenger *_Nonnull m, const GC_Chat *_Nonnull chat
 /** @return the friend number associated to that public key.
  * @retval -1 if no such friend.
  */
-int32_t getfriend_id(const Messenger *_Nonnull m, const uint8_t *_Nonnull real_pk);
+int32_t getfriend_id(const Messenger *_Nonnull m, const uint8_t real_pk[_Nonnull CRYPTO_PUBLIC_KEY_SIZE]);
 
 /** @brief Copies the public key associated to that friend id into real_pk buffer.
  *
@@ -416,6 +421,12 @@ int m_get_friend_connectionstatus(const Messenger *_Nonnull m, int32_t friendnum
  * @retval false if friend doesn't exist.
  */
 bool m_friend_exists(const Messenger *_Nonnull m, int32_t friendnumber);
+
+/** @brief The friend number an unsigned number is.
+ *
+ * @retval -1, which is no friend, if it's too big to be one.
+ */
+int32_t m_friend_number(uint32_t number);
 
 /** @brief Send a message of type to an online friend.
  *
@@ -461,7 +472,7 @@ int setname(Messenger *_Nonnull m, const uint8_t *_Nullable name, uint16_t lengt
  * @return length of the name.
  * @retval 0 on error.
  */
-uint16_t getself_name(const Messenger *_Nonnull m, uint8_t *_Nonnull name);
+uint16_t getself_name(const Messenger *_Nonnull m, uint8_t name[_Nonnull MAX_NAME_LENGTH]);
 
 /** @brief Get name of friendnumber and put it in name.
  *
@@ -470,7 +481,7 @@ uint16_t getself_name(const Messenger *_Nonnull m, uint8_t *_Nonnull name);
  * @return length of name if success.
  * @retval -1 if failure.
  */
-int getname(const Messenger *_Nonnull m, int32_t friendnumber, uint8_t *_Nonnull name);
+int getname(const Messenger *_Nonnull m, int32_t friendnumber, uint8_t name[_Nonnull MAX_NAME_LENGTH]);
 
 /** @return the length of name, including null on success.
  * @retval -1 on failure.
@@ -496,16 +507,17 @@ int m_set_userstatus(Messenger *_Nonnull m, uint8_t status);
 int m_get_statusmessage_size(const Messenger *_Nonnull m, int32_t friendnumber);
 int m_get_self_statusmessage_size(const Messenger *_Nonnull m);
 
-/** @brief Copy friendnumber's status message into buf, truncating if size is over maxlen.
+/** @brief Copy friendnumber's status message into buf, truncating if size is over max_length.
  *
  * Get the size you need to allocate from m_get_statusmessage_size.
- * The self variant will copy our own status message.
+ * The self variant will copy our own status message: buf must have room for
+ * the longest one, though only m_get_self_statusmessage_size bytes are written.
  *
  * @return the length of the copied data on success
  * @retval -1 on failure.
  */
-int m_copy_statusmessage(const Messenger *_Nonnull m, int32_t friendnumber, uint8_t *_Nonnull buf, uint32_t maxlen);
-int m_copy_self_statusmessage(const Messenger *_Nonnull m, uint8_t *_Nonnull buf);
+int m_copy_statusmessage(const Messenger *_Nonnull m, int32_t friendnumber, uint8_t *_Nonnull buf, uint32_t max_length);
+int m_copy_self_statusmessage(const Messenger *_Nonnull m, uint8_t buf[_Nonnull MAX_STATUSMESSAGE_LENGTH]);
 
 /** @brief return one of Userstatus values.
  *
@@ -802,5 +814,9 @@ uint32_t count_friendlist(const Messenger *_Nonnull m);
 uint32_t copy_friendlist(const Messenger *_Nonnull m, uint32_t *_Nonnull out_list, uint32_t list_size);
 
 bool m_is_receiving_file(Messenger *_Nonnull m);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif /* C_TOXCORE_TOXCORE_MESSENGER_H */

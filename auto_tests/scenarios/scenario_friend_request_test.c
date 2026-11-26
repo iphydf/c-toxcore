@@ -40,7 +40,7 @@ static void alice_script(ToxNode *self, void *ctx)
 
 static void bob_script(ToxNode *self, void *ctx)
 {
-    tox_events_callback_friend_request(tox_node_get_dispatch(self), on_friend_request);
+    tox_dispatch_callback_friend_request(tox_node_get_dispatch(self), on_friend_request);
 
     WAIT_UNTIL(tox_node_is_self_connected(self));
     WAIT_UNTIL(tox_node_is_friend_connected(self, 0));

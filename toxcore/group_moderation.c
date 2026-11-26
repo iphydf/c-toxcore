@@ -45,11 +45,11 @@ static int compare_sanctions(const void *_Nonnull a, const void *_Nonnull b)
     return memcmp(sa->signature, sb->signature, SIGNATURE_SIZE);
 }
 
-static int compare_mod_pointers(const void *_Nonnull a, const void *_Nonnull b)
+static int compare_mod_entries(const void *_Nonnull a, const void *_Nonnull b)
 {
-    const uint8_t *const *mod_a = (const uint8_t *const *)a;
-    const uint8_t *const *mod_b = (const uint8_t *const *)b;
-    return memcmp(*mod_a, *mod_b, SIG_PUBLIC_KEY_SIZE);
+    const Mod_List_Entry *mod_a = (const Mod_List_Entry *)a;
+    const Mod_List_Entry *mod_b = (const Mod_List_Entry *)b;
+    return memcmp(mod_a->public_sig_key, mod_b->public_sig_key, SIG_PUBLIC_KEY_SIZE);
 }
 
 static_assert(MOD_SANCTIONS_CREDS_SIZE <= MAX_PACKET_SIZE_NO_HEADERS,
@@ -71,6 +71,10 @@ uint16_t mod_list_packed_size(const Moderation *moderation)
 
 int mod_list_unpack(Moderation *moderation, const uint8_t *data, uint16_t length, uint16_t num_mods)
 {
+    if (num_mods > MOD_MAX_NUM_MODERATORS) {
+        return -1;
+    }
+
     if (length < num_mods * MOD_LIST_ENTRY_SIZE) {
         return -1;
     }
@@ -81,49 +85,37 @@ int mod_list_unpack(Moderation *moderation, const uint8_t *data, uint16_t length
         return 0;
     }
 
-    uint8_t **tmp_list = (uint8_t **)mem_valloc(moderation->mem, num_mods, sizeof(uint8_t *));
+    Mod_List_Entry *tmp_list = (Mod_List_Entry *)mem_valloc(moderation->mem, num_mods, sizeof(Mod_List_Entry));
 
     if (tmp_list == nullptr) {
         return -1;
     }
 
-    uint16_t unpacked_len = 0;
-
     for (uint16_t i = 0; i < num_mods; ++i) {
-        uint8_t *entry = (uint8_t *)mem_balloc(moderation->mem, MOD_LIST_ENTRY_SIZE);
-
-        if (entry == nullptr) {
-            free_uint8_t_pointer_array(moderation->mem, tmp_list, i);
-            return -1;
-        }
-
-        memcpy(entry, &data[i * MOD_LIST_ENTRY_SIZE], MOD_LIST_ENTRY_SIZE);
-        tmp_list[i] = entry;
-
-        unpacked_len += MOD_LIST_ENTRY_SIZE;
+        memcpy(tmp_list[i].public_sig_key, &data[i * MOD_LIST_ENTRY_SIZE], MOD_LIST_ENTRY_SIZE);
     }
 
-    moderation->mod_list = tmp_list;
+    moderation->mods = tmp_list;
     moderation->num_mods = num_mods;
 
-    qsort(moderation->mod_list, moderation->num_mods, sizeof(uint8_t *), compare_mod_pointers);
+    qsort(moderation->mods, moderation->num_mods, sizeof(Mod_List_Entry), compare_mod_entries);
 
-    return unpacked_len;
+    return num_mods * MOD_LIST_ENTRY_SIZE;
 }
 
 void mod_list_pack(const Moderation *moderation, uint8_t *data)
 {
     for (uint16_t i = 0; i < moderation->num_mods; ++i) {
-        memcpy(&data[i * MOD_LIST_ENTRY_SIZE], moderation->mod_list[i], MOD_LIST_ENTRY_SIZE);
+        memcpy(&data[i * MOD_LIST_ENTRY_SIZE], moderation->mods[i].public_sig_key, MOD_LIST_ENTRY_SIZE);
     }
 }
 
-void mod_list_get_data_hash(uint8_t *hash, const uint8_t *packed_mod_list, uint16_t length)
+void mod_list_get_data_hash(uint8_t hash[CRYPTO_SHA256_SIZE], const uint8_t *packed_mod_list, uint16_t length)
 {
     crypto_sha256(hash, packed_mod_list, length);
 }
 
-bool mod_list_make_hash(const Moderation *moderation, uint8_t *hash)
+bool mod_list_make_hash(const Moderation *moderation, uint8_t hash[CRYPTO_SHA256_SIZE])
 {
     if (moderation->num_mods == 0) {
         memzero(hash, MOD_MODERATION_HASH_SIZE);
@@ -158,7 +150,7 @@ bool mod_list_make_hash(const Moderation *moderation, uint8_t *hash)
 static int mod_list_index_of_sig_pk(const Moderation *_Nonnull moderation, const uint8_t *_Nonnull public_sig_key)
 {
     for (uint16_t i = 0; i < moderation->num_mods; ++i) {
-        if (memcmp(moderation->mod_list[i], public_sig_key, SIG_PUBLIC_KEY_SIZE) == 0) {
+        if (memcmp(moderation->mods[i].public_sig_key, public_sig_key, SIG_PUBLIC_KEY_SIZE) == 0) {
             return i;
         }
     }
@@ -173,7 +165,7 @@ bool mod_list_verify_sig_pk(const Moderation *moderation, const uint8_t *sig_pk)
     }
 
     for (uint16_t i = 0; i < moderation->num_mods; ++i) {
-        if (memcmp(moderation->mod_list[i], sig_pk, SIG_PUBLIC_KEY_SIZE) == 0) {
+        if (memcmp(moderation->mods[i].public_sig_key, sig_pk, SIG_PUBLIC_KEY_SIZE) == 0) {
             return true;
         }
     }
@@ -195,20 +187,16 @@ bool mod_list_remove_index(Moderation *moderation, uint16_t index)
     --moderation->num_mods;
 
     if (index != moderation->num_mods) {
-        memcpy(moderation->mod_list[index], moderation->mod_list[moderation->num_mods],
-               MOD_LIST_ENTRY_SIZE);
+        moderation->mods[index] = moderation->mods[moderation->num_mods];
     }
 
-    mem_delete(moderation->mem, moderation->mod_list[moderation->num_mods]);
-    moderation->mod_list[moderation->num_mods] = nullptr;
-
-    uint8_t **tmp_list = (uint8_t **)mem_vrealloc(moderation->mem, moderation->mod_list, moderation->num_mods, sizeof(uint8_t *));
+    Mod_List_Entry *tmp_list = (Mod_List_Entry *)mem_vrealloc(moderation->mem, moderation->mods, moderation->num_mods, sizeof(Mod_List_Entry));
 
     if (tmp_list != nullptr) {
-        moderation->mod_list = tmp_list;
+        moderation->mods = tmp_list;
     }
 
-    qsort(moderation->mod_list, moderation->num_mods, sizeof(uint8_t *), compare_mod_pointers);
+    qsort(moderation->mods, moderation->num_mods, sizeof(Mod_List_Entry), compare_mod_entries);
 
     return true;
 }
@@ -236,35 +224,26 @@ bool mod_list_add_entry(Moderation *moderation, const uint8_t *mod_data)
         return false;
     }
 
-    uint8_t **tmp_list = (uint8_t **)mem_vrealloc(moderation->mem, moderation->mod_list, moderation->num_mods + 1, sizeof(uint8_t *));
+    Mod_List_Entry *tmp_list = (Mod_List_Entry *)mem_vrealloc(moderation->mem, moderation->mods, moderation->num_mods + 1, sizeof(Mod_List_Entry));
 
     if (tmp_list == nullptr) {
         return false;
     }
 
-    moderation->mod_list = tmp_list;
-
-    uint8_t *entry = (uint8_t *)mem_balloc(moderation->mem, MOD_LIST_ENTRY_SIZE);
-
-    if (entry == nullptr) {
-        return false;
-    }
-
-    memcpy(entry, mod_data, MOD_LIST_ENTRY_SIZE);
-
-    tmp_list[moderation->num_mods] = entry;
+    memcpy(tmp_list[moderation->num_mods].public_sig_key, mod_data, MOD_LIST_ENTRY_SIZE);
+    moderation->mods = tmp_list;
     ++moderation->num_mods;
 
-    qsort(moderation->mod_list, moderation->num_mods, sizeof(uint8_t *), compare_mod_pointers);
+    qsort(moderation->mods, moderation->num_mods, sizeof(Mod_List_Entry), compare_mod_entries);
 
     return true;
 }
 
 void mod_list_cleanup(Moderation *moderation)
 {
-    free_uint8_t_pointer_array(moderation->mem, moderation->mod_list, moderation->num_mods);
+    mem_delete(moderation->mem, moderation->mods);
     moderation->num_mods = 0;
-    moderation->mod_list = nullptr;
+    moderation->mods = nullptr;
 }
 
 uint16_t sanctions_creds_pack(const Mod_Sanction_Creds *creds, uint8_t *data)
@@ -441,7 +420,7 @@ int sanctions_list_unpack(Mod_Sanction *sanctions, Mod_Sanction_Creds *creds, ui
  * Return true on success.
  */
 static bool sanctions_list_make_hash(const Memory *_Nonnull mem, const Mod_Sanction *_Nullable sanctions, uint32_t new_version, uint16_t num_sanctions,
-                                     bool sort, uint8_t *_Nonnull hash)
+                                     bool sort, uint8_t hash[_Nonnull CRYPTO_SHA256_SIZE])
 {
     if (num_sanctions == 0 || sanctions == nullptr) {
         memzero(hash, MOD_SANCTION_HASH_SIZE);

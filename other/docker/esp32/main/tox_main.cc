@@ -32,8 +32,7 @@ static void log_handler(Tox *tox, Tox_Log_Level level, const char *file, uint32_
     const char *func, const char *msg, void *user_data)
 {
     const int *index = static_cast<const int *>(user_data);
-    const uint16_t udp_port = tox_self_get_udp_port(tox, nullptr);
-    printf("%s#%d (:%d) [%c] %s:%u(%s): %s\n", color(*index), *index, udp_port,
+    printf("%s#%d [%c] %s:%u(%s): %s\n", color(*index), *index,
         tox_log_level_to_string(level)[0], file, static_cast<unsigned int>(line), func, msg);
 }
 

@@ -14,6 +14,7 @@
 #include "../mem.h"
 #include "../tox.h"
 #include "../tox_event.h"
+#include "../tox_event_struct.h"
 #include "../tox_events.h"
 #include "../tox_options.h"
 #include "../tox_struct.h"
@@ -138,7 +139,7 @@ static bool tox_event_dht_nodes_response_unpack_into(Tox_Event_Dht_Nodes_Respons
 
 const Tox_Event_Dht_Nodes_Response *tox_event_get_dht_nodes_response(const Tox_Event *event)
 {
-    return event->type == TOX_EVENT_DHT_NODES_RESPONSE ? event->data.dht_nodes_response : nullptr;
+    return event->type == TOX_EVENT_TYPE_DHT_NODES_RESPONSE ? event->data.dht_nodes_response : nullptr;
 }
 
 Tox_Event_Dht_Nodes_Response *tox_event_dht_nodes_response_new(const Memory *mem)
@@ -170,7 +171,7 @@ static void tox_events_add_dht_nodes_response(Tox_Events_State *_Nonnull state, 
     }
 
     Tox_Event event;
-    event.type = TOX_EVENT_DHT_NODES_RESPONSE;
+    event.type = TOX_EVENT_TYPE_DHT_NODES_RESPONSE;
     event.data.dht_nodes_response = dht_nodes_response;
 
     if (!tox_events_add(state->events, &event)) {
@@ -183,14 +184,19 @@ bool tox_event_dht_nodes_response_unpack(
     Tox_Event_Dht_Nodes_Response **event, Bin_Unpack *bu, const Memory *mem)
 {
     assert(event != nullptr);
-    assert(*event == nullptr);
-    *event = tox_event_dht_nodes_response_new(mem);
+    Tox_Event_Dht_Nodes_Response *const unpacked = tox_event_dht_nodes_response_new(mem);
 
-    if (*event == nullptr) {
+    if (unpacked == nullptr) {
         return false;
     }
 
-    return tox_event_dht_nodes_response_unpack_into(*event, bu);
+    if (!tox_event_dht_nodes_response_unpack_into(unpacked, bu)) {
+        tox_event_dht_nodes_response_free(unpacked, mem);
+        return false;
+    }
+
+    *event = unpacked;
+    return true;
 }
 
 /*****************************************************
@@ -200,7 +206,7 @@ bool tox_event_dht_nodes_response_unpack(
  *****************************************************/
 
 void tox_events_handle_dht_nodes_response(
-    const uint8_t *public_key,
+    const uint8_t public_key[TOX_PUBLIC_KEY_SIZE],
     const char *ip, uint32_t ip_length,
     Tox_Port port,
     Tox_Events_State *state)

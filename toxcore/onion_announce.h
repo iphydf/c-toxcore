@@ -69,8 +69,9 @@ void onion_announce_entry_set_time(Onion_Announce *_Nonnull onion_a, uint32_t en
  * return -1 on failure.
  * return packet length on success.
  */
-int create_announce_request(const Memory *_Nonnull mem, const Random *_Nonnull rng, uint8_t *_Nonnull packet, uint16_t max_packet_length, const uint8_t *_Nonnull dest_client_id,
-                            const uint8_t *_Nonnull public_key, const uint8_t *_Nonnull secret_key, const uint8_t *_Nonnull ping_id, const uint8_t *_Nonnull client_id, const uint8_t *_Nonnull data_public_key,
+int create_announce_request(const Memory *_Nonnull mem, const Random *_Nonnull rng, uint8_t *_Nonnull packet, uint16_t max_packet_length, const uint8_t dest_client_id[_Nonnull CRYPTO_PUBLIC_KEY_SIZE],
+                            const uint8_t public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE], const uint8_t secret_key[_Nonnull CRYPTO_SECRET_KEY_SIZE], const uint8_t ping_id[_Nonnull ONION_PING_ID_SIZE],
+                            const uint8_t client_id[_Nonnull CRYPTO_PUBLIC_KEY_SIZE], const uint8_t data_public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE],
                             uint64_t sendback_data);
 
 /** @brief Create an onion data request packet in packet of max_packet_length.
@@ -85,8 +86,8 @@ int create_announce_request(const Memory *_Nonnull mem, const Random *_Nonnull r
  * return -1 on failure.
  * return 0 on success.
  */
-int create_data_request(const Memory *_Nonnull mem, const Random *_Nonnull rng, uint8_t *_Nonnull packet, uint16_t max_packet_length, const uint8_t *_Nonnull public_key,
-                        const uint8_t *_Nonnull encrypt_public_key, const uint8_t *_Nonnull nonce, const uint8_t *_Nonnull data, uint16_t length);
+int create_data_request(const Memory *_Nonnull mem, const Random *_Nonnull rng, uint8_t *_Nonnull packet, uint16_t max_packet_length, const uint8_t public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE],
+                        const uint8_t encrypt_public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE], const uint8_t nonce[_Nonnull CRYPTO_NONCE_SIZE], const uint8_t *_Nonnull data, uint16_t length);
 
 /** @brief Create and send an onion announce request packet.
  *
@@ -103,8 +104,9 @@ int create_data_request(const Memory *_Nonnull mem, const Random *_Nonnull rng, 
  * return 0 on success.
  */
 int send_announce_request(const Logger *_Nonnull log, const Memory *_Nonnull mem, const Networking_Core *_Nonnull net, const Random *_Nonnull rng, const Onion_Path *_Nonnull path,
-                          const Node_format *_Nonnull dest, const uint8_t *_Nonnull public_key, const uint8_t *_Nonnull secret_key, const uint8_t *_Nonnull ping_id, const uint8_t *_Nonnull client_id,
-                          const uint8_t *_Nonnull data_public_key, uint64_t sendback_data);
+                          const Node_format *_Nonnull dest, const uint8_t public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE], const uint8_t secret_key[_Nonnull CRYPTO_SECRET_KEY_SIZE],
+                          const uint8_t ping_id[_Nonnull ONION_PING_ID_SIZE], const uint8_t client_id[_Nonnull CRYPTO_PUBLIC_KEY_SIZE],
+                          const uint8_t data_public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE], uint64_t sendback_data);
 
 /** @brief Create and send an onion data request packet.
  *
@@ -123,7 +125,8 @@ int send_announce_request(const Logger *_Nonnull log, const Memory *_Nonnull mem
  * return 0 on success.
  */
 int send_data_request(const Logger *_Nonnull log, const Memory *_Nonnull mem, const Networking_Core *_Nonnull net, const Random *_Nonnull rng, const Onion_Path *_Nonnull path,
-                      const IP_Port *_Nonnull dest, const uint8_t *_Nonnull public_key, const uint8_t *_Nonnull encrypt_public_key, const uint8_t *_Nonnull nonce, const uint8_t *_Nonnull data, uint16_t length);
+                      const IP_Port *_Nonnull dest, const uint8_t public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE], const uint8_t encrypt_public_key[_Nonnull CRYPTO_PUBLIC_KEY_SIZE],
+                      const uint8_t nonce[_Nonnull CRYPTO_NONCE_SIZE], const uint8_t *_Nonnull data, uint16_t length);
 
 typedef int pack_extra_data_cb(void *_Nonnull object, const Logger *_Nonnull logger, const Memory *_Nonnull mem, const Mono_Time *_Nonnull mono_time,
                                uint8_t num_nodes, uint8_t *_Nonnull plain, uint16_t plain_size,

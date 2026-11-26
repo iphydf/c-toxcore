@@ -25,7 +25,7 @@ static void on_friend_request(const Tox_Event_Friend_Request *event, void *user_
 static void peer_script(ToxNode *self, void *ctx)
 {
     State *state = (State *)ctx;
-    tox_events_callback_friend_request(tox_node_get_dispatch(self), on_friend_request);
+    tox_dispatch_callback_friend_request(tox_node_get_dispatch(self), on_friend_request);
 
     tox_node_wait_for_self_connected(self);
 

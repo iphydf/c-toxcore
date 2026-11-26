@@ -126,7 +126,7 @@ int read_tcp_packet(const Logger *_Nonnull logger, const Memory *_Nonnull mem, c
  * @retval -1 on failure (connection must be killed).
  */
 int read_packet_tcp_secure_connection(const Logger *_Nonnull logger, const Memory *_Nonnull mem, const Network *_Nonnull ns, Socket sock, uint16_t *_Nonnull next_packet_length,
-                                      const uint8_t *_Nonnull shared_key, uint8_t *_Nonnull recv_nonce, uint8_t *_Nonnull data, uint16_t max_len, const IP_Port *_Nonnull ip_port);
+                                      const uint8_t shared_key[_Nonnull CRYPTO_SHARED_KEY_SIZE], uint8_t recv_nonce[_Nonnull CRYPTO_NONCE_SIZE], uint8_t *_Nonnull data, uint16_t max_len, const IP_Port *_Nonnull ip_port);
 
 #ifdef __cplusplus
 } /* extern "C" */

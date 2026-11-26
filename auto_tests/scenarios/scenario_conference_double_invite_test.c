@@ -61,7 +61,7 @@ static void alice_script(ToxNode *self, void *ctx)
 
 static void bob_script(ToxNode *self, void *ctx)
 {
-    tox_events_callback_conference_invite(tox_node_get_dispatch(self), on_conference_invite);
+    tox_dispatch_callback_conference_invite(tox_node_get_dispatch(self), on_conference_invite);
     WAIT_UNTIL(tox_node_is_self_connected(self));
 
     const State *state = (const State *)ctx;

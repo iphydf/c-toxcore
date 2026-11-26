@@ -64,6 +64,37 @@ sh_test(
     ],
 )
 
+# The public headers, held to the API's standards (see hs-apigen's
+# Apigen.Check).
+API_HEADERS = [
+    "//c-toxcore:tox/tox.h",
+    "//c-toxcore:tox/tox_attributes.h",
+    "//c-toxcore:tox/tox_dispatch.h",
+    "//c-toxcore:tox/tox_event.h",
+    "//c-toxcore:tox/tox_events.h",
+    "//c-toxcore:tox/tox_log_level.h",
+    "//c-toxcore:tox/tox_options.h",
+    "//c-toxcore:tox/toxav.h",
+    "//c-toxcore:tox/toxencryptsave.h",
+]
+
+sh_test(
+    name = "apigen_test",
+    size = "small",
+    srcs = ["//hs-apigen/tools:apigen"],
+    args = [
+        "--check",
+        # Read for the callbacks of private events, not checked.
+        "--context",
+        "$(rootpath //c-toxcore:tox/tox_private.h)",
+    ] + ["$(rootpath %s)" % h for h in API_HEADERS],
+    data = API_HEADERS + ["//c-toxcore:tox/tox_private.h"],
+    tags = [
+        "haskell",
+        "no-cross",
+    ],
+)
+
 cc_library(
     name = "misc_tools",
     testonly = 1,

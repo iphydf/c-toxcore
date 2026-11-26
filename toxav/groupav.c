@@ -9,6 +9,7 @@
 
 #include "group_jitter_buffer.h"
 
+#include "../toxcore/Messenger.h"
 #include "../toxcore/ccompat.h"
 #include "../toxcore/logger.h"
 #include "../toxcore/mono_time.h"
@@ -437,7 +438,7 @@ int add_av_groupchat(const Logger *log, Tox *tox, Group_Chats *g_c, audio_data_c
 int join_av_groupchat(const Logger *log, Tox *tox, Group_Chats *g_c, Tox_Friend_Number friend_number, const uint8_t *data,
                       uint16_t length, audio_data_cb *audio_callback, void *userdata)
 {
-    const int conference_number = join_groupchat(g_c, friend_number, GROUPCHAT_TYPE_AV, data, length);
+    const int conference_number = join_groupchat(g_c, m_friend_number(friend_number), GROUPCHAT_TYPE_AV, data, length);
 
     if (conference_number == -1) {
         return -1;

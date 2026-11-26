@@ -37,6 +37,7 @@ struct Tox;
  */
 typedef uint16_t Tox_Port;
 
+// TODO(iphydf): Start the name with tox_options_ in 0.3.0, like the rest of this header.
 /**
  * @brief Type of proxy used to connect to TCP relays.
  */
@@ -59,6 +60,7 @@ typedef enum Tox_Proxy_Type {
 
 const char *_Nonnull tox_proxy_type_to_string(Tox_Proxy_Type value);
 
+// TODO(iphydf): Start the name with tox_options_ in 0.3.0, like the rest of this header.
 /**
  * @brief Type of savedata to create the Tox instance from.
  */
@@ -81,6 +83,7 @@ typedef enum Tox_Savedata_Type {
 
 const char *_Nonnull tox_savedata_type_to_string(Tox_Savedata_Type value);
 
+// TODO(iphydf): Start the name with tox_options_ in 0.3.0, like the rest of this header.
 /**
  * @brief This event is triggered when Tox logs an internal message.
  *
@@ -92,8 +95,8 @@ const char *_Nonnull tox_savedata_type_to_string(Tox_Savedata_Type value);
  * any time. Thus, user code must make sure it is equipped to handle concurrent
  * execution, e.g. by employing appropriate mutex locking.
  *
- * When using the experimental_thread_safety option, no Tox API functions can
- * be called from within the log callback.
+ * No Tox API functions can be called from within the log callback: it may be
+ * called in the middle of any of them.
  *
  * @param level The severity of the log message.
  * @param file The source file from which the message originated.

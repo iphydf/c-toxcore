@@ -69,7 +69,7 @@ typedef struct OS_Ev_Registration {
 typedef struct OS_Ev {
     const Memory *_Nonnull mem;
     const Logger *_Nonnull log;
-    OS_Ev_Registration **_Nonnull regs;
+    OS_Ev_Registration *_Nonnull *_Nullable regs;
     uint32_t regs_count;
     uint32_t regs_capacity;
 
@@ -97,6 +97,10 @@ static OS_Ev_Registration *_Nullable os_ev_prepare_add(OS_Ev *_Nonnull os_ev, So
     }
 
     if (os_ev->regs_count == os_ev->regs_capacity) {
+        if (os_ev->regs_capacity > UINT32_MAX / 2) {
+            return nullptr;
+        }
+
         const uint32_t new_capacity = os_ev->regs_capacity == 0 ? 8 : os_ev->regs_capacity * 2;
         OS_Ev_Registration **new_regs
             = (OS_Ev_Registration **)mem_vrealloc(os_ev->mem, os_ev->regs, new_capacity, sizeof(OS_Ev_Registration *));

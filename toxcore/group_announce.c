@@ -191,12 +191,14 @@ static int gca_unpack_announce(const Logger *_Nonnull log, const uint8_t *_Nonnu
     net_unpack_bool(&data[offset], &announce->ip_port_is_set);
     ++offset;
 
-    announce->tcp_relays_count = data[offset];
+    const uint8_t tcp_relays_count = data[offset];
     ++offset;
 
-    if (announce->tcp_relays_count > GCA_MAX_ANNOUNCED_TCP_RELAYS) {
+    if (tcp_relays_count > GCA_MAX_ANNOUNCED_TCP_RELAYS) {
         return -1;
     }
+
+    announce->tcp_relays_count = tcp_relays_count;
 
     if (announce->ip_port_is_set) {
         if (length - offset == 0) {

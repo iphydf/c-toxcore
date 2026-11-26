@@ -24,8 +24,6 @@ extern "C" {
 
 bool is_power_of_2(uint64_t x);
 
-/** @brief Frees all pointers in a uint8_t pointer array, as well as the array itself. */
-void free_uint8_t_pointer_array(const Memory *_Nonnull mem, uint8_t *_Nullable *_Nullable ary, size_t n_items);
 /** Returns -1 if failed or 0 if success */
 int create_recursive_mutex(pthread_mutex_t *_Nonnull mutex);
 
@@ -44,6 +42,7 @@ bool memeq(const uint8_t *_Nonnull a, size_t a_size, const uint8_t *_Nonnull b, 
  *
  * @return nullptr on allocation failure or if the input data was nullptr or data_size was 0.
  */
+GNU_ALLOC_SIZE(3)
 uint8_t *_Nullable memdup(const Memory *_Nonnull mem, const uint8_t *_Nullable data, size_t data_size);
 
 /**

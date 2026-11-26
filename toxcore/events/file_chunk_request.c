@@ -13,6 +13,7 @@
 #include "../mem.h"
 #include "../tox.h"
 #include "../tox_event.h"
+#include "../tox_event_struct.h"
 #include "../tox_events.h"
 #include "../tox_struct.h"
 
@@ -115,7 +116,7 @@ static bool tox_event_file_chunk_request_unpack_into(Tox_Event_File_Chunk_Reques
 
 const Tox_Event_File_Chunk_Request *tox_event_get_file_chunk_request(const Tox_Event *event)
 {
-    return event->type == TOX_EVENT_FILE_CHUNK_REQUEST ? event->data.file_chunk_request : nullptr;
+    return event->type == TOX_EVENT_TYPE_FILE_CHUNK_REQUEST ? event->data.file_chunk_request : nullptr;
 }
 
 Tox_Event_File_Chunk_Request *tox_event_file_chunk_request_new(const Memory *mem)
@@ -147,7 +148,7 @@ static void tox_events_add_file_chunk_request(Tox_Events_State *_Nonnull state, 
     }
 
     Tox_Event event;
-    event.type = TOX_EVENT_FILE_CHUNK_REQUEST;
+    event.type = TOX_EVENT_TYPE_FILE_CHUNK_REQUEST;
     event.data.file_chunk_request = file_chunk_request;
 
     if (!tox_events_add(state->events, &event)) {
@@ -160,14 +161,19 @@ bool tox_event_file_chunk_request_unpack(
     Tox_Event_File_Chunk_Request **event, Bin_Unpack *bu, const Memory *mem)
 {
     assert(event != nullptr);
-    assert(*event == nullptr);
-    *event = tox_event_file_chunk_request_new(mem);
+    Tox_Event_File_Chunk_Request *const unpacked = tox_event_file_chunk_request_new(mem);
 
-    if (*event == nullptr) {
+    if (unpacked == nullptr) {
         return false;
     }
 
-    return tox_event_file_chunk_request_unpack_into(*event, bu);
+    if (!tox_event_file_chunk_request_unpack_into(unpacked, bu)) {
+        tox_event_file_chunk_request_free(unpacked, mem);
+        return false;
+    }
+
+    *event = unpacked;
+    return true;
 }
 
 /*****************************************************

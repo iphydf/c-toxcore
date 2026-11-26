@@ -185,39 +185,39 @@ uint16_t tox_dht_get_num_closelist_announce_capable(const Tox *tox)
     return num_cap;
 }
 
-size_t tox_group_peer_get_ip_address_size(const Tox *tox, uint32_t group_number, uint32_t peer_id,
+size_t tox_group_peer_get_ip_address_size(const Tox *tox, uint32_t group_number, uint32_t peer_number,
         Tox_Err_Group_Peer_Query *error)
 {
     assert(tox != nullptr);
 
     tox_lock(tox);
-    const GC_Chat *chat = gc_get_group(tox->m->group_handler, group_number);
+    const GC_Chat *chat = gc_get_group(tox->m->group_handler, gc_group_number(group_number));
 
     if (chat == nullptr) {
         SET_ERROR_PARAMETER(error, TOX_ERR_GROUP_PEER_QUERY_GROUP_NOT_FOUND);
         tox_unlock(tox);
-        return -1;
+        return SIZE_MAX;
     }
 
-    const int ret = gc_get_peer_ip_address_size(chat, gc_peer_id_from_int(peer_id));
+    const int ret = gc_get_peer_ip_address_size(chat, gc_peer_id_from_int(peer_number));
     tox_unlock(tox);
 
     if (ret == -1) {
         SET_ERROR_PARAMETER(error, TOX_ERR_GROUP_PEER_QUERY_PEER_NOT_FOUND);
-        return -1;
+        return SIZE_MAX;
     } else {
         SET_ERROR_PARAMETER(error, TOX_ERR_GROUP_PEER_QUERY_OK);
         return ret;
     }
 }
 
-bool tox_group_peer_get_ip_address(const Tox *tox, uint32_t group_number, uint32_t peer_id, uint8_t *ip_addr,
+bool tox_group_peer_get_ip_address(const Tox *tox, uint32_t group_number, uint32_t peer_number, uint8_t *ip_addr,
                                    Tox_Err_Group_Peer_Query *error)
 {
     assert(tox != nullptr);
 
     tox_lock(tox);
-    const GC_Chat *chat = gc_get_group(tox->m->group_handler, group_number);
+    const GC_Chat *chat = gc_get_group(tox->m->group_handler, gc_group_number(group_number));
 
     if (chat == nullptr) {
         SET_ERROR_PARAMETER(error, TOX_ERR_GROUP_PEER_QUERY_GROUP_NOT_FOUND);
@@ -225,7 +225,7 @@ bool tox_group_peer_get_ip_address(const Tox *tox, uint32_t group_number, uint32
         return false;
     }
 
-    const int ret = gc_get_peer_ip_address(chat, gc_peer_id_from_int(peer_id), ip_addr);
+    const int ret = gc_get_peer_ip_address(chat, gc_peer_id_from_int(peer_number), ip_addr);
     tox_unlock(tox);
 
     if (ret == -1) {

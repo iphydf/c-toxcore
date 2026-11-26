@@ -13,6 +13,7 @@
 #include "../mem.h"
 #include "../tox.h"
 #include "../tox_event.h"
+#include "../tox_event_struct.h"
 #include "../tox_events.h"
 #include "../tox_pack.h"
 #include "../tox_struct.h"
@@ -89,7 +90,7 @@ static bool tox_event_group_voice_state_unpack_into(Tox_Event_Group_Voice_State 
 
 const Tox_Event_Group_Voice_State *tox_event_get_group_voice_state(const Tox_Event *event)
 {
-    return event->type == TOX_EVENT_GROUP_VOICE_STATE ? event->data.group_voice_state : nullptr;
+    return event->type == TOX_EVENT_TYPE_GROUP_VOICE_STATE ? event->data.group_voice_state : nullptr;
 }
 
 Tox_Event_Group_Voice_State *tox_event_group_voice_state_new(const Memory *mem)
@@ -121,7 +122,7 @@ static void tox_events_add_group_voice_state(Tox_Events_State *_Nonnull state, T
     }
 
     Tox_Event event;
-    event.type = TOX_EVENT_GROUP_VOICE_STATE;
+    event.type = TOX_EVENT_TYPE_GROUP_VOICE_STATE;
     event.data.group_voice_state = group_voice_state;
 
     if (!tox_events_add(state->events, &event)) {
@@ -134,14 +135,19 @@ bool tox_event_group_voice_state_unpack(
     Tox_Event_Group_Voice_State **event, Bin_Unpack *bu, const Memory *mem)
 {
     assert(event != nullptr);
-    assert(*event == nullptr);
-    *event = tox_event_group_voice_state_new(mem);
+    Tox_Event_Group_Voice_State *const unpacked = tox_event_group_voice_state_new(mem);
 
-    if (*event == nullptr) {
+    if (unpacked == nullptr) {
         return false;
     }
 
-    return tox_event_group_voice_state_unpack_into(*event, bu);
+    if (!tox_event_group_voice_state_unpack_into(unpacked, bu)) {
+        tox_event_group_voice_state_free(unpacked, mem);
+        return false;
+    }
+
+    *event = unpacked;
+    return true;
 }
 
 /*****************************************************

@@ -45,9 +45,9 @@ static void on_group_moderation(const Tox_Event_Group_Moderation *event, void *u
 static void common_init(ToxNode *self)
 {
     Tox_Dispatch *dispatch = tox_node_get_dispatch(self);
-    tox_events_callback_group_self_join(dispatch, on_group_self_join);
-    tox_events_callback_group_peer_join(dispatch, on_group_peer_join);
-    tox_events_callback_group_moderation(dispatch, on_group_moderation);
+    tox_dispatch_callback_group_self_join(dispatch, on_group_self_join);
+    tox_dispatch_callback_group_peer_join(dispatch, on_group_peer_join);
+    tox_dispatch_callback_group_moderation(dispatch, on_group_moderation);
     tox_node_wait_for_self_connected(self);
 }
 
